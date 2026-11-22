@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-22T15:39:09+00:00",
+ "generated_at": "2026-11-22T16:08:05+00:00",
  "oos_period": [
   "2023-11-01 00:00:00+00:00",
   "2026-11-22 08:00:00+00:00"
@@ -37,6 +37,18 @@
    "profit_factor": NaN,
    "worst_month": -0.30506113901171117,
    "worst_month_label": "2024-04",
+   "longest_losing_streak": 0,
+   "exposure": 0.0
+  },
+  "btc_dca_weekly": {
+   "return": -0.15144864779286882,
+   "max_dd": -0.4791358003692975,
+   "sharpe": -0.06801152884985023,
+   "calmar": -0.3160871044829851,
+   "avg_r": 0.0,
+   "profit_factor": NaN,
+   "worst_month": -0.21171760240761528,
+   "worst_month_label": "2026-11",
    "longest_losing_streak": 0,
    "exposure": 0.0
   }
@@ -1903,6 +1915,91 @@
      "test_start": "2026-05-01",
      "params": {
       "stop": 2.0
+     }
+    }
+   ]
+  },
+  "range_grid": {
+   "reason": "\u0e41\u0e1a\u0e1a grid: \u0e15\u0e2d\u0e19\u0e15\u0e25\u0e32\u0e14 sideways \u0e23\u0e32\u0e04\u0e32\u0e41\u0e01\u0e27\u0e48\u0e07\u0e43\u0e19\u0e01\u0e23\u0e2d\u0e1a \u0e0b\u0e37\u0e49\u0e2d\u0e43\u0e01\u0e25\u0e49\u0e02\u0e2d\u0e1a\u0e25\u0e48\u0e32\u0e07 \u0e02\u0e32\u0e22\u0e01\u0e25\u0e32\u0e07\u0e01\u0e23\u0e2d\u0e1a \u2014 \u0e44\u0e14\u0e49\u0e40\u0e07\u0e34\u0e19\u0e08\u0e32\u0e01\u0e04\u0e19\u0e17\u0e35\u0e48\u0e44\u0e25\u0e48\u0e0b\u0e37\u0e49\u0e2d\u0e41\u0e1e\u0e07/\u0e02\u0e32\u0e22\u0e16\u0e39\u0e01\u0e43\u0e19\u0e01\u0e23\u0e2d\u0e1a (\u0e41\u0e15\u0e48\u0e15\u0e49\u0e2d\u0e07\u0e21\u0e35 stop \u0e43\u0e15\u0e49\u0e01\u0e23\u0e2d\u0e1a \u0e44\u0e21\u0e48\u0e43\u0e0a\u0e48 grid \u0e44\u0e21\u0e48\u0e08\u0e33\u0e01\u0e31\u0e14\u0e17\u0e35\u0e48\u0e02\u0e32\u0e14\u0e17\u0e38\u0e19\u0e44\u0e21\u0e48\u0e2a\u0e34\u0e49\u0e19\u0e2a\u0e38\u0e14)",
+   "kills": "\u0e23\u0e32\u0e04\u0e32\u0e2b\u0e25\u0e38\u0e14\u0e01\u0e23\u0e2d\u0e1a\u0e25\u0e07\u0e41\u0e23\u0e07 (trend \u0e02\u0e32\u0e25\u0e07\u0e43\u0e2b\u0e21\u0e48) \u2014 grid \u0e41\u0e1a\u0e1a\u0e44\u0e21\u0e48\u0e21\u0e35 stop \u0e08\u0e30\u0e02\u0e32\u0e14\u0e17\u0e38\u0e19\u0e2b\u0e19\u0e31\u0e01\u0e17\u0e35\u0e48\u0e2a\u0e38\u0e14\u0e15\u0e23\u0e07\u0e19\u0e35\u0e49",
+   "metrics": {
+    "return": -0.5401747161822246,
+    "max_dd": -0.5668005481980327,
+    "sharpe": -1.5207729418044635,
+    "calmar": -0.9530243361611827,
+    "trades": 595,
+    "win_rate": 0.30756302521008405,
+    "avg_r": -0.23014059730973976,
+    "profit_factor": 0.6448930580605347,
+    "worst_month": -0.10944937186465864,
+    "worst_month_label": "2026-06",
+    "longest_losing_streak": 26,
+    "exposure": 1.6495152870991796
+   },
+   "regimes": {
+    "bear": {
+     "avg_month": -0.05120432587875414,
+     "months": 11
+    },
+    "chop": {
+     "avg_month": -0.01951135061517664,
+     "months": 9
+    },
+    "bull": {
+     "avg_month": -6.668824401688615e-05,
+     "months": 17
+    }
+   },
+   "score": {
+    "wf_profit": 1,
+    "max_dd": 1,
+    "trades": 5,
+    "losing_streak": 1,
+    "bear_chop": 1,
+    "total": 1.8
+   },
+   "beats_buy_hold": false,
+   "chosen": [
+    {
+     "test_start": "2023-11-01",
+     "params": {
+      "days": 20,
+      "zone": 0.25
+     }
+    },
+    {
+     "test_start": "2024-05-01",
+     "params": {
+      "days": 20,
+      "zone": 0.15
+     }
+    },
+    {
+     "test_start": "2024-11-01",
+     "params": {
+      "days": 20,
+      "zone": 0.15
+     }
+    },
+    {
+     "test_start": "2025-05-01",
+     "params": {
+      "days": 10,
+      "zone": 0.15
+     }
+    },
+    {
+     "test_start": "2025-11-01",
+     "params": {
+      "days": 20,
+      "zone": 0.15
+     }
+    },
+    {
+     "test_start": "2026-05-01",
+     "params": {
+      "days": 20,
+      "zone": 0.15
      }
     }
    ]

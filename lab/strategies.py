@@ -328,3 +328,23 @@ def weekly_open_trend(m, stop=2.0):
     entry = (c > wk_open * 1.03) & (c.shift(1) <= wk_open * 1.03) & (ema(c, 6 * 20) < c)
     a = atr(m)
     return Signals(B(entry) & btc_regime(m), N(a * stop), exit=B(c < wk_open), max_hold=7 * D)
+
+
+@idea("range_grid",
+      "แบบ grid: ตอนตลาด sideways ราคาแกว่งในกรอบ ซื้อใกล้ขอบล่าง ขายกลางกรอบ — ได้เงินจากคนที่ไล่ซื้อแพง/ขายถูกในกรอบ (แต่ต้องมี stop ใต้กรอบ ไม่ใช่ grid ไม่จำกัดที่ขาดทุนไม่สิ้นสุด)",
+      [{"days": d, "zone": z} for d in (10, 20) for z in (0.15, 0.25)],
+      "ราคาหลุดกรอบลงแรง (trend ขาลงใหม่) — grid แบบไม่มี stop จะขาดทุนหนักที่สุดตรงนี้")
+def range_grid(m, days=20, zone=0.2, stop=1.0):
+    c, h, l = _c(m), m.df("high"), m.df("low")
+    n = days * D
+    hi, lo = h.rolling(n).max(), l.rolling(n).min()
+    width = (hi - lo) / c
+    a = atr(m)
+    # ตลาด sideways: กรอบไม่กว้างเกินไป และ EMA50 แทบไม่เอียง
+    e50 = ema(c, 50)
+    flat = (e50.pct_change(5 * D).abs() < 0.03) & (width < 0.35)
+    pos = (c - lo) / (hi - lo).replace(0, np.nan)
+    entry = flat & (pos < zone)
+    exit_ = pos > 0.5
+    stop_dist = (c - lo) + stop * a  # stop ใต้ขอบล่างของกรอบ
+    return Signals(B(entry), N(stop_dist), exit=B(exit_), max_hold=n)

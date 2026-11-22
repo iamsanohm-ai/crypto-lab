@@ -73,8 +73,18 @@ def benchmarks(m, start, costs=Costs()):
     mem = m.df("member").iloc[start:].shift(1, fill_value=False)
     ew = (rets.where(mem).mean(axis=1)).fillna(0)
     ew_eq = (1 + ew).cumprod() * (1 - costs.per_side) ** 2
+    # DCA: แบ่งเงินซื้อ BTC เท่าๆ กันทุกสัปดาห์ตลอดช่วงทดสอบ (เงินที่ยังไม่ซื้อถือเป็นเงินสด)
+    weeks = list(range(0, len(btc), 7 * 6))
+    per = 1.0 / len(weeks)
+    units, cash, dca = 0.0, 1.0, []
+    for i, px in enumerate(btc.to_numpy()):
+        if i in weeks:
+            units += per * (1 - costs.per_side) / px
+            cash -= per
+        dca.append(cash + units * px)
+    dca_eq = pd.Series(dca, index=btc.index)
     out = {}
-    for k, e in (("btc_buy_hold", btc_eq), ("top20_equal_weight", ew_eq)):
+    for k, e in (("btc_buy_hold", btc_eq), ("top20_equal_weight", ew_eq), ("btc_dca_weekly", dca_eq)):
         out[k] = metrics(Result(e * 500, pd.DataFrame()))
         out[k].pop("trades"), out[k].pop("win_rate")
     return out, btc

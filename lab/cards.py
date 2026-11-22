@@ -98,7 +98,8 @@ def main():
     lines = ["# ผล Judge — ทุกไอเดีย (walk-forward OOS, หลังต้นทุน)\n",
              f"ข้อมูล: Binance spot 4h, {j['oos_period'][0][:10]} → {j['oos_period'][1][:10]} · แหล่ง: data/manifest.json · สร้างเมื่อ {j['generated_at']}\n",
              f"**Benchmark:** BTC buy & hold {pct(bh['btc_buy_hold']['return'])} (DD {pct(bh['btc_buy_hold']['max_dd'])}, Sharpe {bh['btc_buy_hold']['sharpe']:.2f}) · "
-             f"Top-20 equal weight {pct(bh['top20_equal_weight']['return'])}\n",
+             f"Top-20 equal weight {pct(bh['top20_equal_weight']['return'])} · "
+             f"BTC DCA รายสัปดาห์ {pct(bh['btc_dca_weekly']['return'])} (DD {pct(bh['btc_dca_weekly']['max_dd'])}, Sharpe {bh['btc_dca_weekly']['sharpe']:.2f})\n",
              "| ไอเดีย | ผลตอบแทน | MaxDD | Sharpe | เทรด | แพ้ติด | คะแนน | สถานะ |", "|---|---|---|---|---|---|---|---|"]
     for name, r in rows:
         mt = r["metrics"]

@@ -15,6 +15,7 @@ sentinel:
   max_consecutive_losses: 3    # แพ้ติด 3 → หยุด
   stale_feed_minutes: 30       # แท่ง 4h ล่าสุดเก่ากว่า 4h30m → หยุด
   max_price_deviation: 0.05    # ราคาตอนส่งออเดอร์ห่างจากราคาปิดแท่งสัญญาณ >5% → ปฏิเสธ
+  paper_auto_resume: true      # paper: หยุดแล้วพักถึงวันถัดไป (เจ้าของเลือก 2026-11-22); live: หยุดจนเจ้าของปลดเสมอ
 strategies:
   - {role: champion,     name: keltner_trend,           params: {k: 2.0, stop: 3.0}, crowned: "2026-11-22"}
   - {role: challenger_1, name: golden_cross_50_200,     params: {fast: 30, slow: 120}}

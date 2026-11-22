@@ -109,3 +109,13 @@ def test_sentinel_halts(tmp_path, monkeypatch):
     assert not Sentinel(CFG, st).check_account(484) and "daily loss" in st["halted"]["reason"]
     st2 = _st(loss_streak=3)
     assert not Sentinel(CFG, st2).check_account(500) and st2["halted"]
+
+
+def test_sentinel_paper_pause_and_live_hard_stop(tmp_path, monkeypatch):
+    monkeypatch.setattr("lab.live.LEDGER", tmp_path / "l.jsonl")
+    st = _st(loss_streak=3)
+    Sentinel({**CFG, "mode": "paper"}, st).check_account(500)
+    assert st["halted"]["resume_on"]            # paper → กลับมาเองวันถัดไป
+    st2 = _st(loss_streak=3)
+    Sentinel({**CFG, "mode": "live"}, st2).check_account(500)
+    assert st2["halted"]["resume_on"] is None   # live → ต้องให้เจ้าของปลด

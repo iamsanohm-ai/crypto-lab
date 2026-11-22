@@ -155,8 +155,11 @@ class Sentinel:
         self.cfg, self.st = cfg, st
 
     def halt(self, reason):
-        self.st["halted"] = {"at": now_iso(), "reason": reason}
-        log("SENTINEL_HALT", reason=reason)
+        """paper: พักถึงวันถัดไป (UTC 00:00 = 07:00 เวลาไทย) แล้วกลับมาเอง; live: หยุดจนเจ้าของปลดเอง."""
+        auto = self.cfg.get("mode", "paper") == "paper" and self.cfg["sentinel"].get("paper_auto_resume", True)
+        resume = (datetime.now(timezone.utc) + timedelta(days=1)).strftime("%Y-%m-%d") if auto else None
+        self.st["halted"] = {"at": now_iso(), "reason": reason, "resume_on": resume}
+        log("SENTINEL_HALT", reason=reason, resume_on=resume or "owner must clear")
 
     def check_feed(self, m: Market) -> bool:
         age = datetime.now(timezone.utc) - (m.times[-1] + H4).to_pydatetime()
@@ -205,6 +208,11 @@ def run_all(dry: bool = False):
 
 def run_once(cfg, champ, cache, dry=False):
     st = load_state(cfg, champ["name"])
+    h = st.get("halted")
+    if h and h.get("resume_on") and datetime.now(timezone.utc).strftime("%Y-%m-%d") >= h["resume_on"]:
+        log("SENTINEL_RESUME", previous=h)
+        st["halted"], st["loss_streak"] = None, 0
+        st["day"] = None  # เริ่มนับขาดทุนรายวันใหม่
     if st.get("halted"):
         log("SKIP_HALTED", halted=st["halted"])
         return st
