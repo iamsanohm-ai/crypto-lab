@@ -116,9 +116,6 @@ def main():
     print("ok")
 
 
-if __name__ == "__main__":
-    main()
-
 
 def write_bt_curves():
     """เส้น equity backtest รายวันของกลยุทธ์ใน config + BTC buy & hold → research/bt_curves.json (ใช้ใน dashboard)."""
@@ -137,3 +134,7 @@ def write_bt_curves():
     b = b / b.iloc[0] * 500 * (1 - 0.0015)
     rows += [{"date": d.strftime("%Y-%m-%d"), "series": "BTC buy & hold", "equity": round(v, 2)} for d, v in b.items()]
     (ROOT / "research" / "bt_curves.json").write_text(json.dumps(rows, separators=(",", ":")))
+
+
+if __name__ == "__main__":
+    main()
