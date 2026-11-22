@@ -1,0 +1,21 @@
+# กลยุทธ์ทั้งหมดสลับได้จากไฟล์นี้ไฟล์เดียว (Engineer/Judge แก้ได้เฉพาะเมื่อคุณอนุมัติ)
+mode: paper            # paper | live  — live ต้องได้ "go live" จากคุณ + อนุมัติทุกเทรด
+exchange: binance
+capital: 500           # USDT ต่อบัญชีจำลอง (แต่ละกลยุทธ์มีบัญชีของตัวเอง)
+risk_per_trade: 0.005  # 0.5%
+max_positions: 5
+max_position_frac: 0.25
+min_notional: 5
+fee: 0.001
+slippage: 0.0005
+universe_top_n: 20
+timeframe: 4h
+sentinel:
+  daily_loss_limit: 0.03       # -3% ต่อวัน → หยุด
+  max_consecutive_losses: 3    # แพ้ติด 3 → หยุด
+  stale_feed_minutes: 30       # แท่ง 4h ล่าสุดเก่ากว่า 4h30m → หยุด
+  max_price_deviation: 0.05    # ราคาตอนส่งออเดอร์ห่างจากราคาปิดแท่งสัญญาณ >5% → ปฏิเสธ
+strategies:
+  - {role: champion,     name: keltner_trend,           params: {k: 2.0, stop: 3.0}, crowned: "2026-11-22"}
+  - {role: challenger_1, name: golden_cross_50_200,     params: {fast: 30, slow: 120}}
+  - {role: challenger_2, name: breakout_funding_filter, params: {n: 60, fmax: 0.0001}}   # funding live = ESTIMATE

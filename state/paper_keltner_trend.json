@@ -1,0 +1,36 @@
+{
+ "strategy": "keltner_trend",
+ "cash": 500,
+ "positions": {},
+ "closed": [],
+ "last_bar": "2026-11-22 08:00:00+00:00",
+ "halted": null,
+ "universe": {
+  "month": "2026-11",
+  "members": [
+   "BTCUSDT",
+   "ETHUSDT",
+   "SOLUSDT",
+   "ZECUSDT",
+   "NEARUSDT",
+   "XRPUSDT",
+   "BNBUSDT",
+   "SUIUSDT",
+   "DOGEUSDT",
+   "PEPEUSDT",
+   "UNIUSDT",
+   "WLDUSDT",
+   "ENAUSDT",
+   "HYPEUSDT",
+   "TRXUSDT",
+   "ADAUSDT",
+   "AVAXUSDT",
+   "QNTUSDT",
+   "PUMPUSDT",
+   "TAOUSDT"
+  ]
+ },
+ "day": "2026-11-22",
+ "day_start_equity": 500,
+ "loss_streak": 0
+}

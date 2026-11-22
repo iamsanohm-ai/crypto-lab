@@ -1,0 +1,37 @@
+# คัดลอกเป็น config.yaml แล้วแก้ไข
+# ⚠️ ห้ามใส่ API key ในไฟล์นี้ — ใช้ environment variables แทน เช่น
+#    export BINANCE_API_KEY=...   export BINANCE_SECRET=...
+#    (OKX ต้องมี OKX_PASSWORD ด้วย)
+
+exchange:
+  id: binance        # binance, okx, bybit, kraken, bitkub, coinbase ... (ดู: python -m cryptoassist exchanges)
+  sandbox: false     # true = ใช้ testnet (ถ้า exchange รองรับ) เหมาะกับการทดสอบ --live
+
+watchlist: [BTC/USDT, ETH/USDT, SOL/USDT]
+
+alerts:
+  - {symbol: BTC/USDT, type: price_above, value: 120000}
+  - {symbol: BTC/USDT, type: price_below, value: 80000}
+  - {symbol: ETH/USDT, type: change_24h_below, value: -5}
+  - {symbol: ETH/USDT, type: rsi_below, value: 30, timeframe: 1h, period: 14}
+  - {symbol: SOL/USDT, type: rsi_above, value: 75, timeframe: 4h}
+  - {symbol: BTC/USDT, type: ma_cross, fast: 50, slow: 200, timeframe: 1d}
+
+notify:
+  telegram: false    # true แล้วตั้ง env TELEGRAM_BOT_TOKEN และ TELEGRAM_CHAT_ID
+
+bot:
+  symbol: BTC/USDT
+  timeframe: 1h
+  fast: 9                  # EMA เร็ว
+  slow: 21                 # EMA ช้า
+  rsi_period: 14
+  rsi_buy_below: 70        # ไม่ซื้อถ้า RSI สูงกว่านี้ (overbought)
+  order_quote_amount: 50   # ซื้อครั้งละกี่ USDT
+  stop_loss_pct: 3.0
+  take_profit_pct: 6.0
+  max_position_quote: 500  # เพดานมูลค่าที่ถือในเหรียญนี้
+  poll_seconds: 60
+  paper_starting_quote: 1000
+
+db_path: crypto_assist.db
