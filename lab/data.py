@@ -22,6 +22,8 @@ API = "https://data-api.binance.vision/api/v3"
 VISION = "https://data.binance.vision/data/futures/um/monthly/fundingRate"
 ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / "data"
+for _sub in ("", "klines", "funding"):
+    (DATA / _sub).mkdir(parents=True, exist_ok=True)
 STABLES = {"USDC", "FDUSD", "TUSD", "BUSD", "USDP", "DAI", "EUR", "PAX", "UST", "USDE", "AEUR", "GBP",
            "TRY", "BRL", "RLUSD", "USD1", "XUSD", "BFUSD", "PAXG", "WBTC", "WBETH", "EURI", "BNSOL", "USTC",
            "XAUT", "SNDKB", "SPCXB", "U"}  # ทองคำ/หุ้นแบบ token ไม่ใช่คริปโต

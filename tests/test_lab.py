@@ -119,3 +119,9 @@ def test_sentinel_paper_pause_and_live_hard_stop(tmp_path, monkeypatch):
     st2 = _st(loss_streak=3)
     Sentinel({**CFG, "mode": "live"}, st2).check_account(500)
     assert st2["halted"]["resume_on"] is None   # live → ต้องให้เจ้าของปลด
+
+
+def test_data_dirs_created():
+    from lab.data import DATA
+    for sub in ("", "klines", "funding"):
+        assert (DATA / sub).is_dir()
