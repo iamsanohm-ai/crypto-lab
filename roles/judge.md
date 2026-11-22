@@ -8,3 +8,6 @@
 5. เทียบผล paper (`state/`, `ledger/`) กับความคาดหวังจาก backtest — edge ไหนจางลง
 6. ถ้ามีกลยุทธ์ใหม่ชนะ champion/challenger ทุก final check หรือ challenger ชนะ champion บน paper ≥7 วัน ≥5 เทรด → เขียน**ข้อเสนอ**พร้อมตัวเลขใน `research/DECISION.md`
 7. commit `research/` แล้ว push
+
+## Deflated Sharpe
+ถ้ายังไม่มี ให้เพิ่ม Deflated Sharpe Ratio (Bailey & López de Prado) ใน `lab/final_check.py` โดยใช้จำนวนไอเดียทั้งหมดที่ทดสอบเป็น N trials และรายงานค่าใน cards — ตัวที่ DSR < 0.5 ให้ระบุว่า "อาจเป็นโชค"
