@@ -1,0 +1,585 @@
+<meta name="dash-one-writer">
+<style>
+  .ct {
+    --bg: #0a0e13; --panel: #10161e; --panel2: #0d1319; --line: #1d2833; --fg: #e4ebf2; --muted: #8696a7;
+    --up: #26d07c; --down: #f0525b; --accent: #2bc4b6; --amber: #f2a93b; --violet: #8f7cf2; --grid: #18222c;
+    --mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+    background: var(--bg); color: var(--fg); border-radius: 14px; padding: 14px;
+    font-family: var(--font-anthropic-sans, system-ui, sans-serif); font-size: 13px; color-scheme: dark;
+  }
+  .ct * { box-sizing: border-box; }
+  .ct-top { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; padding: 4px 4px 12px; border-bottom: 1px solid var(--line); }
+  .ct-brand { display: flex; align-items: center; gap: 8px; font-weight: 650; font-size: 16px; letter-spacing: .02em; }
+  .ct-brand svg { color: var(--up); }
+  .ct-chip { font-family: var(--mono); font-size: 11px; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); letter-spacing: .04em; }
+  .ct-chip.paper { color: var(--amber); border-color: color-mix(in srgb, var(--amber) 45%, transparent); }
+  .ct-chip.up { color: var(--up); border-color: color-mix(in srgb, var(--up) 45%, transparent); }
+  .ct-chip.down { color: var(--down); border-color: color-mix(in srgb, var(--down) 45%, transparent); }
+  .ct-top .ct-spacer { flex: 1; }
+  .ct-meta { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .ct-take { margin: 12px 4px 14px; color: var(--muted); font-size: 13.5px; line-height: 1.5; max-width: 80ch; }
+  .ct-take b { color: var(--fg); font-weight: 600; }
+  .ct-grid { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); }
+  @media (min-width: 900px) { .ct-grid.main { grid-template-columns: minmax(220px, 1fr) minmax(0, 2.4fr) minmax(240px, 1.1fr); } }
+  @media (min-width: 900px) { .ct-grid.lower { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); } }
+  .ct-card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px; min-width: 0; }
+  .ct-card h3 { margin: 0 0 10px; font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; display: flex; align-items: center; gap: 8px; }
+  .ct-card h3 .ct-note { text-transform: none; letter-spacing: 0; font-weight: 400; font-family: var(--mono); font-size: 11px; margin-left: auto; }
+  .ct-stack { display: grid; gap: 12px; align-content: start; min-width: 0; }
+  .ct-big { font-family: var(--mono); font-size: 26px; font-weight: 600; letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
+  .ct-sub { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .ct-pos { color: var(--up); } .ct-neg { color: var(--down); } .ct-flat { color: var(--muted); }
+  .ct-acct { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 9px 0; border-top: 1px solid var(--line); }
+  .ct-acct:first-of-type { border-top: 0; }
+  .ct-acct .n { font-weight: 600; font-size: 12.5px; overflow-wrap: anywhere; }
+  .ct-acct .r { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .ct-acct .v { font-family: var(--mono); text-align: right; font-variant-numeric: tabular-nums; }
+  .ct-role { font-family: var(--mono); font-size: 10px; padding: 1px 6px; border-radius: 4px; background: var(--panel2); border: 1px solid var(--line); color: var(--accent); margin-left: 6px; }
+  .ct-chartbox { position: relative; min-height: 120px; }
+  .ct-chartbox.tall { min-height: 420px; }
+  .ct-chartbox svg { display: block; width: 100%; overflow: visible; }
+  .ct-chartbox text { fill: var(--muted); font-family: var(--mono); font-size: 10px; }
+  .ct-tip { position: absolute; pointer-events: none; background: #0f151c; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-family: var(--mono); font-size: 11px; color: var(--fg); box-shadow: 0 6px 24px rgba(0,0,0,.45); white-space: nowrap; z-index: 2; }
+  .ct-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-family: var(--mono); font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+  .ct-legend i { display: inline-block; width: 10px; height: 2px; vertical-align: middle; margin-right: 5px; }
+  .ct-ohlc { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
+  .ct-ohlc div { display: grid; gap: 2px; }
+  .ct-ohlc span { font-size: 11px; color: var(--muted); }
+  .ct-ohlc b { font-family: var(--mono); font-weight: 500; font-variant-numeric: tabular-nums; }
+  .ct-feed { display: grid; gap: 8px; max-height: 330px; overflow-y: auto; }
+  .ct-ev { border: 1px solid var(--line); border-left-width: 3px; border-radius: 8px; padding: 8px 10px; background: var(--panel2); font-size: 12px; }
+  .ct-ev.buy { border-left-color: var(--up); } .ct-ev.sell { border-left-color: var(--down); }
+  .ct-ev.warn { border-left-color: var(--amber); } .ct-ev.info { border-left-color: var(--accent); }
+  .ct-ev .h { display: flex; gap: 8px; font-family: var(--mono); font-weight: 600; }
+  .ct-ev .t { margin-left: auto; color: var(--muted); font-weight: 400; font-size: 11px; }
+  .ct-ev .d { color: var(--muted); margin-top: 3px; overflow-wrap: anywhere; }
+  .ct-empty { color: var(--muted); font-size: 12px; line-height: 1.55; border: 1px dashed var(--line); border-radius: 8px; padding: 12px; }
+  .ct-gauges { display: grid; gap: 10px; }
+  .ct-gauge { display: grid; grid-template-columns: 92px 1fr; gap: 10px; align-items: center; }
+  .ct-gauge .lbl { font-size: 12px; font-weight: 600; overflow-wrap: anywhere; }
+  .ct-gauge .lbl small { display: block; font-weight: 400; color: var(--muted); font-family: var(--mono); font-size: 10.5px; margin-top: 2px; }
+  .ct-bar { height: 6px; border-radius: 3px; background: var(--grid); overflow: hidden; margin: 4px 0 2px; }
+  .ct-bar > i { display: block; height: 100%; border-radius: 3px; }
+  .ct-gline { font-family: var(--mono); font-size: 10.5px; color: var(--muted); display: flex; justify-content: space-between; gap: 6px; }
+  .ct-tablewrap { overflow-x: auto; }
+  .ct table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  .ct th { text-align: left; font-size: 10.5px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; padding: 6px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  .ct td { padding: 6px 8px; border-bottom: 1px solid var(--grid); font-family: var(--mono); font-size: 12px; white-space: nowrap; }
+  .ct td:first-child { font-family: inherit; font-weight: 600; }
+  .ct th.num, .ct td.num { text-align: right; }
+  .ct tr.hl td { background: color-mix(in srgb, var(--accent) 9%, transparent); }
+  .ct tr.bench td { color: var(--muted); }
+  .ct-foot { margin-top: 12px; color: var(--muted); font-size: 11.5px; line-height: 1.55; }
+  .ct-foot summary { cursor: pointer; color: var(--fg); }
+  .ct-foot ul { margin: 8px 0 0; padding-left: 18px; }
+  @media (max-width: 520px) { .ct { padding: 10px; border-radius: 10px; } .ct-big { font-size: 22px; } .ct-gauge { grid-template-columns: 1fr; } }
+</style>
+
+<div class="ct" lang="th" data-read>
+  <header class="ct-top" id="top">
+    <div class="ct-brand">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l5-6 4 4 8-9"/><path d="M15 6h5v5"/></svg>
+      Crypto Lab
+    </div>
+    <span class="ct-chip paper" data-draw="mode" data-source="status" data-field="mode" data-row="0">—</span>
+    <span class="ct-chip" data-draw="regime">—</span>
+    <span class="ct-spacer"></span>
+    <span class="ct-meta">BTC <b data-draw="btc" data-source="status" data-field="btc_close" data-row="0">—</b></span>
+    <span class="ct-meta">บอทรันล่าสุด <span data-draw="tick" data-source="status" data-field="last_bot_tick" data-row="0">—</span></span>
+  </header>
+
+  <p class="ct-take" id="takeaway" data-draw="takeaway">—</p>
+
+  <div class="ct-grid main">
+    <div class="ct-stack">
+      <section class="ct-card" id="portfolio">
+        <h3>พอร์ตจำลอง (Paper)</h3>
+        <div class="ct-big" data-draw="total" data-source="total_equity">—</div>
+        <div class="ct-sub" data-draw="totalsub">—</div>
+        <div data-draw="accounts" data-source="accounts" style="margin-top:10px"></div>
+      </section>
+      <section class="ct-card" id="paper-equity">
+        <h3>Equity paper รายชั่วโมง</h3>
+        <div class="ct-chartbox" data-draw="paperEquity" data-source="equity"></div>
+      </section>
+    </div>
+
+    <section class="ct-card" id="btc-chart">
+      <h3>BTC/USDT · 4h · Binance <span class="ct-note" data-draw="candleTime">—</span></h3>
+      <div class="ct-legend"><span><i style="background:var(--accent)"></i>EMA20</span><span><i style="background:var(--amber)"></i>EMA200 (ตัวกรองขาขึ้น/ขาลง)</span><span><i style="background:var(--violet)"></i>RSI 14</span></div>
+      <div class="ct-chartbox tall" data-draw="candles" data-source="candles"></div>
+      <div class="ct-ohlc" id="ohlc">
+        <div><span>ราคาปิด</span><b data-draw="o_close" data-source="candles" data-field="close">—</b></div>
+        <div><span>เปลี่ยนแปลง 4h</span><b data-draw="o_chg" data-source="btc_change">—</b></div>
+        <div><span>สูงสุด</span><b data-draw="o_high" data-source="candles" data-field="high">—</b></div>
+        <div><span>ต่ำสุด</span><b data-draw="o_low" data-source="candles" data-field="low">—</b></div>
+        <div><span>Volume (USDT)</span><b data-draw="o_vol" data-source="candles" data-field="quote_volume">—</b></div>
+        <div><span>RSI 14</span><b data-draw="o_rsi" data-source="candles" data-field="rsi14">—</b></div>
+      </div>
+    </section>
+
+    <div class="ct-stack">
+      <section class="ct-card" id="signals">
+        <h3>สัญญาณ &amp; การตัดสินใจของบอท</h3>
+        <div class="ct-feed" data-draw="events" data-source="events"></div>
+      </section>
+      <section class="ct-card" id="risk">
+        <h3>Sentinel · ความเสี่ยง</h3>
+        <div class="ct-gauges" data-draw="risk" data-source="risk"></div>
+      </section>
+    </div>
+  </div>
+
+  <div class="ct-grid lower" style="margin-top:12px">
+    <section class="ct-card" id="backtest">
+      <h3>Backtest walk-forward (หลังต้นทุน) เทียบ BTC buy &amp; hold <span class="ct-note">เริ่ม 500 USDT</span></h3>
+      <div class="ct-legend" data-draw="btLegend" data-source="bt_curves"></div>
+      <div class="ct-chartbox" data-draw="btCurves" data-source="bt_curves" style="min-height:240px"></div>
+    </section>
+    <section class="ct-card" id="market">
+      <h3>ตลาด Top 20 (universe ของบอท) <span class="ct-note">24 ชม.</span></h3>
+      <div class="ct-tablewrap">
+        <table data-source="market" data-row-key="symbol">
+          <thead><tr><th data-field="symbol">เหรียญ</th><th class="num" data-field="last">ราคา</th><th class="num" data-field="change_24h_pct">24h %</th><th class="num" data-field="quote_volume_24h">Volume (USDT)</th></tr></thead>
+          <tbody data-draw="marketRows"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <div class="ct-grid lower" style="margin-top:12px">
+    <section class="ct-card" id="leaderboard">
+      <h3>อันดับกลยุทธ์ (เรียงตาม Sharpe) <span class="ct-note">ทดสอบนอกตัวอย่าง พ.ย. 2023 – ปัจจุบัน</span></h3>
+      <div class="ct-tablewrap">
+        <table data-source="leaderboard" data-row-key="name">
+          <thead><tr><th data-field="name">กลยุทธ์</th><th data-field="status">สถานะ</th><th class="num" data-field="return_pct">ผลตอบแทน %</th><th class="num" data-field="max_dd_pct">Max DD %</th><th class="num" data-field="sharpe">Sharpe</th><th class="num" data-field="trades">เทรด</th></tr></thead>
+          <tbody data-draw="leaderRows"></tbody>
+        </table>
+      </div>
+    </section>
+    <section class="ct-card" id="positions">
+      <h3>สถานะที่ถืออยู่</h3>
+      <div class="ct-tablewrap">
+        <table data-source="positions" data-row-key="strategy,symbol">
+          <thead><tr><th data-field="symbol">เหรียญ</th><th data-field="strategy">กลยุทธ์</th><th class="num" data-field="entry">เข้า</th><th class="num" data-field="last">ล่าสุด</th><th class="num" data-field="stop">Stop</th><th class="num" data-field="pnl">P&amp;L</th></tr></thead>
+          <tbody data-draw="posRows"></tbody>
+        </table>
+      </div>
+      <p class="ct-empty ct-posempty" hidden>ยังไม่มีสถานะเปิด บอทจะซื้อเมื่อสัญญาณของกลยุทธ์เกิดบนแท่ง 4h ที่ปิดแล้ว และ Sentinel ตรวจผ่าน</p>
+    </section>
+  </div>
+
+  <details class="ct-foot" id="notes">
+    <summary>ตัวเลขเหล่านี้มาจากไหน และควรอ่านอย่างไร</summary>
+    <ul>
+      <li>ทุกอย่างเป็น <b>paper trading</b> (เงินจำลอง 500 USDT ต่อกลยุทธ์) ยังไม่มีเงินจริง เงินจริงต้องรอคุณพิมพ์ "go live" และอนุมัติทุกเทรด</li>
+      <li>ราคาและแท่งเทียนมาจาก Binance (data-api.binance.vision) ข้อมูลบนหน้านี้อัปเดตทุกชั่วโมงโดยบอท ดูเวลาที่ Sources</li>
+      <li>Backtest = walk-forward 3 ปีบนข้อมูลที่ไม่ได้ใช้เลือกพารามิเตอร์ หักค่าธรรมเนียม 0.1% + slippage 0.05% ต่อขา และรวมเหรียญที่ถูกถอด</li>
+      <li>ไม่มีกลยุทธ์ไหนชนะ BTC buy &amp; hold ในแง่ผลตอบแทนดิบ ที่เลือกเพราะชนะเมื่อคิดตามความเสี่ยง (Sharpe, drawdown) และ Sharpe ระดับนี้ยังไม่มีนัยสำคัญทางสถิติ</li>
+      <li>Funding ของ challenger 2 ในการเทรดสดเป็นค่าประมาณจาก premium index (ช้าได้ ~1 วัน)</li>
+    </ul>
+  </details>
+</div>
+
+<script>
+(function () {
+  const fmt = {
+    usd: (v, d) => v == null || isNaN(v) ? '—' : Number(v).toLocaleString('en-US', {minimumFractionDigits: d ?? 2, maximumFractionDigits: d ?? 2}),
+    px: (v) => v == null ? '—' : (Math.abs(v) >= 1000 ? fmt.usd(v, 2) : Math.abs(v) >= 1 ? fmt.usd(v, 4) : Number(v).toPrecision(4)),
+    pct: (v) => v == null || isNaN(v) ? '—' : (v > 0 ? '+' : '') + Number(v).toFixed(2) + '%',
+    big: (v) => v == null ? '—' : d3.format('.3~s')(v).replace('G', 'B'),
+    time: (s) => { if (!s) return '—'; const d = new Date(s); return isNaN(d) ? s : d.toLocaleString('th-TH', {day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'}); },
+  };
+  const cls = (v) => v > 0 ? 'ct-pos' : v < 0 ? 'ct-neg' : 'ct-flat';
+  window.ctFmt = fmt; window.ctCls = cls;
+  const SERIES = {keltner_trend: '#2bc4b6', golden_cross_50_200: '#8f7cf2', breakout_funding_filter: '#f2a93b', 'BTC buy & hold': '#6b7a8a'};
+  window.ctSeries = SERIES;
+  const ROLE_TH = {champion: 'Champion', challenger_1: 'Challenger 1', challenger_2: 'Challenger 2'};
+  window.ctRole = ROLE_TH;
+
+  window.ctReady = true;
+})();
+</script>
+
+<script>
+dash.loader('status', {description: 'อ่านตาราง "status" จากไฟล์ snapshot ที่บอทสร้างทุกชั่วโมง', fn: ({answer}) => {
+  if (!answer || typeof answer !== 'object' || !Array.isArray(answer['status'])) throw new Error('ไฟล์ snapshot ไม่มีตาราง status');
+  const rows = answer['status'];
+  return {data: rows, columns: Object.keys(rows[0] || {}), meta: [{label: 'สร้างเมื่อ (UTC)', value: String(answer.generated_at || '')}]};
+}});
+dash.loader('candles', {description: 'อ่านตาราง "candles" จากไฟล์ snapshot ที่บอทสร้างทุกชั่วโมง', fn: ({answer}) => {
+  if (!answer || typeof answer !== 'object' || !Array.isArray(answer['candles'])) throw new Error('ไฟล์ snapshot ไม่มีตาราง candles');
+  const rows = answer['candles'];
+  return {data: rows, columns: Object.keys(rows[0] || {}), meta: [{label: 'สร้างเมื่อ (UTC)', value: String(answer.generated_at || '')}]};
+}});
+dash.loader('market', {description: 'อ่านตาราง "market" จากไฟล์ snapshot ที่บอทสร้างทุกชั่วโมง', fn: ({answer}) => {
+  if (!answer || typeof answer !== 'object' || !Array.isArray(answer['market'])) throw new Error('ไฟล์ snapshot ไม่มีตาราง market');
+  const rows = answer['market'];
+  return {data: rows, columns: Object.keys(rows[0] || {}), meta: [{label: 'สร้างเมื่อ (UTC)', value: String(answer.generated_at || '')}]};
+}});
+dash.loader('accounts', {description: 'อ่านตาราง "accounts" จากไฟล์ snapshot ที่บอทสร้างทุกชั่วโมง', fn: ({answer}) => {
+  if (!answer || typeof answer !== 'object' || !Array.isArray(answer['accounts'])) throw new Error('ไฟล์ snapshot ไม่มีตาราง accounts');
+  const rows = answer['accounts'];
+  return {data: rows, columns: Object.keys(rows[0] || {}), meta: [{label: 'สร้างเมื่อ (UTC)', value: String(answer.generated_at || '')}]};
+}});
+dash.loader('equity', {description: 'อ่านตาราง "equity" จากไฟล์ snapshot ที่บอทสร้างทุกชั่วโมง', fn: ({answer}) => {
+  if (!answer || typeof answer !== 'object' || !Array.isArray(answer['equity'])) throw new Error('ไฟล์ snapshot ไม่มีตาราง equity');
+  const rows = answer['equity'];
+  return {data: rows, columns: Object.keys(rows[0] || {}), meta: [{label: 'สร้างเมื่อ (UTC)', value: String(answer.generated_at || '')}]};
+}});
+dash.loader('positions', {description: 'อ่านตาราง "positions" จากไฟล์ snapshot ที่บอทสร้างทุกชั่วโมง', fn: ({answer}) => {
+  if (!answer || typeof answer !== 'object' || !Array.isArray(answer['positions'])) throw new Error('ไฟล์ snapshot ไม่มีตาราง positions');
+  const rows = answer['positions'];
+  return {data: rows, columns: Object.keys(rows[0] || {}), meta: [{label: 'สร้างเมื่อ (UTC)', value: String(answer.generated_at || '')}]};
+}});
+dash.loader('risk', {description: 'อ่านตาราง "risk" จากไฟล์ snapshot ที่บอทสร้างทุกชั่วโมง', fn: ({answer}) => {
+  if (!answer || typeof answer !== 'object' || !Array.isArray(answer['risk'])) throw new Error('ไฟล์ snapshot ไม่มีตาราง risk');
+  const rows = answer['risk'];
+  return {data: rows, columns: Object.keys(rows[0] || {}), meta: [{label: 'สร้างเมื่อ (UTC)', value: String(answer.generated_at || '')}]};
+}});
+dash.loader('events', {description: 'อ่านตาราง "events" จากไฟล์ snapshot ที่บอทสร้างทุกชั่วโมง', fn: ({answer}) => {
+  if (!answer || typeof answer !== 'object' || !Array.isArray(answer['events'])) throw new Error('ไฟล์ snapshot ไม่มีตาราง events');
+  const rows = answer['events'];
+  return {data: rows, columns: Object.keys(rows[0] || {}), meta: [{label: 'สร้างเมื่อ (UTC)', value: String(answer.generated_at || '')}]};
+}});
+dash.loader('leaderboard', {description: 'อ่านตาราง "leaderboard" จากไฟล์ snapshot ที่บอทสร้างทุกชั่วโมง', fn: ({answer}) => {
+  if (!answer || typeof answer !== 'object' || !Array.isArray(answer['leaderboard'])) throw new Error('ไฟล์ snapshot ไม่มีตาราง leaderboard');
+  const rows = answer['leaderboard'];
+  return {data: rows, columns: Object.keys(rows[0] || {}), meta: [{label: 'สร้างเมื่อ (UTC)', value: String(answer.generated_at || '')}]};
+}});
+dash.loader('bt_curves', {description: 'อ่านตาราง "bt_curves" จากไฟล์ snapshot ที่บอทสร้างทุกชั่วโมง', fn: ({answer}) => {
+  if (!answer || typeof answer !== 'object' || !Array.isArray(answer['bt_curves'])) throw new Error('ไฟล์ snapshot ไม่มีตาราง bt_curves');
+  const rows = answer['bt_curves'];
+  return {data: rows, columns: Object.keys(rows[0] || {}), meta: [{label: 'สร้างเมื่อ (UTC)', value: String(answer.generated_at || '')}]};
+}});
+
+dash.calc('total_equity', {inputs: ['accounts'], title: 'Equity รวมทุกบัญชีจำลอง', description: 'ผลรวม equity ของทั้ง 3 บัญชี paper',
+    fn: (accounts) => accounts.reduce((s, a) => s + Number(a.equity), 0)});
+  dash.calc('total_pnl_pct', {inputs: ['accounts'], title: 'กำไร/ขาดทุนรวม %', description: 'equity รวม เทียบเงินตั้งต้นรวม',
+    fn: (accounts) => { const e = accounts.reduce((s, a) => s + Number(a.equity), 0), c = accounts.reduce((s, a) => s + Number(a.start_capital), 0); return c ? (e / c - 1) * 100 : 0; }});
+  dash.calc('btc_change', {inputs: ['candles'], title: 'BTC เปลี่ยนแปลงแท่ง 4h ล่าสุดที่ปิดแล้ว', description: 'ราคาปิดแท่งล่าสุดที่ปิด เทียบแท่งก่อนหน้า (%)',
+    fn: (candles) => { const c = candles.filter((r) => r.closed === true || r.closed === 'true'); if (c.length < 2) return null; return (c[c.length - 1].close / c[c.length - 2].close - 1) * 100; }});
+</script>
+
+<script>
+(function () {
+  const fmt = window.ctFmt, cls = window.ctCls;
+  const ok = (id) => dash.data(id).status === 'ok';
+  const st = () => (ok('status') && dash.data('status').data[0]) || null;
+  const lastClosedIdx = () => { const c = dash.data('candles').data; for (let i = c.length - 1; i >= 0; i--) if (c[i].closed === true) return i; return c.length - 1; };
+
+  dash.draw('mode', (el) => { const s = st(); el.textContent = s ? (s.mode === 'paper' ? 'PAPER' : String(s.mode).toUpperCase()) : '—'; });
+  dash.draw('regime', (el) => {
+    const s = st(); if (!s) { el.textContent = '—'; return; }
+    el.className = 'ct-chip ' + (s.regime === 'up' ? 'up' : 'down');
+    el.textContent = s.regime === 'up' ? 'BTC > EMA200 · ขาขึ้น' : 'BTC < EMA200 · ขาลง';
+  });
+  dash.draw('btc', (el) => { const s = st(); el.textContent = s ? fmt.usd(s.btc_close) : '—'; });
+  dash.draw('tick', (el) => { const s = st(); el.textContent = s ? fmt.time(s.last_bot_tick) : '—'; });
+  dash.draw('candleTime', (el) => { const s = st(); el.textContent = s ? 'แท่งปิดล่าสุด ' + fmt.time(s.candle_time) : '—'; });
+
+  dash.draw('takeaway', (el) => {
+    const s = st(), a = dash.data('accounts');
+    if (!s || a.status !== 'ok') { el.textContent = '—'; return; }
+    const champ = a.data.find((x) => x.role === 'champion');
+    const open = a.data.reduce((n, x) => n + Number(x.open_positions), 0);
+    const gap = (s.btc_close / s.btc_ema200 - 1) * 100;
+    el.textContent = '';
+    const b = (t) => { const e = document.createElement('b'); e.textContent = t; return e; };
+    if (s.regime === 'up') {
+      el.append('BTC อยู่เหนือ EMA200 ', b(fmt.pct(gap)), ' กลยุทธ์ขาขึ้นเปิดสถานะได้ ตอนนี้ถืออยู่ ', b(String(open)), ' สถานะ');
+    } else {
+      el.append('BTC อยู่ต่ำกว่า EMA200 ', b(fmt.pct(gap)), ' จึงเป็นตลาดขาลง champion (', b(champ ? champ.strategy : '—'), ') และ challenger 2 จะไม่เปิดสถานะใหม่จนกว่า BTC จะกลับขึ้นเหนือเส้นนี้ ตอนนี้ถืออยู่ ', b(String(open)), ' สถานะ');
+    }
+  });
+
+  dash.draw('total', (el) => { const t = dash.data('total_equity'); el.textContent = t.status === 'ok' && t.data != null ? fmt.usd(t.data) + ' USDT' : '—'; });
+  dash.draw('totalsub', (el) => {
+    const p = dash.data('total_pnl_pct');
+    if (p.status !== 'ok' || p.data == null) { el.textContent = '—'; return; }
+    el.className = 'ct-sub ' + cls(p.data);
+    el.textContent = fmt.pct(p.data) + ' ตั้งแต่เริ่ม (3 บัญชี × 500 USDT)';
+  });
+
+  dash.draw('accounts', (el) => {
+    const a = dash.data('accounts');
+    el.replaceChildren();
+    if (a.status !== 'ok') { el.textContent = a.status === 'error' ? 'โหลดบัญชีไม่สำเร็จ' : '—'; return; }
+    for (const x of a.data) {
+      const row = document.createElement('div'); row.className = 'ct-acct';
+      const n = document.createElement('div'); n.className = 'n'; n.textContent = x.strategy;
+      const role = document.createElement('span'); role.className = 'ct-role'; role.textContent = window.ctRole[x.role] || x.role; n.append(role);
+      const v = document.createElement('div'); v.className = 'v';
+      const ve = document.createElement('span'); ve.textContent = fmt.usd(x.equity);
+      ve.dataset.source = 'accounts'; ve.dataset.field = 'equity'; ve.dataset.where = 'strategy=' + encodeURIComponent(x.strategy);
+      v.append(ve);
+      const r = document.createElement('div'); r.className = 'r';
+      const pl = document.createElement('span'); pl.className = cls(x.pnl_pct); pl.textContent = fmt.pct(x.pnl_pct);
+      pl.dataset.source = 'accounts'; pl.dataset.field = 'pnl_pct'; pl.dataset.where = 'strategy=' + encodeURIComponent(x.strategy);
+      r.append(pl, ' paper · BT ');
+      const bt = document.createElement('span'); bt.textContent = fmt.pct(x.bt_return_pct);
+      bt.dataset.source = 'accounts'; bt.dataset.field = 'bt_return_pct'; bt.dataset.where = 'strategy=' + encodeURIComponent(x.strategy);
+      r.append(bt, ' · Sharpe ');
+      const sh = document.createElement('span'); sh.textContent = Number(x.bt_sharpe).toFixed(2);
+      sh.dataset.source = 'accounts'; sh.dataset.field = 'bt_sharpe'; sh.dataset.where = 'strategy=' + encodeURIComponent(x.strategy);
+      r.append(sh);
+      const r2 = document.createElement('div'); r2.className = 'r'; r2.style.textAlign = 'right';
+      r2.textContent = x.open_positions + ' ถือ · ' + x.closed_trades + ' ปิด';
+      row.append(n, v, r, r2); el.append(row);
+    }
+  });
+
+  dash.draw('marketRows', (tb) => {
+    const m = dash.data('market');
+    tb.replaceChildren();
+    if (m.status !== 'ok') { if (m.status === 'error') { const tr = tb.insertRow(); const td = tr.insertCell(); td.colSpan = 4; td.textContent = 'โหลดราคาไม่สำเร็จ'; } return; }
+    for (const r of m.data) {
+      const tr = tb.insertRow();
+      tr.insertCell().textContent = r.symbol;
+      const c1 = tr.insertCell(); c1.className = 'num'; c1.textContent = fmt.px(r.last);
+      const c2 = tr.insertCell(); c2.className = 'num ' + cls(r.change_24h_pct); c2.textContent = fmt.pct(r.change_24h_pct);
+      const c3 = tr.insertCell(); c3.className = 'num'; c3.textContent = fmt.big(r.quote_volume_24h);
+    }
+  });
+
+  dash.draw('leaderRows', (tb) => {
+    const m = dash.data('leaderboard');
+    tb.replaceChildren();
+    if (m.status !== 'ok') return;
+    const label = {champion: '👑 Champion', challenger_1: 'Challenger 1', challenger_2: 'Challenger 2', passed: 'ผ่าน (สำรอง)', cut: 'ตัดทิ้ง', benchmark: 'เกณฑ์เทียบ'};
+    for (const r of m.data) {
+      const tr = tb.insertRow();
+      if (/^(champion|challenger)/.test(r.status)) tr.className = 'hl';
+      if (r.status === 'benchmark') tr.className = 'bench';
+      tr.insertCell().textContent = r.name;
+      const s = tr.insertCell(); s.textContent = label[r.status] || r.status;
+      s.style.color = r.status === 'cut' ? 'var(--down)' : /^(champion|challenger)/.test(r.status) ? 'var(--accent)' : 'var(--muted)';
+      const a = tr.insertCell(); a.className = 'num ' + cls(r.return_pct); a.textContent = fmt.pct(r.return_pct);
+      const b = tr.insertCell(); b.className = 'num'; b.textContent = Number(r.max_dd_pct).toFixed(1) + '%';
+      const c = tr.insertCell(); c.className = 'num'; c.textContent = Number(r.sharpe).toFixed(2);
+      const d = tr.insertCell(); d.className = 'num'; d.textContent = r.trades == null ? '–' : r.trades;
+    }
+  });
+
+  dash.draw('posRows', (tb) => {
+    const m = dash.data('positions');
+    tb.replaceChildren();
+    const empty = document.querySelectorAll('.ct-posempty');
+    empty.forEach((e) => e.hidden = !(m.status === 'ok' && m.data.length === 0));
+    if (m.status !== 'ok') return;
+    for (const r of m.data) {
+      const tr = tb.insertRow(); tr.dataset.key = encodeURIComponent(r.strategy) + ',' + encodeURIComponent(r.symbol);
+      tr.insertCell().textContent = r.symbol;
+      tr.insertCell().textContent = r.strategy;
+      for (const k of ['entry', 'last', 'stop']) { const c = tr.insertCell(); c.className = 'num'; c.textContent = fmt.px(r[k]); }
+      const p = tr.insertCell(); p.className = 'num ' + cls(r.pnl); p.textContent = (r.pnl > 0 ? '+' : '') + fmt.usd(r.pnl);
+    }
+  });
+
+  dash.draw('events', (el) => {
+    const m = dash.data('events');
+    el.replaceChildren();
+    if (m.status !== 'ok') { el.textContent = m.status === 'error' ? 'โหลดสัญญาณไม่สำเร็จ' : '—'; return; }
+    if (!m.data.length) {
+      const p = document.createElement('div'); p.className = 'ct-empty';
+      p.textContent = 'ยังไม่มีสัญญาณหรือเทรด บอทตรวจทุกชั่วโมง และจะแสดงที่นี่เมื่อกลยุทธ์ส่งสัญญาณซื้อ/ขาย หรือ Sentinel ปฏิเสธ/หยุดการเทรด';
+      el.append(p); return;
+    }
+    const kind = {BUY: 'buy', SELL: 'sell', SENTINEL_HALT: 'warn', SENTINEL_REJECT: 'warn', ERROR: 'warn', SENTINEL_RESUME: 'info', SIGNALS: 'info'};
+    const name = {BUY: 'ซื้อ', SELL: 'ขาย', SENTINEL_HALT: 'Sentinel หยุด', SENTINEL_REJECT: 'Sentinel ปฏิเสธ', SENTINEL_RESUME: 'กลับมาเทรด', ERROR: 'ข้อผิดพลาด', SIGNALS: 'สัญญาณ'};
+    for (const e of m.data) {
+      const card = document.createElement('div'); card.className = 'ct-ev ' + (kind[e.event] || 'info');
+      const h = document.createElement('div'); h.className = 'h';
+      const t1 = document.createElement('span'); t1.textContent = (name[e.event] || e.event) + (e.symbol ? ' · ' + e.symbol : '');
+      const t2 = document.createElement('span'); t2.className = 't'; t2.textContent = fmt.time(e.time);
+      h.append(t1, t2);
+      const d = document.createElement('div'); d.className = 'd';
+      const bits = [window.ctRole[e.role] || e.strategy];
+      if (e.price != null) bits.push('@ ' + fmt.px(e.price));
+      if (e.pnl != null) bits.push('P&L ' + (e.pnl > 0 ? '+' : '') + fmt.usd(e.pnl));
+      if (e.detail) bits.push(e.detail);
+      d.textContent = bits.join(' · ');
+      card.append(h, d); el.append(card);
+    }
+  });
+
+  dash.draw('risk', (el) => {
+    const m = dash.data('risk');
+    el.replaceChildren();
+    if (m.status !== 'ok') { el.textContent = m.status === 'error' ? 'โหลดข้อมูลความเสี่ยงไม่สำเร็จ' : '—'; return; }
+    const bar = (frac, color) => { const b = document.createElement('div'); b.className = 'ct-bar'; const i = document.createElement('i'); i.style.width = Math.max(2, Math.min(100, frac * 100)) + '%'; i.style.background = color; b.append(i); return b; };
+    for (const r of m.data) {
+      const g = document.createElement('div'); g.className = 'ct-gauge';
+      const l = document.createElement('div'); l.className = 'lbl'; l.textContent = window.ctRole[r.role] || r.role;
+      const sm = document.createElement('small'); sm.textContent = r.halted ? '⛔ หยุด' + (r.resume_on ? ' ถึง ' + r.resume_on : '') : '● ทำงาน';
+      sm.style.color = r.halted ? 'var(--down)' : 'var(--up)'; l.append(sm);
+      const body = document.createElement('div');
+      const lossUse = r.day_pnl_pct < 0 ? r.day_pnl_pct / r.daily_limit_pct : 0;
+      const l1 = document.createElement('div'); l1.className = 'ct-gline';
+      const a = document.createElement('span'); a.textContent = 'ขาดทุนวันนี้';
+      const b = document.createElement('span'); b.textContent = fmt.pct(r.day_pnl_pct) + ' / ' + r.daily_limit_pct + '%';
+      b.dataset.source = 'risk'; b.dataset.field = 'day_pnl_pct'; b.dataset.where = 'strategy=' + encodeURIComponent(r.strategy);
+      l1.append(a, b);
+      const l2 = document.createElement('div'); l2.className = 'ct-gline';
+      const c = document.createElement('span'); c.textContent = 'แพ้ติดกัน';
+      const d = document.createElement('span'); d.textContent = r.loss_streak + ' / ' + r.loss_streak_limit;
+      d.dataset.source = 'risk'; d.dataset.field = 'loss_streak'; d.dataset.where = 'strategy=' + encodeURIComponent(r.strategy);
+      l2.append(c, d);
+      const col = (f) => f >= 0.8 ? 'var(--down)' : f >= 0.5 ? 'var(--amber)' : 'var(--up)';
+      const su = r.loss_streak / r.loss_streak_limit;
+      body.append(l1, bar(lossUse, col(lossUse)), l2, bar(su, col(su)));
+      if (r.halted && r.halt_reason) { const h = document.createElement('div'); h.className = 'ct-gline'; h.style.color = 'var(--down)'; h.textContent = r.halt_reason; body.append(h); }
+      g.append(l, body); el.append(g);
+    }
+  });
+
+  // OHLC strip (last closed candle)
+  const ohlc = (k, f, color) => dash.draw(k, (el) => {
+    const c = dash.data('candles'); if (c.status !== 'ok' || !c.data.length) { el.textContent = '—'; return; }
+    const i = lastClosedIdx(); el.dataset.row = String(i); el.textContent = f(c.data[i]);
+  });
+  ohlc('o_close', (r) => fmt.usd(r.close));
+  ohlc('o_high', (r) => fmt.usd(r.high));
+  ohlc('o_low', (r) => fmt.usd(r.low));
+  ohlc('o_vol', (r) => fmt.big(r.quote_volume));
+  ohlc('o_rsi', (r) => Number(r.rsi14).toFixed(1));
+  dash.draw('o_chg', (el) => { const v = dash.data('btc_change'); if (v.status !== 'ok' || v.data == null) { el.textContent = '—'; return; } el.className = cls(v.data); el.textContent = fmt.pct(v.data); });
+})();
+</script>
+
+<script>
+(function () {
+  const fmt = window.ctFmt;
+  const css = (v) => v;
+  function tipBox(el) { const t = document.createElement('div'); t.className = 'ct-tip'; t.hidden = true; el.append(t); return t; }
+  function placeTip(el, tip, x, y) {
+    const w = el.clientWidth; tip.hidden = false;
+    const tw = tip.offsetWidth, th = tip.offsetHeight;
+    tip.style.left = Math.max(0, Math.min(w - tw, x + 12)) + 'px';
+    tip.style.top = Math.max(0, y - th - 8) + 'px';
+  }
+
+  // ---------- candlestick + volume + RSI ----------
+  dash.draw('candles', (el) => {
+    const c = dash.data('candles');
+    el.replaceChildren();
+    if (c.status !== 'ok' || !c.data.length) { el.textContent = c.status === 'error' ? 'โหลดกราฟไม่สำเร็จ' : '—'; return; }
+    const rows = c.data.slice(-Math.max(40, Math.min(c.data.length, Math.floor(el.clientWidth / 5))));
+    const W = Math.max(280, el.clientWidth), H = 420, mR = 64, mL = 4;
+    const hMain = 260, gap = 8, hVol = 54, hRsi = 70, top = 6;
+    const yVol0 = top + hMain + gap, yRsi0 = yVol0 + hVol + gap + 6;
+    const svg = d3.select(el).append('svg').attr('viewBox', `0 0 ${W} ${H}`).attr('height', H).attr('role', 'img')
+      .attr('aria-label', 'กราฟแท่งเทียน BTC/USDT 4 ชั่วโมง พร้อม EMA20, EMA200, volume และ RSI');
+    const x = d3.scaleBand().domain(rows.map((r) => r.time)).range([mL, W - mR]).padding(0.25);
+    const lo = d3.min(rows, (r) => Math.min(r.low, r.ema200)), hi = d3.max(rows, (r) => Math.max(r.high, r.ema200));
+    const y = d3.scaleLinear().domain([lo, hi]).nice().range([top + hMain, top]);
+    const yv = d3.scaleLinear().domain([0, d3.max(rows, (r) => r.quote_volume)]).range([yVol0 + hVol, yVol0]);
+    const yr = d3.scaleLinear().domain([0, 100]).range([yRsi0 + hRsi, yRsi0]);
+    const grid = svg.append('g');
+    y.ticks(6).forEach((t) => {
+      grid.append('line').attr('x1', mL).attr('x2', W - mR).attr('y1', y(t)).attr('y2', y(t)).style('stroke', '#18222c');
+      grid.append('text').attr('x', W - mR + 6).attr('y', y(t) + 3).text(d3.format(',.0f')(t));
+    });
+    [30, 70].forEach((t) => grid.append('line').attr('x1', mL).attr('x2', W - mR).attr('y1', yr(t)).attr('y2', yr(t)).style('stroke', '#2a3644').style('stroke-dasharray', '3 3'));
+    grid.append('text').attr('x', W - mR + 6).attr('y', yr(70) + 3).text('70');
+    grid.append('text').attr('x', W - mR + 6).attr('y', yr(30) + 3).text('30');
+    grid.append('text').attr('x', W - mR + 6).attr('y', yVol0 + 10).text('Vol');
+    // x labels (dates)
+    const step = Math.ceil(rows.length / Math.max(2, Math.floor((W - mR) / 90)));
+    rows.forEach((r, i) => { if (i % step === 0) svg.append('text').attr('x', x(r.time) + x.bandwidth() / 2).attr('y', H - 2).attr('text-anchor', 'middle').text(d3.utcFormat('%d %b')(new Date(r.time))); });
+    const up = '#26d07c', down = '#f0525b';
+    const g = svg.append('g');
+    rows.forEach((r) => {
+      const cx = x(r.time) + x.bandwidth() / 2, col = r.close >= r.open ? up : down;
+      g.append('line').attr('x1', cx).attr('x2', cx).attr('y1', y(r.high)).attr('y2', y(r.low)).style('stroke', col);
+      g.append('rect').attr('x', x(r.time)).attr('width', x.bandwidth()).attr('y', y(Math.max(r.open, r.close)))
+        .attr('height', Math.max(1, Math.abs(y(r.open) - y(r.close)))).style('fill', col).style('opacity', r.closed ? 1 : 0.55);
+      g.append('rect').attr('x', x(r.time)).attr('width', x.bandwidth()).attr('y', yv(r.quote_volume)).attr('height', yVol0 + hVol - yv(r.quote_volume))
+        .style('fill', col).style('opacity', 0.35);
+    });
+    const line = (f, sc) => d3.line().x((r) => x(r.time) + x.bandwidth() / 2).y((r) => sc(f(r)));
+    svg.append('path').datum(rows).attr('d', line((r) => r.ema20, y)).style('fill', 'none').style('stroke', '#2bc4b6').style('stroke-width', 1.5);
+    svg.append('path').datum(rows).attr('d', line((r) => r.ema200, y)).style('fill', 'none').style('stroke', '#f2a93b').style('stroke-width', 1.5);
+    svg.append('path').datum(rows).attr('d', line((r) => r.rsi14, yr)).style('fill', 'none').style('stroke', '#8f7cf2').style('stroke-width', 1.3);
+    // last price tag
+    const last = rows[rows.length - 1];
+    const tagCol = last.close >= last.open ? up : down;
+    svg.append('rect').attr('x', W - mR + 2).attr('y', y(last.close) - 8).attr('width', mR - 4).attr('height', 16).attr('rx', 3).style('fill', tagCol);
+    svg.append('text').attr('x', W - mR + 6).attr('y', y(last.close) + 4).style('fill', '#071018').style('font-weight', 600).text(d3.format(',.0f')(last.close));
+    svg.append('line').attr('x1', mL).attr('x2', W - mR).attr('y1', y(last.close)).attr('y2', y(last.close)).style('stroke', tagCol).style('stroke-dasharray', '2 3').style('opacity', .6);
+    // tooltip
+    const tip = tipBox(el), cross = svg.append('line').style('stroke', '#3a4757').attr('y1', top).attr('y2', H - 14).style('display', 'none');
+    svg.append('rect').attr('x', mL).attr('y', 0).attr('width', W - mR - mL).attr('height', H).style('fill', 'transparent')
+      .on('pointermove', (ev) => {
+        const [px] = d3.pointer(ev); const i = Math.max(0, Math.min(rows.length - 1, Math.floor((px - mL) / x.step())));
+        const r = rows[i], cx = x(r.time) + x.bandwidth() / 2;
+        cross.attr('x1', cx).attr('x2', cx).style('display', null);
+        tip.textContent = '';
+        const lines = [d3.utcFormat('%d %b %H:%M UTC')(new Date(r.time)) + (r.closed ? '' : ' (ยังไม่ปิด)'),
+          'O ' + fmt.usd(r.open) + '  H ' + fmt.usd(r.high), 'L ' + fmt.usd(r.low) + '  C ' + fmt.usd(r.close),
+          'EMA20 ' + fmt.usd(r.ema20) + '  EMA200 ' + fmt.usd(r.ema200), 'RSI ' + Number(r.rsi14).toFixed(1) + '  Vol ' + fmt.big(r.quote_volume)];
+        lines.forEach((t) => { const d = document.createElement('div'); d.textContent = t; tip.append(d); });
+        const [, py] = d3.pointer(ev, el); placeTip(el, tip, cx * el.clientWidth / W, py);
+      })
+      .on('pointerleave', () => { tip.hidden = true; cross.style('display', 'none'); });
+  });
+
+  // ---------- multi-line chart helper ----------
+  function lines(el, rows, {xKey, yKey, sKey, parse, height, yFmt, empty}) {
+    el.replaceChildren();
+    const series = d3.groups(rows, (r) => r[sKey]);
+    const pts = rows.length;
+    if (!pts) { const p = document.createElement('div'); p.className = 'ct-empty'; p.textContent = empty; el.append(p); return; }
+    const W = Math.max(260, el.clientWidth), H = height, mL = 4, mR = 58, mT = 8, mB = 18;
+    const svg = d3.select(el).append('svg').attr('viewBox', `0 0 ${W} ${H}`).attr('height', H).attr('role', 'img').attr('aria-label', 'กราฟ equity');
+    const xs = d3.scaleUtc().domain(d3.extent(rows, (r) => parse(r[xKey]))).range([mL, W - mR]);
+    const ys = d3.scaleLinear().domain(d3.extent(rows, (r) => +r[yKey])).nice().range([H - mB, mT]);
+    if (ys.domain()[0] === ys.domain()[1]) ys.domain([ys.domain()[0] * 0.98, ys.domain()[1] * 1.02]);
+    ys.ticks(4).forEach((t) => {
+      svg.append('line').attr('x1', mL).attr('x2', W - mR).attr('y1', ys(t)).attr('y2', ys(t)).style('stroke', '#18222c');
+      svg.append('text').attr('x', W - mR + 6).attr('y', ys(t) + 3).text(yFmt(t));
+    });
+    xs.ticks(Math.max(2, Math.floor(W / 120))).forEach((t) => svg.append('text').attr('x', xs(t)).attr('y', H - 3).attr('text-anchor', 'middle').text(d3.utcFormat('%b %y')(t)));
+    for (const [name, rs] of series) {
+      const col = window.ctSeries[name] || '#9aa';
+      svg.append('path').datum(rs).attr('d', d3.line().x((r) => xs(parse(r[xKey]))).y((r) => ys(+r[yKey])))
+        .style('fill', 'none').style('stroke', col).style('stroke-width', name === 'BTC buy & hold' ? 1.2 : 1.7).style('opacity', name === 'BTC buy & hold' ? .8 : 1);
+      const l = rs[rs.length - 1];
+      svg.append('circle').attr('cx', xs(parse(l[xKey]))).attr('cy', ys(+l[yKey])).attr('r', 3).style('fill', col);
+    }
+    const tip = tipBox(el);
+    const dates = Array.from(new Set(rows.map((r) => r[xKey]))).sort();
+    svg.append('rect').attr('x', mL).attr('y', 0).attr('width', W - mR - mL).attr('height', H).style('fill', 'transparent')
+      .on('pointermove', (ev) => {
+        const [px] = d3.pointer(ev); const d0 = xs.invert(px);
+        const k = d3.bisector((d) => parse(d)).center(dates, d0); const key = dates[k];
+        tip.textContent = '';
+        const h = document.createElement('div'); h.textContent = key; tip.append(h);
+        for (const [name, rs] of series) { const r = rs.find((q) => q[xKey] === key); if (r) { const d = document.createElement('div'); d.style.color = window.ctSeries[name] || '#ccc'; d.textContent = name + '  ' + yFmt(+r[yKey]); tip.append(d); } }
+        const [, py] = d3.pointer(ev, el); placeTip(el, tip, xs(parse(key)) * el.clientWidth / W, py);
+      }).on('pointerleave', () => { tip.hidden = true; });
+  }
+
+  dash.draw('btCurves', (el) => {
+    const c = dash.data('bt_curves');
+    if (c.status !== 'ok') { el.replaceChildren(); el.textContent = c.status === 'error' ? 'โหลด backtest ไม่สำเร็จ' : '—'; return; }
+    lines(el, c.data, {xKey: 'date', yKey: 'equity', sKey: 'series', parse: (s) => new Date(s + 'T00:00:00Z'), height: 240, yFmt: d3.format(',.0f'), empty: 'ยังไม่มีผล backtest'});
+  });
+  dash.draw('btLegend', (el) => {
+    const c = dash.data('bt_curves'); el.replaceChildren();
+    if (c.status !== 'ok') return;
+    for (const [name, rs] of d3.groups(c.data, (r) => r.series)) {
+      const s = document.createElement('span'); const i = document.createElement('i'); i.style.background = window.ctSeries[name] || '#9aa';
+      s.append(i, name + ' ' + d3.format(',.0f')(rs[rs.length - 1].equity)); el.append(s);
+    }
+  });
+  dash.draw('paperEquity', (el) => {
+    const c = dash.data('equity');
+    if (c.status !== 'ok') { el.replaceChildren(); el.textContent = c.status === 'error' ? 'โหลด equity ไม่สำเร็จ' : '—'; return; }
+    const n = d3.groups(c.data, (r) => r.strategy)[0]?.[1].length || 0;
+    if (n < 2) { el.replaceChildren(); const p = document.createElement('div'); p.className = 'ct-empty';
+      p.textContent = 'เพิ่งเริ่ม paper trading (' + n + ' รอบ) กราฟจะขึ้นเมื่อบอทรันครบหลายชั่วโมง'; el.append(p); return; }
+    lines(el, c.data, {xKey: 'time', yKey: 'equity', sKey: 'strategy', parse: (s) => new Date(s), height: 150, yFmt: d3.format(',.1f'), empty: ''});
+  });
+})();
+</script>

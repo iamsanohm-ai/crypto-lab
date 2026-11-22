@@ -112,8 +112,28 @@ def main():
                  "ในแง่ผลตอบแทนดิบ** (ด้วยความเสี่ยง 0.5%/เทรด)\n")
     lines.append("**ทำไม weekly_open_trend ไม่ถูกเลือก:** ถ้าตัด 5 เทรดที่ดีที่สุดออกจะขาดทุน และค่าธรรมเนียม×2 เหลือ Sharpe 0.31\n")
     (ROOT / "research" / "SUMMARY.md").write_text("\n".join(lines))
+    write_bt_curves()
     print("ok")
 
 
 if __name__ == "__main__":
     main()
+
+
+def write_bt_curves():
+    """เส้น equity backtest รายวันของกลยุทธ์ใน config + BTC buy & hold → research/bt_curves.json (ใช้ใน dashboard)."""
+    import pandas as pd
+    from lab.data import DATA
+    cfg = yaml.safe_load((ROOT / "config" / "strategy.yaml").read_text())
+    rows = []
+    for s in cfg["strategies"]:
+        p = DATA / f"wf_{s['name']}.parquet"
+        if not p.exists():
+            continue
+        e = pd.read_parquet(p)["equity"].resample("1D").last().dropna()
+        rows += [{"date": d.strftime("%Y-%m-%d"), "series": s["name"], "equity": round(v, 2)} for d, v in e.items()]
+    b = pd.read_parquet(DATA / "klines" / "BTCUSDT.parquet").set_index("time")["close"]
+    b = b[b.index >= pd.Timestamp("2023-11-01", tz="UTC")].resample("1D").last().dropna()
+    b = b / b.iloc[0] * 500 * (1 - 0.0015)
+    rows += [{"date": d.strftime("%Y-%m-%d"), "series": "BTC buy & hold", "equity": round(v, 2)} for d, v in b.items()]
+    (ROOT / "research" / "bt_curves.json").write_text(json.dumps(rows, separators=(",", ":")))
