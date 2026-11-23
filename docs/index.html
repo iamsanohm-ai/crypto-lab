@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Crypto Lab Terminal</title>
+<meta name="robots" content="noindex">
+<style>
+html,body{margin:0;background:#070a0e;}
+body{padding:16px max(16px,env(safe-area-inset-left)) 24px max(16px,env(safe-area-inset-right));}
+.ct{max-width:1500px;margin:0 auto;}
+.ct-err{color:#f0525b;font-family:monospace;padding:12px}
+
+  .ct {
+    --bg: #0a0e13; --panel: #10161e; --panel2: #0d1319; --line: #1d2833; --fg: #e4ebf2; --muted: #8696a7;
+    --up: #26d07c; --down: #f0525b; --accent: #2bc4b6; --amber: #f2a93b; --violet: #8f7cf2; --grid: #18222c;
+    --mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+    background: var(--bg); color: var(--fg); border-radius: 14px; padding: 14px;
+    font-family: var(--font-anthropic-sans, system-ui, sans-serif); font-size: 13px; color-scheme: dark;
+  }
+  .ct * { box-sizing: border-box; }
+  .ct-top { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; padding: 4px 4px 12px; border-bottom: 1px solid var(--line); }
+  .ct-brand { display: flex; align-items: center; gap: 8px; font-weight: 650; font-size: 16px; letter-spacing: .02em; }
+  .ct-brand svg { color: var(--up); }
+  .ct-chip { font-family: var(--mono); font-size: 11px; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); letter-spacing: .04em; }
+  .ct-chip.paper { color: var(--amber); border-color: color-mix(in srgb, var(--amber) 45%, transparent); }
+  .ct-chip.up { color: var(--up); border-color: color-mix(in srgb, var(--up) 45%, transparent); }
+  .ct-chip.down { color: var(--down); border-color: color-mix(in srgb, var(--down) 45%, transparent); }
+  .ct-top .ct-spacer { flex: 1; }
+  .ct-meta { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .ct-take { margin: 12px 4px 14px; color: var(--muted); font-size: 13.5px; line-height: 1.5; max-width: 80ch; }
+  .ct-take b { color: var(--fg); font-weight: 600; }
+  .ct-grid { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); }
+  @media (min-width: 900px) { .ct-grid.main { grid-template-columns: minmax(220px, 1fr) minmax(0, 2.4fr) minmax(240px, 1.1fr); } }
+  @media (min-width: 900px) { .ct-grid.lower { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); } }
+  .ct-card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px; min-width: 0; }
+  .ct-card h3 { margin: 0 0 10px; font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; display: flex; align-items: center; gap: 8px; }
+  .ct-card h3 .ct-note { text-transform: none; letter-spacing: 0; font-weight: 400; font-family: var(--mono); font-size: 11px; margin-left: auto; }
+  .ct-stack { display: grid; gap: 12px; align-content: start; min-width: 0; }
+  .ct-big { font-family: var(--mono); font-size: 26px; font-weight: 600; letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
+  .ct-sub { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .ct-pos { color: var(--up); } .ct-neg { color: var(--down); } .ct-flat { color: var(--muted); }
+  .ct-acct { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 9px 0; border-top: 1px solid var(--line); }
+  .ct-acct:first-of-type { border-top: 0; }
+  .ct-acct .n { font-weight: 600; font-size: 12.5px; overflow-wrap: anywhere; }
+  .ct-acct .r { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .ct-acct .v { font-family: var(--mono); text-align: right; font-variant-numeric: tabular-nums; }
+  .ct-role { font-family: var(--mono); font-size: 10px; padding: 1px 6px; border-radius: 4px; background: var(--panel2); border: 1px solid var(--line); color: var(--accent); margin-left: 6px; }
+  .ct-chartbox { position: relative; min-height: 120px; }
+  .ct-chartbox.tall { min-height: 420px; }
+  .ct-chartbox svg { display: block; width: 100%; overflow: visible; }
+  .ct-chartbox text { fill: var(--muted); font-family: var(--mono); font-size: 10px; }
+  .ct-tip { position: absolute; pointer-events: none; background: #0f151c; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-family: var(--mono); font-size: 11px; color: var(--fg); box-shadow: 0 6px 24px rgba(0,0,0,.45); white-space: nowrap; z-index: 2; }
+  .ct-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-family: var(--mono); font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+  .ct-legend i { display: inline-block; width: 10px; height: 2px; vertical-align: middle; margin-right: 5px; }
+  .ct-ohlc { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
+  .ct-ohlc div { display: grid; gap: 2px; }
+  .ct-ohlc span { font-size: 11px; color: var(--muted); }
+  .ct-ohlc b { font-family: var(--mono); font-weight: 500; font-variant-numeric: tabular-nums; }
+  .ct-feed { display: grid; gap: 8px; max-height: 330px; overflow-y: auto; }
+  .ct-ev { border: 1px solid var(--line); border-left-width: 3px; border-radius: 8px; padding: 8px 10px; background: var(--panel2); font-size: 12px; }
+  .ct-ev.buy { border-left-color: var(--up); } .ct-ev.sell { border-left-color: var(--down); }
+  .ct-ev.warn { border-left-color: var(--amber); } .ct-ev.info { border-left-color: var(--accent); }
+  .ct-ev .h { display: flex; gap: 8px; font-family: var(--mono); font-weight: 600; }
+  .ct-ev .t { margin-left: auto; color: var(--muted); font-weight: 400; font-size: 11px; }
+  .ct-ev .d { color: var(--muted); margin-top: 3px; overflow-wrap: anywhere; }
+  .ct-empty { color: var(--muted); font-size: 12px; line-height: 1.55; border: 1px dashed var(--line); border-radius: 8px; padding: 12px; }
+  .ct-gauges { display: grid; gap: 10px; }
+  .ct-gauge { display: grid; grid-template-columns: 92px 1fr; gap: 10px; align-items: center; }
+  .ct-gauge .lbl { font-size: 12px; font-weight: 600; overflow-wrap: anywhere; }
+  .ct-gauge .lbl small { display: block; font-weight: 400; color: var(--muted); font-family: var(--mono); font-size: 10.5px; margin-top: 2px; }
+  .ct-bar { height: 6px; border-radius: 3px; background: var(--grid); overflow: hidden; margin: 4px 0 2px; }
+  .ct-bar > i { display: block; height: 100%; border-radius: 3px; }
+  .ct-gline { font-family: var(--mono); font-size: 10.5px; color: var(--muted); display: flex; justify-content: space-between; gap: 6px; }
+  .ct-tablewrap { overflow-x: auto; }
+  .ct table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  .ct th { text-align: left; font-size: 10.5px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; padding: 6px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  .ct td { padding: 6px 8px; border-bottom: 1px solid var(--grid); font-family: var(--mono); font-size: 12px; white-space: nowrap; }
+  .ct td:first-child { font-family: inherit; font-weight: 600; }
+  .ct th.num, .ct td.num { text-align: right; }
+  .ct tr.hl td { background: color-mix(in srgb, var(--accent) 9%, transparent); }
+  .ct tr.bench td { color: var(--muted); }
+  .ct-foot { margin-top: 12px; color: var(--muted); font-size: 11.5px; line-height: 1.55; }
+  .ct-foot summary { cursor: pointer; color: var(--fg); }
+  .ct-foot ul { margin: 8px 0 0; padding-left: 18px; }
+  @media (max-width: 520px) { .ct { padding: 10px; border-radius: 10px; } .ct-big { font-size: 22px; } .ct-gauge { grid-template-columns: 1fr; } }
+
+</style></head><body>
+<div class="ct" lang="th" data-read>
+  <header class="ct-top" id="top">
+    <div class="ct-brand">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l5-6 4 4 8-9"/><path d="M15 6h5v5"/></svg>
+      Crypto Lab
+    </div>
+    <span class="ct-chip paper" data-draw="mode">—</span>
+    <span class="ct-chip" data-draw="regime">—</span>
+    <span class="ct-spacer"></span>
+    <span class="ct-meta">BTC <b data-draw="btc">—</b></span>
+    <span class="ct-meta">บอทรันล่าสุด <span data-draw="tick">—</span></span>
+  </header>
+
+  <p class="ct-take" id="takeaway" data-draw="takeaway">—</p>
+
+  <div class="ct-grid main">
+    <div class="ct-stack">
+      <section class="ct-card" id="portfolio">
+        <h3>พอร์ตจำลอง (Paper)</h3>
+        <div class="ct-big" data-draw="total">—</div>
+        <div class="ct-sub" data-draw="totalsub">—</div>
+        <div data-draw="accounts" style="margin-top:10px"></div>
+      </section>
+      <section class="ct-card" id="paper-equity">
+        <h3>Equity paper รายชั่วโมง</h3>
+        <div class="ct-chartbox" data-draw="paperEquity"></div>
+      </section>
+    </div>
+
+    <section class="ct-card" id="btc-chart">
+      <h3>BTC/USDT · 4h · Binance <span class="ct-note" data-draw="candleTime">—</span></h3>
+      <div class="ct-legend"><span><i style="background:var(--accent)"></i>EMA20</span><span><i style="background:var(--amber)"></i>EMA200 (ตัวกรองขาขึ้น/ขาลง)</span><span><i style="background:var(--violet)"></i>RSI 14</span></div>
+      <div class="ct-chartbox tall" data-draw="candles"></div>
+      <div class="ct-ohlc" id="ohlc">
+        <div><span>ราคาปิด</span><b data-draw="o_close">—</b></div>
+        <div><span>เปลี่ยนแปลง 4h</span><b data-draw="o_chg">—</b></div>
+        <div><span>สูงสุด</span><b data-draw="o_high">—</b></div>
+        <div><span>ต่ำสุด</span><b data-draw="o_low">—</b></div>
+        <div><span>Volume (USDT)</span><b data-draw="o_vol">—</b></div>
+        <div><span>RSI 14</span><b data-draw="o_rsi">—</b></div>
+      </div>
+    </section>
+
+    <div class="ct-stack">
+      <section class="ct-card" id="signals">
+        <h3>สัญญาณ &amp; การตัดสินใจของบอท</h3>
+        <div class="ct-feed" data-draw="events"></div>
+      </section>
+      <section class="ct-card" id="risk">
+        <h3>Sentinel · ความเสี่ยง</h3>
+        <div class="ct-gauges" data-draw="risk"></div>
+      </section>
+    </div>
+  </div>
+
+  <div class="ct-grid lower" style="margin-top:12px">
+    <section class="ct-card" id="backtest">
+      <h3>Backtest walk-forward (หลังต้นทุน) เทียบ BTC buy &amp; hold <span class="ct-note">เริ่ม 500 USDT</span></h3>
+      <div class="ct-legend" data-draw="btLegend"></div>
+      <div class="ct-chartbox" data-draw="btCurves" style="min-height:240px"></div>
+    </section>
+    <section class="ct-card" id="market">
+      <h3>ตลาด Top 20 (universe ของบอท) <span class="ct-note">24 ชม.</span></h3>
+      <div class="ct-tablewrap">
+        <table>
+          <thead><tr><th>เหรียญ</th><th class="num">ราคา</th><th class="num">24h %</th><th class="num">Volume (USDT)</th></tr></thead>
+          <tbody data-draw="marketRows"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <div class="ct-grid lower" style="margin-top:12px">
+    <section class="ct-card" id="leaderboard">
+      <h3>อันดับกลยุทธ์ (เรียงตาม Sharpe) <span class="ct-note">ทดสอบนอกตัวอย่าง พ.ย. 2023 – ปัจจุบัน</span></h3>
+      <div class="ct-tablewrap">
+        <table>
+          <thead><tr><th>กลยุทธ์</th><th>สถานะ</th><th class="num">ผลตอบแทน %</th><th class="num">Max DD %</th><th class="num">Sharpe</th><th class="num">เทรด</th></tr></thead>
+          <tbody data-draw="leaderRows"></tbody>
+        </table>
+      </div>
+    </section>
+    <section class="ct-card" id="positions">
+      <h3>สถานะที่ถืออยู่</h3>
+      <div class="ct-tablewrap">
+        <table>
+          <thead><tr><th>เหรียญ</th><th>กลยุทธ์</th><th class="num">เข้า</th><th class="num">ล่าสุด</th><th class="num">Stop</th><th class="num">P&amp;L</th></tr></thead>
+          <tbody data-draw="posRows"></tbody>
+        </table>
+      </div>
+      <p class="ct-empty ct-posempty" hidden>ยังไม่มีสถานะเปิด บอทจะซื้อเมื่อสัญญาณของกลยุทธ์เกิดบนแท่ง 4h ที่ปิดแล้ว และ Sentinel ตรวจผ่าน</p>
+    </section>
+  </div>
+
+  <details class="ct-foot" id="notes">
+    <summary>ตัวเลขเหล่านี้มาจากไหน และควรอ่านอย่างไร</summary>
+    <ul>
+      <li>ทุกอย่างเป็น <b>paper trading</b> (เงินจำลอง 500 USDT ต่อกลยุทธ์) ยังไม่มีเงินจริง เงินจริงต้องรอคุณพิมพ์ "go live" และอนุมัติทุกเทรด</li>
+      <li>ราคาและแท่งเทียนมาจาก Binance (data-api.binance.vision) ข้อมูลบนหน้านี้อัปเดตทุกชั่วโมงโดยบอท ดูเวลาที่ Sources</li>
+      <li>Backtest = walk-forward 3 ปีบนข้อมูลที่ไม่ได้ใช้เลือกพารามิเตอร์ หักค่าธรรมเนียม 0.1% + slippage 0.05% ต่อขา และรวมเหรียญที่ถูกถอด</li>
+      <li>ไม่มีกลยุทธ์ไหนชนะ BTC buy &amp; hold ในแง่ผลตอบแทนดิบ ที่เลือกเพราะชนะเมื่อคิดตามความเสี่ยง (Sharpe, drawdown) และ Sharpe ระดับนี้ยังไม่มีนัยสำคัญทางสถิติ</li>
+      <li>Funding ของ challenger 2 ในการเทรดสดเป็นค่าประมาณจาก premium index (ช้าได้ ~1 วัน)</li>
+    </ul>
+  </details>
+</div>
+
+
+<script src="d3.min.js"></script>
+<script src="app.js"></script>
+</body></html>

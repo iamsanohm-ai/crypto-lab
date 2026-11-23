@@ -13,6 +13,7 @@ import yaml
 from lab.data import API, ROOT, _get, now_iso
 
 OUT = ROOT / "dashboard" / "data.json"
+OUT_SITE = ROOT / "docs" / "data.json"  # GitHub Pages
 
 
 def _klines(symbol="BTCUSDT", interval="4h", limit=700):
@@ -141,6 +142,8 @@ def build():
                             candle_time=last_closed["time"])
     OUT.parent.mkdir(exist_ok=True)
     OUT.write_text(json.dumps(out, separators=(",", ":"), default=str))
+    OUT_SITE.parent.mkdir(exist_ok=True)
+    OUT_SITE.write_text(OUT.read_text())
     return out
 
 
