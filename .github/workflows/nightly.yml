@@ -1,0 +1,54 @@
+# งานรายวัน/รายสัปดาห์ที่ไม่ใช้ AI (ฟรี): Judge ทุกคืน, morning brief ทุกเช้า, weekly ทุกวันอาทิตย์
+name: nightly
+on:
+  schedule:
+    - cron: "43 15 * * *"   # 22:43 เวลาไทย — Judge
+    - cron: "5 0 * * *"     # 07:05 เวลาไทย — morning brief
+    - cron: "35 2 * * 0"    # อาทิตย์ 09:35 เวลาไทย — weekly
+  workflow_dispatch:
+    inputs:
+      job: {description: "judge | brief | weekly", default: "judge"}
+permissions:
+  contents: write
+concurrency:
+  group: repo-writer
+  cancel-in-progress: false
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12", cache: pip}
+      - run: pip install -q -r requirements.txt
+      - name: Pick job
+        id: pick
+        run: |
+          J="${{ github.event.inputs.job }}"
+          if [ -z "$J" ]; then
+            case "${{ github.event.schedule }}" in
+              "43 15 * * *") J=judge;; "5 0 * * *") J=brief;; "35 2 * * 0") J=weekly;; esac
+          fi
+          echo "job=$J" >> "$GITHUB_OUTPUT"
+      - name: Judge (data refresh + walk-forward + final check + cards)
+        if: steps.pick.outputs.job == 'judge'
+        run: python -m lab.universe && python -m lab.fetch && python -m pytest -q && python -m lab.nightly && python -m lab.dashboard
+      - name: Morning brief
+        if: steps.pick.outputs.job == 'brief'
+        run: python -m lab.live && python -m lab.notify && python -m lab.dashboard
+      - name: Weekly review
+        if: steps.pick.outputs.job == 'weekly'
+        run: python -m lab.notify weekly
+      - name: Commit
+        run: |
+          git config user.name "crypto-lab-bot"
+          git config user.email "crypto-lab-bot@users.noreply.github.com"
+          git add research state ledger dashboard/data.json
+          git diff --cached --quiet && exit 0
+          git commit -m "${{ steps.pick.outputs.job }} $(date -u +%Y-%m-%dT%H:%MZ)"
+          for i in 1 2 3; do git pull --rebase origin main && git push origin main && exit 0; sleep 5; done
+          exit 1

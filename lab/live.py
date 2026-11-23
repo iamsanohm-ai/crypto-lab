@@ -27,7 +27,17 @@ H4 = timedelta(hours=4)
 CTX = {}
 
 
+ALERT_EVENTS = {"BUY", "SELL", "SENTINEL_HALT", "SENTINEL_RESUME", "ERROR"}
+
+
 def log(event: str, **kw):
+    if event in ALERT_EVENTS:
+        try:
+            from lab.notifier import Notifier
+            bits = [f"{k}={v}" for k, v in kw.items() if k in ("symbol", "price", "pnl", "reason", "error")]
+            Notifier(telegram=True).send(f"[Crypto Lab · {CTX.get('role', '')}] {event} " + " ".join(bits))
+        except Exception:
+            pass
     LEDGER.parent.mkdir(exist_ok=True)
     rec = {"ts": now_iso(), **CTX, "event": event, **kw}
     with open(LEDGER, "a") as f:

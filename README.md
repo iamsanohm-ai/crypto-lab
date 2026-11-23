@@ -33,3 +33,15 @@ python -m pytest -q
 - API key: trade-only, ปิดถอนเงิน, เก็บใน environment เท่านั้น ห้ามอยู่ในโค้ดหรือแชต
 - ห้ามแต่งตัวเลข — ทุกราคา/ผลลัพธ์มาจากข้อมูลจริงที่มีแหล่งและเวลา ค่าประมาณต้องติดป้าย (เช่น funding live = ESTIMATE)
 - Sentinel หยุดทุกอย่างเมื่อ: ขาดทุน -3%/วัน, แพ้ติด 3, feed ค้าง
+
+## ระบบอัตโนมัติ (ฟรี ไม่ใช้ AI)
+| งาน | ที่รัน | เวลา (ไทย) |
+|---|---|---|
+| บอท paper + Sentinel | GitHub Actions `paper-bot.yml` | ทุกชั่วโมง (GitHub อาจเลื่อนเวลา) |
+| Judge: ดึงข้อมูล + backtest + final check + cards | `nightly.yml` | 22:43 |
+| Morning brief (+ บอทรันอีกรอบ) | `nightly.yml` | 07:05 |
+| Weekly review | `nightly.yml` | อาทิตย์ 09:35 |
+
+แจ้งเตือนทาง Telegram (ฟรี): ใส่ `TELEGRAM_BOT_TOKEN` และ `TELEGRAM_CHAT_ID` ใน GitHub → Settings → Secrets and variables → Actions
+รันเองทันที: GitHub → Actions → เลือก workflow → Run workflow
+งานที่ต้องใช้ AI (คิดไอเดียใหม่, อ่านข่าว, แก้บั๊ก) ทำเมื่อเจ้าของสั่งเท่านั้น — `roles/*.md` คือคู่มือ
