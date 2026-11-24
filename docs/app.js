@@ -77,7 +77,7 @@
   document.addEventListener('change', (e) => { if (e.target && e.target.id === 'chart-sym') { chart.sym = e.target.value; loadChart(); } });
 
   // ---------------- tabs (hash routing) ----------------
-  const TABS = ['overview', 'plans', 'scan', 'portfolio', 'strategy'];
+  const TABS = ['overview', 'plans', 'scan', 'trade', 'portfolio', 'strategy'];
   function showTab(name) {
     if (!TABS.includes(name)) name = 'overview';
     document.querySelectorAll('[data-view]').forEach((s) => { s.hidden = s.dataset.view !== name; });
@@ -203,7 +203,10 @@
         add('เสียได้สูงสุด', `${fmt.usd(p.risk_usdt, 1)} USDT`);
         const t1 = mk('div', 'txt'); t1.append(mk('b', null, 'เข้า: '), p.how_to_enter);
         const t2 = mk('div', 'txt'); t2.append(mk('b', null, 'ออก: '), p.how_to_exit);
-        card.append(top, kv, t1, t2); if (p.note) card.append(mk('div', 'txt', '⚠️ ' + p.note)); el.append(card);
+        card.append(top, kv, t1, t2); if (p.note) card.append(mk('div', 'txt', '⚠️ ' + p.note));
+        const tb = mk('button', 'btn sm tradebtn', p.state === 'enter_now' ? 'เทรดตามแผนนี้ →' : 'เตรียมออเดอร์ล่วงหน้า →'); tb.type = 'button';
+        tb.onclick = () => document.dispatchEvent(new CustomEvent('cl:plan', {detail: p})); card.append(tb);
+        el.append(card);
       }
     });
 
@@ -470,6 +473,7 @@
   window.addEventListener('resize', syncBar); syncBar();
   let rw; window.addEventListener('resize', () => { clearTimeout(rw); rw = setTimeout(() => D && render(), 200); });
 
+  window.CL = {data: () => D, showTab: (t) => { history.replaceState(null, '', '#' + t); showTab(t); }, fmt};
   showTab(location.hash.slice(1));
   load().then(connect); setInterval(load, 5 * 60 * 1000);
 })();

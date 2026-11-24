@@ -45,3 +45,10 @@ python -m pytest -q
 แจ้งเตือนทาง Telegram (ฟรี): ใส่ `TELEGRAM_BOT_TOKEN` และ `TELEGRAM_CHAT_ID` ใน GitHub → Settings → Secrets and variables → Actions
 รันเองทันที: GitHub → Actions → เลือก workflow → Run workflow
 งานที่ต้องใช้ AI (คิดไอเดียใหม่, อ่านข่าว, แก้บั๊ก) ทำเมื่อเจ้าของสั่งเท่านั้น — `roles/*.md` คือคู่มือ
+
+## ซื้อขายจาก dashboard (แท็บ "ซื้อขาย")
+- ส่งคำสั่งตรงจากเบราว์เซอร์ไป Binance ผ่าน **WebSocket API** (REST ใช้จากเบราว์เซอร์ไม่ได้เพราะ CORS) — `docs/trade.js`
+- API key/secret ถูกเข้ารหัส AES-GCM (PBKDF2-SHA256 310,000 รอบ) ด้วยรหัสผ่านของผู้ใช้ และเก็บใน localStorage ของเบราว์เซอร์นั้นเท่านั้น ไม่มี server ไม่ถูก commit
+- เริ่มที่ Testnet (`testnet.binance.vision`) · บัญชีจริงต้องพิมพ์ "เงินจริง" ตอนเข้าระบบ และ "ยืนยัน" ทุกออเดอร์
+- เพดานต่อออเดอร์ (ค่าเริ่มต้น 125 USDT) + stop-loss อัตโนมัติหลังซื้อ (STOP_LOSS_LIMIT) · ล็อกเองหลังไม่ใช้งาน 30 นาที
+- คีย์ต้องเปิดเฉพาะสิทธิ์เทรด **ห้ามเปิดถอนเงิน**

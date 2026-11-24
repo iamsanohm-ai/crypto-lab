@@ -16,6 +16,7 @@
   color-scheme:dark;
 }
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html,body{margin:0;background:var(--bg);color:var(--fg)}
 body{font-family:var(--sans);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
 .wrap{max-width:1360px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 40px}
@@ -171,17 +172,57 @@ details.notes summary{cursor:pointer;color:var(--fg)}
 .flash-up{animation:fu .9s ease-out}.flash-down{animation:fd .9s ease-out}
 @keyframes fu{0%{color:var(--up);text-shadow:0 0 12px color-mix(in srgb,var(--up) 60%,transparent)}100%{color:inherit}}
 @keyframes fd{0%{color:var(--down);text-shadow:0 0 12px color-mix(in srgb,var(--down) 60%,transparent)}100%{color:inherit}}
+
+/* auth + trade */
+.authbtn{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+.authbtn:hover{border-color:var(--accent)}
+.authbtn.test{color:var(--amber);border-color:color-mix(in srgb,var(--amber) 50%,transparent)}
+.authbtn.live{color:#fff;background:var(--down);border-color:var(--down)}
+.btn{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 14px;cursor:pointer;font-weight:500}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#04110f;font-weight:700}
+.btn.big{width:100%;padding:12px;font-size:15px}
+.btn.sm{padding:5px 10px;font-size:12px}
+.btn.danger{color:var(--down)}
+.ticket{display:grid;gap:12px}
+.ticket label{display:grid;gap:5px;font-size:12.5px;color:var(--muted)}
+.ticket label.check{display:flex;align-items:center;gap:8px;color:var(--fg)}
+.row2{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));align-items:end}
+.inp{font:inherit;font-size:14px;padding:9px 11px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--fg);width:100%;min-width:0;font-family:var(--mono)}
+.inp:disabled{opacity:.45}
+.seg2{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg2 label{position:relative;display:block;cursor:pointer}
+.seg2 input{position:absolute;opacity:0;inset:0}
+.seg2 span{display:block;text-align:center;padding:9px 8px;font-weight:600;color:var(--muted);background:var(--panel2)}
+.seg2 .buy input:checked+span{background:color-mix(in srgb,var(--up) 22%,var(--panel2));color:var(--up)}
+.seg2 .sell input:checked+span{background:color-mix(in srgb,var(--down) 22%,var(--panel2));color:var(--down)}
+.seg2 input:focus-visible+span{outline:2px solid var(--accent);outline-offset:-2px}
+.preview{margin:0;font-family:var(--mono);font-size:12.5px;color:var(--fg);background:var(--panel2);border:1px dashed var(--line);border-radius:10px;padding:10px}
+.formerr{margin:0;color:var(--down);font-size:13px;min-height:1em}
+.warnbox{border:1px solid color-mix(in srgb,var(--down) 50%,transparent);background:color-mix(in srgb,var(--down) 10%,transparent);border-radius:10px;padding:10px;font-size:13px;display:grid;gap:8px}
+.dlg{border:1px solid var(--line);border-radius:16px;background:var(--panel);color:var(--fg);padding:20px;width:min(460px,calc(100vw - 32px));max-height:calc(100vh - 32px);overflow:auto}
+.dlg::backdrop{background:rgba(0,0,0,.6)}
+.dlg h3{margin:0 0 12px;font-size:18px}
+.dlg form{display:grid;gap:12px}
+.dlg label{display:grid;gap:5px;font-size:12.5px;color:var(--muted)}
+.dlg a{color:var(--accent)}
+.dlgbtns{display:flex;justify-content:flex-end;gap:8px}
+.kvs{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13.5px}
+.kvs span:nth-child(odd){color:var(--muted)}
+.kvs span:nth-child(even){font-family:var(--mono)}
+.plan .tradebtn{justify-self:start}
 .err{color:var(--down);font-family:var(--mono);padding:12px}
-@media (max-width:560px){.bar .wrap{flex-wrap:nowrap}.brand{font-size:15px}.chip.paper{display:none}.card{padding:13px}.bigv{font-size:24px}.gauge{grid-template-columns:1fr}.meta{display:none}.decision{padding:16px}}
+@media (max-width:560px){.bar .wrap{flex-wrap:nowrap;gap:8px}.brand .bt{display:none}#live{padding:3px 7px}.authbtn{padding:5px 10px;font-size:12px}.btc small{display:none}.brand{font-size:15px}.chip.paper{display:none}.card{padding:13px}.bigv{font-size:24px}.gauge{grid-template-columns:1fr}.meta{display:none}.decision{padding:16px}}
 @media (prefers-reduced-motion:no-preference){.gate .fill{transition:width .6s ease}}
 </style></head><body>
 
 <header class="bar"><div class="wrap">
-  <div class="brand"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l5-6 4 4 8-9"/><path d="M15 6h5v5"/></svg>Crypto Lab</div>
+  <div class="brand"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l5-6 4 4 8-9"/><path d="M15 6h5v5"/></svg><span class="bt">Crypto Lab</span></div>
   <span class="chip paper" data-draw="mode">—</span>
   <span class="spacer"></span>
   <span class="btc"><small>BTC</small><span data-draw="btc">—</span></span>
   <span class="meta">อัปเดต <span data-draw="tick">—</span></span>
+  <button type="button" class="authbtn" id="auth-btn">เข้าสู่ระบบ</button>
 </div></header>
 
 <main class="wrap">
@@ -199,6 +240,7 @@ details.notes summary{cursor:pointer;color:var(--fg)}
     <button class="tab" role="tab" data-tab="overview">ภาพรวม</button>
     <button class="tab" role="tab" data-tab="plans">แผนเทรด<span class="n" data-draw="nPlans">0</span></button>
     <button class="tab" role="tab" data-tab="scan">สแกนกระดาน<span class="n" data-draw="nScan">0</span></button>
+    <button class="tab" role="tab" data-tab="trade">ซื้อขาย</button>
     <button class="tab" role="tab" data-tab="portfolio">พอร์ต &amp; บอท</button>
     <button class="tab" role="tab" data-tab="strategy">กลยุทธ์ &amp; ผลทดสอบ</button>
   </div></nav>
@@ -277,6 +319,88 @@ details.notes summary{cursor:pointer;color:var(--fg)}
     </div>
   </section>
 
+
+  <!-- ซื้อขาย -->
+  <section class="view" id="view-trade" data-view="trade" hidden>
+    <div class="card" data-auth="out">
+      <h2>เชื่อมบัญชี Binance เพื่อซื้อขายจากหน้านี้</h2>
+      <p class="help" style="margin-top:0" id="tr-status">ยังไม่ได้เชื่อมบัญชี Binance</p>
+      <div class="howto" style="margin-top:12px">
+        <div class="step"><b>ปลอดภัยแค่ไหน</b>คีย์ถูกเข้ารหัสด้วยรหัสผ่านของคุณ และเก็บเฉพาะในเบราว์เซอร์นี้ ไม่ถูกส่งไป GitHub หรือที่อื่น นอกจากใช้เซ็นคำสั่งไปยัง Binance</div>
+        <div class="step"><b>เริ่มที่ Testnet</b>ใช้เงินทดลองของ Binance ก่อน (testnet.binance.vision) ฝึกให้คล่อง แล้วค่อยเปลี่ยนเป็นบัญชีจริง</div>
+        <div class="step"><b>สร้างคีย์ให้ถูกสิทธิ์</b>เปิดเฉพาะ "Enable Spot Trading" ห้ามเปิด Withdrawals เด็ดขาด ใช้คีย์แบบ HMAC</div>
+      </div>
+      <p style="margin-top:14px"><button type="button" class="btn primary" onclick="document.getElementById('auth-btn').click()">เข้าสู่ระบบ / ปลดล็อก</button></p>
+    </div>
+
+    <div class="grid g-2-1" data-auth="in" hidden>
+      <div class="card">
+        <h2>ส่งคำสั่งซื้อขาย <span class="chip paper" id="tr-netbadge"></span></h2>
+        <form id="ticket" class="ticket" novalidate>
+          <div class="row2">
+            <label>เหรียญ<select class="sel" name="sym" id="tk-sym"></select></label>
+            <div class="seg2" role="radiogroup" aria-label="ซื้อหรือขาย">
+              <label class="buy"><input type="radio" name="side" value="BUY" checked><span>ซื้อ</span></label>
+              <label class="sell"><input type="radio" name="side" value="SELL"><span>ขาย</span></label>
+            </div>
+          </div>
+          <div class="row2">
+            <label>ชนิดคำสั่ง<select class="sel" name="otype"><option value="MARKET">ราคาตลาด (Market)</option><option value="LIMIT">กำหนดราคา (Limit)</option></select></label>
+            <label data-for="limit" hidden>ราคา Limit<input class="inp" name="limit_price" inputmode="decimal" autocomplete="off"></label>
+          </div>
+          <label data-for="buy">จำนวนเงิน (USDT)<input class="inp" name="amount" inputmode="decimal" placeholder="เช่น 50" autocomplete="off"></label>
+          <div data-for="sell" hidden class="row2">
+            <label>จำนวนเหรียญที่จะขาย<input class="inp" name="qty" inputmode="decimal" autocomplete="off"></label>
+            <button type="button" class="btn sm" id="btn-sellall" style="align-self:end">ขายทั้งหมด</button>
+          </div>
+          <div data-for="buy" class="row2">
+            <label class="check"><input type="checkbox" name="use_stop" checked> ตั้ง stop-loss อัตโนมัติหลังซื้อ</label>
+            <label>ราคา Stop<input class="inp" name="stop_price" inputmode="decimal" autocomplete="off"></label>
+          </div>
+          <p class="preview" id="tk-preview">—</p>
+          <p class="help" id="tk-free" style="margin:0"></p>
+          <p class="formerr" role="alert"></p>
+          <button class="btn primary big" type="submit">ตรวจสอบคำสั่ง</button>
+        </form>
+      </div>
+      <div class="card">
+        <h2>บัญชี <button type="button" class="btn sm" id="btn-refresh" style="margin-left:auto">รีเฟรช</button></h2>
+        <div class="bigv" style="font-size:20px" id="tr-total">—</div>
+        <div class="tablewrap" style="margin-top:8px"><table>
+          <thead><tr><th>เหรียญ</th><th class="num">ใช้ได้</th><th class="num">ติดออเดอร์</th><th class="num">มูลค่า USDT</th></tr></thead>
+          <tbody id="tr-bal"></tbody>
+        </table></div>
+        <p style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 0">
+          <button type="button" class="btn sm" id="btn-logout">ออกจากระบบ</button>
+          <button type="button" class="btn sm danger" id="btn-forget">ลบคีย์จากเบราว์เซอร์</button>
+        </p>
+      </div>
+    </div>
+
+    <div class="grid g-2-1" data-auth="in" hidden>
+      <div class="card">
+        <h2>ออเดอร์ที่ค้างอยู่ (รวม stop-loss)</h2>
+        <div class="tablewrap"><table>
+          <thead><tr><th>เหรียญ</th><th>ประเภท</th><th class="num">จำนวน</th><th class="num">ราคา</th><th class="num">Stop</th><th></th></tr></thead>
+          <tbody id="tr-orders"></tbody>
+        </table></div>
+      </div>
+      <div class="card">
+        <h2>การตั้งค่าความปลอดภัย</h2>
+        <form id="settings-form" class="ticket">
+          <label>เพดานต่อออเดอร์ (USDT)<input class="inp" name="max_order" inputmode="decimal"></label>
+          <label>Stop-loss เริ่มต้น (% ต่ำกว่าราคาซื้อ)<input class="inp" name="stop_pct" inputmode="decimal"></label>
+          <button class="btn sm" type="submit">บันทึก</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>บันทึกการซื้อขายในเครื่องนี้</h2>
+      <div class="feed" id="tr-log"></div>
+    </div>
+  </section>
+
   <!-- พอร์ต & บอท -->
   <section class="view" id="view-portfolio" data-view="portfolio" hidden>
     <div class="grid g-1-1">
@@ -333,6 +457,43 @@ details.notes summary{cursor:pointer;color:var(--fg)}
   </section>
 </main>
 
+
+<dialog id="dlg-login" class="dlg">
+  <form id="login-form" novalidate>
+    <h3>เข้าสู่ระบบ Binance</h3>
+    <div id="login-unlock" hidden>
+      <p class="help" style="margin-top:0">มีคีย์ที่บันทึกไว้ในเบราว์เซอร์นี้แล้ว ใส่รหัสผ่านเพื่อปลดล็อก</p>
+      <label>รหัสผ่าน<input class="inp" type="password" name="pass_unlock" autocomplete="current-password"></label>
+    </div>
+    <div id="login-first">
+      <div class="seg2" role="radiogroup" aria-label="บัญชี">
+        <label class="buy"><input type="radio" name="net" value="testnet" checked><span>Testnet (เงินทดลอง)</span></label>
+        <label class="sell"><input type="radio" name="net" value="live"><span>บัญชีจริง</span></label>
+      </div>
+      <p class="help">สร้าง API key ได้ที่ <a id="keys-link" href="https://testnet.binance.vision/" target="_blank" rel="noopener">testnet.binance.vision</a> · เปิดเฉพาะสิทธิ์เทรด ห้ามเปิดถอนเงิน</p>
+      <label>API Key<input class="inp" name="api_key" autocomplete="off" spellcheck="false"></label>
+      <label>Secret Key<input class="inp" type="password" name="api_secret" autocomplete="off"></label>
+      <label>ตั้งรหัสผ่าน (อย่างน้อย 8 ตัว) ใช้ปลดล็อกครั้งต่อไป<input class="inp" type="password" name="pass_new" autocomplete="new-password"></label>
+      <label>ยืนยันรหัสผ่าน<input class="inp" type="password" name="pass_new2" autocomplete="new-password"></label>
+      <div id="login-live" hidden class="warnbox">⚠️ บัญชีจริงใช้เงินจริง ขาดทุนได้จริง พิมพ์คำว่า <b>เงินจริง</b> เพื่อยืนยัน
+        <input class="inp" name="live_ack" autocomplete="off"></div>
+    </div>
+    <p class="formerr" role="alert"></p>
+    <div class="dlgbtns"><button type="button" class="btn" data-close="dlg-login">ยกเลิก</button><button class="btn primary" type="submit">เข้าสู่ระบบ</button></div>
+  </form>
+</dialog>
+
+<dialog id="dlg-confirm" class="dlg">
+  <form id="cf-form" novalidate>
+    <h3>ยืนยันคำสั่ง</h3>
+    <div class="kvs" id="cf-summary"></div>
+    <div id="cf-live" hidden class="warnbox">⚠️ นี่คือเงินจริง พิมพ์คำว่า <b>ยืนยัน</b> เพื่อส่งคำสั่ง<input class="inp" id="cf-type" autocomplete="off"></div>
+    <p class="formerr" id="cf-err" role="alert"></p>
+    <div class="dlgbtns"><button type="button" class="btn" data-close="dlg-confirm">ยกเลิก</button><button class="btn primary" type="submit">ส่งคำสั่ง</button></div>
+  </form>
+</dialog>
+
 <script src="d3.min.js"></script>
-<script src="app.js?v=20261124c"></script>
+<script src="app.js?v=20261125c"></script>
+<script src="trade.js?v=20261125c"></script>
 </body></html>
