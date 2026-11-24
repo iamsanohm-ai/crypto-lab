@@ -34,5 +34,5 @@ jobs:
           git add state ledger dashboard/data.json docs/data.json
           git diff --cached --quiet && exit 0
           git commit -m "paper tick $(date -u +%Y-%m-%dT%H:%MZ)"
-          for i in 1 2 3; do git pull --rebase origin main && git push origin main && exit 0; sleep 5; done
+          for i in 1 2 3; do git pull --rebase origin main && git push origin main && exit 0; git rebase --abort 2>/dev/null; sleep 5; done
           exit 1

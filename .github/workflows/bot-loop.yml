@@ -1,0 +1,48 @@
+# บอทแบบวนรอบ: รันต่อเนื่อง ~5 ชม. 50 นาที ติ๊กทุกชั่วโมง แล้วสั่งรันตัวเองต่อ (เชื่อถือได้กว่า cron)
+# ทำงานเฉพาะเมื่อ repo เป็น public (นาที Actions ฟรีไม่จำกัด) — ถ้า private จะข้ามเพื่อไม่ให้เปลืองโควตา
+name: bot-loop
+on:
+  schedule:
+    - cron: "50 */6 * * *"   # สำรอง: ปลุกให้ loop เริ่มใหม่ถ้าหลุด
+  workflow_dispatch: {}
+permissions:
+  contents: write
+  actions: write
+concurrency:
+  group: bot-loop
+  cancel-in-progress: false
+jobs:
+  loop:
+    if: ${{ github.event.repository.private == false }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    env:
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12", cache: pip}
+      - run: pip install -q -r requirements.txt
+      - name: Hourly ticks
+        run: |
+          git config user.name "crypto-lab-bot"
+          git config user.email "crypto-lab-bot@users.noreply.github.com"
+          END=$(( $(date +%s) + 340*60 ))
+          while [ "$(date +%s)" -lt "$END" ]; do
+            git fetch -q origin main && git reset -q --hard origin/main
+            python -m lab.live || echo "tick failed"
+            python -m lab.dashboard || echo "dashboard failed"
+            git add state ledger dashboard/data.json docs/data.json
+            if ! git diff --cached --quiet; then
+              git commit -qm "paper tick $(date -u +%Y-%m-%dT%H:%MZ)"
+              git pull -q --rebase origin main && git push -q origin main || { git rebase --abort 2>/dev/null; echo "push skipped (conflict) — next tick retries"; }
+            fi
+            NOW=$(date +%s); NEXT=$(( (NOW/3600 + 1)*3600 + 7*60 ))   # นาทีที่ 7 ของชั่วโมงถัดไป
+            [ "$NEXT" -ge "$END" ] && break
+            sleep $(( NEXT - NOW ))
+          done
+      - name: Restart loop
+        if: always()
+        env: {GH_TOKEN: "${{ github.token }}"}
+        run: gh workflow run bot-loop.yml --ref main
