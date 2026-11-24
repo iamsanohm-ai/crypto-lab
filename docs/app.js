@@ -52,9 +52,9 @@
       if (`${chart.sym}|${chart.tf}` !== want) return;
       const ws = new WebSocket(['wss://data-stream.binance.vision/ws/', 'wss://stream.binance.com:9443/ws/'][attempt % 2] + pair.toLowerCase() + '@kline_' + chart.tf);
       chart.ws = ws;
-      ws.onopen = () => { chart.live = true; redraw('chartLive'); };
+      ws.onopen = () => { chart.live = true; chart.lastMsg = Date.now(); redraw('chartLive'); };
       ws.onmessage = (ev) => {
-        const k = JSON.parse(ev.data).k; if (!k || !chart.rows) return;
+        chart.lastMsg = Date.now(); const k = JSON.parse(ev.data).k; if (!k || !chart.rows) return;
         const bar = kl([k.t, k.o, k.h, k.l, k.c, k.v, k.T, k.q]); bar.closed = k.x;
         const rows = chart.rows, last = rows[rows.length - 1];
         if (last && last.time === bar.time) rows[rows.length - 1] = bar; else if (!last || bar.time > last.time) { rows.push(bar); if (rows.length > 500) rows.shift(); }
@@ -90,6 +90,13 @@
   }));
   window.addEventListener('hashchange', () => showTab(location.hash.slice(1)));
 
+  // ---------------- live getters (drawers redrawn every second must read fresh values, not render-time copies) ----------------
+  const live = () => {
+    const CR = chartRows(), lastBar = CR[CR.length - 1] || {}, prevBar = CR.length > 1 ? CR[CR.length - 2] : null;
+    const A = (D.scanner || {}).analysis, btcNow = D.status[0].btc_close, e200 = (A && A.btc_ema200) || D.status[0].btc_ema200;
+    return {lastBar, chg: prevBar ? (lastBar.close / prevBar.close - 1) * 100 : null, btcNow, e200, up: btcNow > e200};
+  };
+
   // ---------------- render ----------------
   function render() {
     const s = D.status[0], acc = D.accounts, S = D.scanner || {}, A = S.analysis || null, P = S.plans || [];
@@ -103,7 +110,7 @@
     const open = acc.reduce((n, x) => n + +x.open_positions, 0);
 
     draw('mode', (el) => el.textContent = s.mode === 'paper' ? 'PAPER · เงินจำลอง' : String(s.mode).toUpperCase());
-    draw('btc', (el) => el.textContent = fmt.usd(btcNow));
+    draw('btc', (el) => el.textContent = fmt.usd(live().btcNow));
     draw('tick', (el) => el.textContent = fmt.time(D.generated_at));
 
     // ---- hero ----
@@ -121,6 +128,7 @@
       else el.textContent = `BTC อยู่เหนือ EMA200 แล้ว · มี ${near.length} เหรียญใกล้จุดเข้า ระบบจะแจ้ง Telegram เมื่อเกิดสัญญาณ`;
     });
     draw('gate', (el) => {
+      const {btcNow, e200, up} = live();
       el.replaceChildren(); el.classList.toggle('open', up);
       const gap = (btcNow / e200 - 1) * 100;
       const frac = up ? 1 : Math.max(0.03, Math.min(1, 1 + gap / 25));   // -25% → empty, 0% → full
@@ -147,17 +155,17 @@
     draw('anMeta', (el) => el.textContent = S.generated_at ? fmt.time(S.generated_at) : '');
     draw('anLines', (el) => { el.replaceChildren(); if (!A) { el.append(mk('li', null, 'ยังไม่มีผลวิเคราะห์ (รอบอทรันรอบถัดไป)')); return; } for (const t of A.lines) el.append(mk('li', null, t)); });
     draw('chartTitle', (el) => el.textContent = `${chart.sym}/USDT · ${TF_LABEL[chart.tf]} · Binance`);
-    draw('chartLive', (el) => { const on = isDefault() ? (document.getElementById('live')?.classList.contains('up')) : chart.live;
+    draw('chartLive', (el) => { const on = isDefault() ? (lastMsg && Date.now() - lastMsg < 6000) : (chart.live || chart.polling);
       el.className = 'chip ' + (on ? 'up' : ''); el.textContent = chart.loading ? 'กำลังโหลด…' : on ? '● เรียลไทม์' : '○ ไม่สด'; });
-    draw('candleTime', (el) => el.textContent = lastBar.time ? 'แท่งล่าสุด ' + fmt.time(lastBar.time) : '');
+    draw('candleTime', (el) => { const {lastBar} = live(); el.textContent = lastBar.time ? 'แท่งล่าสุด ' + fmt.time(lastBar.time) : ''; });
     draw('chartSym', (el) => { if (el.options.length) return; const syms = Array.from(new Set(['BTC', ...D.market.map((m) => m.symbol)]));
       for (const x of syms) el.append(new Option(x + '/USDT', x)); el.value = chart.sym; });
-    draw('o_close', (el) => el.textContent = fmt.px(lastBar.close));
-    draw('o_high', (el) => el.textContent = fmt.px(lastBar.high));
-    draw('o_low', (el) => el.textContent = fmt.px(lastBar.low));
-    draw('o_vol', (el) => el.textContent = fmt.big(lastBar.quote_volume));
-    draw('o_rsi', (el) => el.textContent = lastBar.rsi14 == null ? '—' : Number(lastBar.rsi14).toFixed(1));
-    draw('o_chg', (el) => { el.className = cls(chg); el.textContent = fmt.pct(chg); });
+    draw('o_close', (el) => { const b = live().lastBar; el.textContent = fmt.px(b.close); });
+    draw('o_high', (el) => { const b = live().lastBar; el.textContent = fmt.px(b.high); });
+    draw('o_low', (el) => { const b = live().lastBar; el.textContent = fmt.px(b.low); });
+    draw('o_vol', (el) => { const b = live().lastBar; el.textContent = fmt.big(b.quote_volume); });
+    draw('o_rsi', (el) => { const b = live().lastBar; el.textContent = b.rsi14 == null ? '—' : Number(b.rsi14).toFixed(1); });
+    draw('o_chg', (el) => { const {chg} = live(); el.className = cls(chg); el.textContent = fmt.pct(chg); });
     draw('candles', candles);
     draw('marketRows', (tb) => {
       tb.replaceChildren();
@@ -363,52 +371,103 @@
     try { const r = await fetch('data.json?t=' + Date.now(), {cache: 'no-store'}); D = await r.json(); render(); }
     catch (e) { document.querySelector('main').prepend(mk('div', 'err', 'โหลดข้อมูลไม่สำเร็จ: ' + e.message)); }
   }
-  let dirty = false, hovering = false, lastMsg = 0, wsStarted = false;
-  document.addEventListener('pointerover', (e) => { hovering = !!(e.target.closest && e.target.closest('[data-draw="candles"]')); });
-  function liveChip(on) {
+  // live: WebSocket first (3 hosts), REST polling every 2 s as fallback — the page keeps moving even if a network blocks WebSockets
+  let dirty = false, lastMsg = 0, wsStarted = false, wsLive = false, hoverUntil = 0, mode = 'off';
+  const hovering = () => Date.now() < hoverUntil;   // pause chart redraw only while the pointer is actually moving on it
+  document.addEventListener('pointermove', (e) => { if (e.pointerType === 'mouse' && e.target.closest && e.target.closest('[data-draw="candles"]')) hoverUntil = Date.now() + 1500; });
+  const REST = ['https://data-api.binance.vision', 'https://api.binance.com'];
+  async function restGet(path) {
+    for (const h of REST) { try { const r = await fetch(h + path, {cache: 'no-store'}); if (r.ok) return await r.json(); } catch (e) { /* next host */ } }
+    return null;
+  }
+  function liveChip() {
     let c = document.getElementById('live');
     if (!c) { c = mk('span', 'chip', ''); c.id = 'live'; document.querySelector('.bar .spacer').before(c); }
-    c.className = 'chip ' + (on ? 'up' : ''); c.textContent = on ? '● LIVE' : '○ ออฟไลน์'; syncBar(); redraw('chartLive');
-    c.title = on ? 'ราคาอัปเดตทุกวินาทีจาก Binance' : 'เชื่อมต่อราคาสดไม่ได้ กำลังลองใหม่ (ข้อมูลรายชั่วโมงยังแสดงอยู่)';
+    const age = lastMsg ? Math.round((Date.now() - lastMsg) / 1000) : null;
+    const on = age != null && age <= 6;
+    c.className = 'chip ' + (on ? 'up' : '');
+    c.textContent = on ? (mode === 'ws' ? '● LIVE' : '● LIVE · สำรอง') : '○ กำลังเชื่อมต่อ…';
+    c.title = on ? (mode === 'ws' ? 'ราคาสดจาก Binance WebSocket' : 'WebSocket ถูกบล็อก ใช้การดึงราคาทุก 2 วินาทีแทน') : 'กำลังเชื่อมต่อราคาสดจาก Binance';
+    const t = document.querySelector('[data-draw="tick"]');
+    if (t && age != null) t.textContent = age <= 1 ? 'สด' : `${age} วินาทีที่แล้ว`;
+    syncBar();
+  }
+  function applyTicker(sym, price, open24, qv) {
+    const row = D.market.find((r) => r.symbol === sym);
+    if (row) { row.last = price; if (open24) row.change_24h_pct = (price / open24 - 1) * 100; if (qv) row.quote_volume_24h = qv; }
+    if (sym === 'BTC') D.status[0].btc_close = price;
+  }
+  function applyBtc4h(bar) {
+    const last = D.candles[D.candles.length - 1];
+    if (last && last.time === bar.time) Object.assign(last, bar);
+    else if (last && bar.time > last.time) { const a20 = 2 / 21, a200 = 2 / 201;
+      D.candles.push(Object.assign({}, bar, {ema20: last.ema20 + a20 * (bar.close - last.ema20), ema200: last.ema200 + a200 * (bar.close - last.ema200), rsi14: last.rsi14})); D.candles.shift(); }
+  }
+  function applyChartBar(bar) {
+    const rows = chart.rows; if (!rows) return;
+    const last = rows[rows.length - 1];
+    if (last && last.time === bar.time) rows[rows.length - 1] = bar; else if (!last || bar.time > last.time) { rows.push(bar); if (rows.length > 500) rows.shift(); }
+    const prev = rows.length > 1 ? rows[rows.length - 2] : null, cur = rows[rows.length - 1];
+    if (prev) { cur.ema20 = prev.ema20 + (2 / 21) * (cur.close - prev.ema20); cur.ema200 = prev.ema200 + (2 / 201) * (cur.close - prev.ema200); cur.rsi14 = prev.rsi14; }
+    chartDirty = true;
   }
   function connect() {
     if (!D || wsStarted) return; wsStarted = true;
     const syms = Array.from(new Set(['BTC', ...D.market.map((m) => m.symbol)])).map((x) => x.toLowerCase() + 'usdt');
     const streams = ['btcusdt@kline_4h', ...syms.map((x) => x + '@miniTicker')].join('/');
-    const hosts = ['wss://data-stream.binance.vision/stream?streams=', 'wss://stream.binance.com:9443/stream?streams='];
+    const hosts = ['wss://data-stream.binance.vision/stream?streams=', 'wss://stream.binance.com:443/stream?streams=', 'wss://stream.binance.com:9443/stream?streams='];
     let attempt = 0;
     const open = () => {
-      const ws = new WebSocket(hosts[attempt % hosts.length] + streams);
+      let ws; try { ws = new WebSocket(hosts[attempt % hosts.length] + streams); } catch (e) { attempt++; setTimeout(open, 3000); return; }
       ws.onmessage = (ev) => {
-        lastMsg = Date.now(); const d = JSON.parse(ev.data).data; if (!d) return;
-        if (d.e === '24hrMiniTicker') {
-          const sym = d.s.replace('USDT', ''), row = D.market.find((r) => r.symbol === sym);
-          if (row) { row.last = +d.c; row.change_24h_pct = (+d.c / +d.o - 1) * 100; row.quote_volume_24h = +d.q; }
-          if (sym === 'BTC') D.status[0].btc_close = +d.c;
-          dirty = true;
-        } else if (d.e === 'kline') {
-          const k = d.k, t = new Date(k.t).toISOString().slice(0, 16) + 'Z', last = D.candles[D.candles.length - 1];
-          const bar = {time: t, open: +k.o, high: +k.h, low: +k.l, close: +k.c, quote_volume: +k.q, closed: k.x};
-          if (last && last.time === t) Object.assign(last, bar);
-          else if (last && t > last.time) { const a20 = 2 / 21, a200 = 2 / 201;
-            D.candles.push(Object.assign({}, bar, {ema20: last.ema20 + a20 * (bar.close - last.ema20), ema200: last.ema200 + a200 * (bar.close - last.ema200), rsi14: last.rsi14})); D.candles.shift(); }
-          dirty = true;
-        }
+        lastMsg = Date.now(); wsLive = true; mode = 'ws'; const d = JSON.parse(ev.data).data; if (!d) return;
+        if (d.e === '24hrMiniTicker') applyTicker(d.s.replace('USDT', ''), +d.c, +d.o, +d.q);
+        else if (d.e === 'kline') { const k = d.k; applyBtc4h({time: new Date(k.t).toISOString().slice(0, 16) + 'Z', open: +k.o, high: +k.h, low: +k.l, close: +k.c, quote_volume: +k.q, closed: k.x}); }
+        dirty = true;
       };
-      ws.onopen = () => { attempt = 0; liveChip(true); };
-      ws.onclose = () => { liveChip(false); attempt++; setTimeout(open, Math.min(30000, 2000 * attempt)); };
+      ws.onclose = () => { wsLive = false; attempt++; setTimeout(open, Math.min(20000, 2000 * attempt)); };
       ws.onerror = () => ws.close();
     };
     open();
+    // REST fallback: runs whenever the WebSocket has been silent for > 4 s
+    const symList = encodeURIComponent(JSON.stringify(syms.map((x) => x.toUpperCase())));
+    setInterval(async () => {
+      if (document.hidden) return;
+      if (wsLive && Date.now() - lastMsg < 4000) return;
+      const [px, k4] = await Promise.all([restGet(`/api/v3/ticker/price?symbols=${symList}`), restGet('/api/v3/klines?symbol=BTCUSDT&interval=4h&limit=2')]);
+      if (!px) return;
+      for (const t of px) { const sym = t.symbol.replace('USDT', ''), row = D.market.find((r) => r.symbol === sym);
+        const open24 = row && row.change_24h_pct != null ? row.last / (1 + row.change_24h_pct / 100) : null; applyTicker(sym, +t.price, open24, null); }
+      if (k4) k4.forEach((k) => applyBtc4h(kl(k)));
+      lastMsg = Date.now(); mode = wsLive ? 'ws' : 'poll'; dirty = true;
+    }, 2000);
   }
+  // chart for another coin / timeframe: poll if its WebSocket is not delivering
+  setInterval(async () => {
+    if (!D || document.hidden || isDefault() || !chart.rows || chart.loading) return;
+    if (chart.live && Date.now() - (chart.lastMsg || 0) < 4000) return;
+    const want = `${chart.sym}|${chart.tf}`;
+    const k = await restGet(`/api/v3/klines?symbol=${chart.sym}USDT&interval=${chart.tf}&limit=2`);
+    if (!k || `${chart.sym}|${chart.tf}` !== want) return;
+    k.forEach((x) => applyChartBar(kl(x)));
+    chart.polling = true;
+  }, 2000);
+
+  let lastBtc = null;
   setInterval(() => {
     if (!D) return;
-    if (dirty) { dirty = false; ['btc', 'gate', 'marketRows'].forEach(redraw); if (isDefault() && !hovering) redrawChart(); }
-    if (chartDirty && !isDefault() && !hovering) { chartDirty = false; redrawChart(); }
+    liveChip();
+    if (dirty) {
+      dirty = false; ['btc', 'gate', 'marketRows', 'chartLive'].forEach(redraw);
+      const el = document.querySelector('[data-draw="btc"]'), p = D.status[0].btc_close;
+      if (el && lastBtc != null && p !== lastBtc) { el.classList.remove('flash-up', 'flash-down'); void el.offsetWidth; el.classList.add(p > lastBtc ? 'flash-up' : 'flash-down'); }
+      lastBtc = p;
+      if (isDefault() && !hovering()) redrawChart();
+    }
+    if (chartDirty && !isDefault() && !hovering()) { chartDirty = false; redrawChart(); }
   }, 1000);
   function syncBar() { const b = document.querySelector('.bar'); if (b) document.documentElement.style.setProperty('--barh', b.offsetHeight + 'px'); }
   window.addEventListener('resize', syncBar); syncBar();
-  setInterval(() => { if (lastMsg && Date.now() - lastMsg > 60000) liveChip(false); }, 10000);
   let rw; window.addEventListener('resize', () => { clearTimeout(rw); rw = setTimeout(() => D && render(), 200); });
 
   showTab(location.hash.slice(1));
