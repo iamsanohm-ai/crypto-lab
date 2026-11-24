@@ -39,9 +39,10 @@ class Market:
         return pd.DataFrame(getattr(self, name), index=self.times, columns=self.symbols)
 
 
-def load_market(exclude: set[str] = frozenset()) -> Market:
+def load_market(exclude: set[str] = frozenset(), top_n: int = 20) -> Market:
     uni = json.loads((DATA / "universe.json").read_text())
-    syms = sorted({s for m in uni["members"].values() for s in m} - set(exclude))
+    members_n = {k: [s for s in v if s not in exclude][:top_n] for k, v in uni["members"].items()}
+    syms = sorted({s for m in members_n.values() for s in m})
     frames = {}
     for s in syms:
         p = DATA / "klines" / f"{s}.parquet"
@@ -64,7 +65,7 @@ def load_market(exclude: set[str] = frozenset()) -> Market:
             fund[:, j] = m["funding"].to_numpy()
     member = np.zeros_like(close, dtype=bool)
     month_idx = times.strftime("%Y-%m")
-    for month, mem in uni["members"].items():
+    for month, mem in members_n.items():
         rows = month_idx == month
         for s in mem:
             if s in syms:

@@ -11,7 +11,9 @@
   const SERIES = {keltner_trend: '#2bc4b6', golden_cross_50_200: '#8f7cf2', breakout_funding_filter: '#f2a93b', 'BTC buy & hold': '#6b7a8a'};
   const ROLE = {champion: 'Champion', challenger_1: 'Challenger 1', challenger_2: 'Challenger 2'};
   const $$ = (name) => document.querySelectorAll(`[data-draw="${name}"]`);
-  const draw = (name, fn) => $$(name).forEach((el) => { try { fn(el); } catch (e) { el.textContent = 'แสดงผลไม่ได้'; console.error(name, e); } });
+  const DRAWERS = {};
+  const draw = (name, fn) => { DRAWERS[name] = fn; $$(name).forEach((el) => { try { fn(el); } catch (e) { el.textContent = 'แสดงผลไม่ได้'; console.error(name, e); } }); };
+  const redraw = (name) => { if (DRAWERS[name]) draw(name, DRAWERS[name]); };
   const mk = (tag, cl, text) => { const e = document.createElement(tag); if (cl) e.className = cl; if (text != null) e.textContent = text; return e; };
   let D = null;
 
@@ -172,6 +174,57 @@
     try { const r = await fetch('data.json?t=' + Date.now(), {cache: 'no-store'}); D = await r.json(); render(); }
     catch (e) { document.querySelector('.ct').prepend(mk('div', 'ct-err', 'โหลดข้อมูลไม่สำเร็จ: ' + e.message)); }
   }
+  // ---------- live prices every second via Binance public WebSocket (runs in the viewer's browser, free) ----------
+  let dirty = false, hovering = false, lastMsg = 0, wsStarted = false;
+  document.addEventListener('pointerover', (e) => { hovering = !!(e.target.closest && e.target.closest('[data-draw="candles"]')); });
+  function liveChip(on) {
+    let c = document.getElementById('ct-live');
+    if (!c) { c = mk('span', 'ct-chip', ''); c.id = 'ct-live'; const sp = document.querySelector('.ct-top .ct-spacer'); if (sp) sp.before(c); }
+    c.className = 'ct-chip ' + (on ? 'up' : ''); c.textContent = on ? '● LIVE ทุกวินาที' : '○ ออฟไลน์';
+  }
+  function connect() {
+    if (!D || wsStarted) return; wsStarted = true;
+    const syms = Array.from(new Set(['BTC', ...D.market.map((m) => m.symbol)])).map((x) => x.toLowerCase() + 'usdt');
+    const streams = ['btcusdt@kline_4h', ...syms.map((x) => x + '@miniTicker')].join('/');
+    const hosts = ['wss://data-stream.binance.vision/stream?streams=', 'wss://stream.binance.com:9443/stream?streams='];
+    let attempt = 0;
+    const open = () => {
+      const ws = new WebSocket(hosts[attempt % hosts.length] + streams);
+      ws.onmessage = (ev) => {
+        lastMsg = Date.now();
+        const d = JSON.parse(ev.data).data;
+        if (!d) return;
+        if (d.e === '24hrMiniTicker') {
+          const sym = d.s.replace('USDT', ''), row = D.market.find((r) => r.symbol === sym);
+          if (row) { row.last = +d.c; row.change_24h_pct = (+d.c / +d.o - 1) * 100; row.quote_volume_24h = +d.q; }
+          if (sym === 'BTC') D.status[0].btc_close = +d.c;
+          dirty = true;
+        } else if (d.e === 'kline') {
+          const k = d.k, t = new Date(k.t).toISOString().slice(0, 16) + 'Z', last = D.candles[D.candles.length - 1];
+          const bar = {time: t, open: +k.o, high: +k.h, low: +k.l, close: +k.c, quote_volume: +k.q, closed: k.x};
+          if (last && last.time === t) Object.assign(last, bar);
+          else if (last && t > last.time) {
+            const a20 = 2 / 21, a200 = 2 / 201;
+            D.candles.push(Object.assign({}, bar, {ema20: last.ema20 + a20 * (bar.close - last.ema20), ema200: last.ema200 + a200 * (bar.close - last.ema200), rsi14: last.rsi14}));
+            D.candles.shift();
+          }
+          dirty = true;
+        }
+      };
+      ws.onopen = () => { attempt = 0; liveChip(true); };
+      ws.onclose = () => { liveChip(false); attempt++; setTimeout(open, Math.min(30000, 2000 * attempt)); };
+      ws.onerror = () => ws.close();
+    };
+    open();
+  }
+  setInterval(() => {
+    if (!dirty || !D) return;
+    dirty = false;
+    redraw('btc'); redraw('marketRows');
+    if (!hovering) redraw('candles');
+  }, 1000);
+  setInterval(() => { if (lastMsg && Date.now() - lastMsg > 60000) liveChip(false); }, 10000);
+
   let rw; window.addEventListener('resize', () => { clearTimeout(rw); rw = setTimeout(() => D && render(), 200); });
-  load(); setInterval(load, 5 * 60 * 1000);
+  load().then(connect); setInterval(load, 5 * 60 * 1000);
 })();

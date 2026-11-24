@@ -11,7 +11,7 @@ import pandas as pd
 from lab.data import DATA, candidate_symbols, klines, now_iso
 
 START = datetime(2022, 10, 1, tzinfo=timezone.utc)
-TOP_N = 20
+TOP_N = 100  # เก็บอันดับ top 100 ต่อเดือน; ตอนใช้งานตัดเหลือ N ตาม config (เช่น 20)
 
 
 def build():
@@ -36,7 +36,7 @@ def build():
         prev = vol.loc[months[i - 1]]
         members[months[i]] = list(prev.sort_values(ascending=False).head(TOP_N).index)
     out = {"source": "data-api.binance.vision /api/v3/klines interval=1M", "fetched_at": now_iso(),
-           "rule": f"top {TOP_N} USDT spot pairs by previous-month quote volume (stablecoins/leveraged tokens excluded)",
+           "rule": f"top {TOP_N} USDT spot pairs ranked by previous-month quote volume (stablecoins/leveraged tokens excluded); members lists are in rank order",
            "candidates": len(cands), "status_counts": cands["status"].value_counts().to_dict(), "members": members}
     (DATA / "universe.json").write_text(json.dumps(out, indent=1))
     union = sorted({s for m in members.values() for s in m})
