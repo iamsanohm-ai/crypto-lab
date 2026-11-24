@@ -78,7 +78,7 @@ def universe_for_month(month: str, top_n: int) -> list[str]:
     return [s for s, _ in sorted(vols.items(), key=lambda x: -x[1])[:top_n]]
 
 
-def build_live_market(symbols: list[str], bars: int = 1000) -> Market:
+def build_live_market(symbols: list[str], bars: int = 1000, with_funding: bool = True) -> Market:
     end = datetime.now(timezone.utc)
     start = end - H4 * bars
     from concurrent.futures import ThreadPoolExecutor
@@ -90,14 +90,14 @@ def build_live_market(symbols: list[str], bars: int = 1000) -> Market:
 
     with ThreadPoolExecutor(8) as pool:
         frames = {s: k for s, k in pool.map(one, sorted(set(symbols) | {"BTCUSDT"})) if k is not None}
-        funds = dict(pool.map(lambda s: (s, funding_recent(s)), sorted(frames)))
+        funds = dict(pool.map(lambda s: (s, funding_recent(s)), sorted(frames))) if with_funding else {}
     syms = sorted(frames)
     times = pd.DatetimeIndex(sorted(set().union(*[f.index for f in frames.values()])))
     mat = lambda col: pd.DataFrame({s: frames[s][col] for s in syms}).reindex(times).to_numpy(float)
     close = mat("close")
     fund = np.full_like(close, np.nan)
     for j, s in enumerate(syms):
-        f = funds[s]
+        f = funds.get(s, pd.DataFrame())
         if len(f):
             ct = pd.DataFrame({"t": (times + H4 - pd.Timedelta(milliseconds=1)).as_unit("ns")})
             f["t"] = f["t"].dt.as_unit("ns")

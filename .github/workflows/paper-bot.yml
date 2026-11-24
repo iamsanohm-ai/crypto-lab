@@ -26,6 +26,8 @@ jobs:
       - run: pip install -q -r requirements.txt
       - name: Paper tick (Sentinel checks inside)
         run: python -m lab.live
+      - name: Board scanner
+        run: python -m lab.scanner || echo "scanner failed"
       - name: Dashboard snapshot
         run: python -m lab.dashboard
       - name: Commit state

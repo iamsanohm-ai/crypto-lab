@@ -49,7 +49,13 @@ def morning():
     judge = json.loads((ROOT / "research" / "judge_results.json").read_text())
     since = datetime.now(timezone.utc) - timedelta(hours=24)
     led = ledger(since)
-    lines = ["☀️ Crypto Lab — Morning brief", "", "ตลาด:"] + market_lines() + ["", "กลยุทธ์ (backtest OOS 3 ปี | paper ตั้งแต่เริ่ม):"]
+    lines = ["☀️ Crypto Lab — Morning brief", "", "ตลาด:"] + market_lines()
+    sp = ROOT / "dashboard" / "scanner.json"
+    if sp.exists():
+        an = json.loads(sp.read_text()).get("analysis") or {}
+        if an.get("lines"):
+            lines += ["", "วิเคราะห์ตลาด (ทั้งกระดาน):"] + ["• " + x for x in an["lines"]]
+    lines += ["", "กลยุทธ์ (backtest OOS 3 ปี | paper ตั้งแต่เริ่ม):"]
     flags = []
     for s in cfg["strategies"]:
         mt = judge["results"][s["name"]]["metrics"]

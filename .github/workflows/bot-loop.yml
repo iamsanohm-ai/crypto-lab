@@ -33,6 +33,7 @@ jobs:
           while [ "$(date +%s)" -lt "$END" ]; do
             git fetch -q origin main && git reset -q --hard origin/main
             python -m lab.live || echo "tick failed"
+            python -m lab.scanner || echo "scanner failed"
             python -m lab.dashboard || echo "dashboard failed"
             git add state ledger dashboard/data.json docs/data.json
             if ! git diff --cached --quiet; then

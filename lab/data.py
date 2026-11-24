@@ -26,7 +26,8 @@ for _sub in ("", "klines", "funding"):
     (DATA / _sub).mkdir(parents=True, exist_ok=True)
 STABLES = {"USDC", "FDUSD", "TUSD", "BUSD", "USDP", "DAI", "EUR", "PAX", "UST", "USDE", "AEUR", "GBP",
            "TRY", "BRL", "RLUSD", "USD1", "XUSD", "BFUSD", "PAXG", "WBTC", "WBETH", "EURI", "BNSOL", "USTC",
-           "XAUT", "SNDKB", "SPCXB", "U"}  # ทองคำ/หุ้นแบบ token ไม่ใช่คริปโต
+           "XAUT", "SNDKB", "SPCXB", "U", "RWUSD", "TSLAB", "USDS", "PYUSD", "XUSD",
+           "SNXXB", "SOXLB", "NVDAB", "AAPLB", "MSTRB", "COINB", "QQQB", "SPYB"}  # หุ้น/ETF แบบ token  # ทองคำ/หุ้นแบบ token ไม่ใช่คริปโต
 LEVERAGED = ("UP", "DOWN", "BULL", "BEAR")
 
 
@@ -56,7 +57,8 @@ def candidate_symbols() -> pd.DataFrame:
     rows = []
     for s in info["symbols"]:
         base = s["baseAsset"]
-        if not s["symbol"].isascii() or s["quoteAsset"] != "USDT" or base in STABLES or base.endswith(LEVERAGED):
+        if not s["symbol"].isascii() or s["quoteAsset"] != "USDT" or base in STABLES or base.endswith(LEVERAGED) \
+                or base.endswith("USD"):  # stablecoin เกือบทั้งหมดลงท้ายด้วย USD
             continue
         rows.append({"symbol": s["symbol"], "base": base, "status": s["status"]})
     return pd.DataFrame(rows)

@@ -102,6 +102,7 @@
         g.append(l, body); el.append(g); }
     });
     draw('candles', candles);
+    renderScanner();
     draw('btCurves', (el) => lines(el, D.bt_curves, {xKey: 'date', yKey: 'equity', sKey: 'series', parse: (s) => new Date(s + 'T00:00:00Z'), height: 240, yFmt: d3.format(',.0f'), empty: 'ยังไม่มีผล backtest'}));
     draw('btLegend', (el) => { el.replaceChildren(); for (const [n, rs] of d3.groups(D.bt_curves, (r) => r.series)) { const sp = mk('span'); const i = mk('i'); i.style.background = SERIES[n] || '#9aa'; sp.append(i, n + ' ' + d3.format(',.0f')(rs[rs.length - 1].equity)); el.append(sp); } });
     draw('paperEquity', (el) => {
@@ -110,6 +111,65 @@
       lines(el, D.equity, {xKey: 'time', yKey: 'equity', sKey: 'strategy', parse: (s) => new Date(s), height: 150, yFmt: d3.format(',.1f'), empty: ''});
     });
   }
+
+  const SCAN_LABEL = {buy_signal: 'สัญญาณซื้อ', uptrend: 'ขาขึ้น', downtrend: 'ขาลง', illiquid: 'สภาพคล่องต่ำ', new: 'ข้อมูลไม่พอ'};
+  let scanFilter = 'buy_signal,uptrend';
+  function renderScanner() {
+    const S = D.scanner;
+    const A = S && S.analysis;
+    draw('regimeChip', (el) => { if (!A) { el.textContent = '—'; return; } el.className = 'ct-chip ' + (A.regime === 'bull' ? 'up' : A.regime === 'bear' ? 'down' : 'paper'); el.textContent = A.regime_th; });
+    draw('anMeta', (el) => el.textContent = S ? 'อัปเดต ' + fmt.time(S.generated_at) : '');
+    draw('plans', (el) => {
+      el.replaceChildren();
+      const P = (S && S.plans) || [];
+      if (!P.length) { el.append(mk('div', 'ct-empty', 'ตอนนี้ยังไม่มีเหรียญที่เข้าเงื่อนไขหรือใกล้จุดเข้า (ต้องอยู่เหนือ EMA200 และใกล้ทะลุกรอบ Keltner) ระบบจะแจ้งใน Telegram ทันทีเมื่อมี')); return; }
+      const ST = {enter_now: ['เข้าได้ตอนนี้', 'buy_signal'], near: ['ใกล้จุดเข้า', 'uptrend'], wait_btc: ['รอ BTC ขาขึ้น', 'new']};
+      for (const p of P.slice(0, 18)) {
+        const card = mk('div', 'ct-plan ' + p.state);
+        const top = mk('div', 'top', p.symbol); top.append(mk('span', 'ct-pill ' + ST[p.state][1], ST[p.state][0]));
+        if (!p.in_universe) top.append(mk('span', 'ct-pill illiquid', 'นอก Top 20'));
+        const kv = mk('div', 'kv');
+        const add = (k, v) => kv.append(mk('span', null, k), mk('span', null, v));
+        add('ราคาตอนนี้', fmt.px(p.price));
+        add('จุดเข้า', fmt.px(p.entry) + (p.state === 'enter_now' ? '' : `  (+${p.distance_pct.toFixed(1)}%)`));
+        add('Stop', fmt.px(p.stop) + `  (−${p.stop_pct.toFixed(1)}%)`);
+        add('ขนาดไม้', `~${fmt.usd(p.size_usdt, 0)} USDT (เสี่ยง ${fmt.usd(p.risk_usdt, 1)})`);
+        card.append(top, kv, mk('div', 'txt', 'เข้า: ' + p.how_to_enter), mk('div', 'txt', 'ออก: ' + p.how_to_exit));
+        if (p.note) card.append(mk('div', 'txt', '⚠️ ' + p.note));
+        el.append(card);
+      }
+    });
+    draw('anLines', (el) => { el.replaceChildren(); if (!A) { el.append(mk('li', null, 'ยังไม่มีผลวิเคราะห์ (รอบอทรันรอบถัดไป)')); return; } for (const t of A.lines) el.append(mk('li', null, t)); });
+    draw('scanMeta', (el) => el.textContent = S ? `${S.total} เหรียญ · แท่ง ${fmt.time(S.bar)}` : 'ยังไม่มีผลสแกน');
+    draw('scanTabs', (el) => {
+      el.replaceChildren(); if (!S) return;
+      const c = S.counts || {};
+      const tabs = [['buy_signal,uptrend', `น่าสนใจ (${(c.buy_signal || 0) + (c.uptrend || 0)})`], ['buy_signal', `สัญญาณซื้อ (${c.buy_signal || 0})`],
+        ['uptrend', `ขาขึ้น (${c.uptrend || 0})`], ['downtrend', `ขาลง (${c.downtrend || 0})`], ['illiquid', `สภาพคล่องต่ำ (${c.illiquid || 0})`], ['all', `ทั้งหมด (${S.total})`]];
+      for (const [k, label] of tabs) { const b = mk('button', 'ct-tab', label); b.type = 'button'; b.setAttribute('aria-pressed', String(k === scanFilter));
+        b.onclick = () => { scanFilter = k; renderScanner(); }; el.append(b); }
+    });
+    draw('scanRows', (tb) => {
+      tb.replaceChildren(); if (!S) return;
+      const q = (document.getElementById('scan-search')?.value || '').trim().toUpperCase();
+      const allow = scanFilter === 'all' ? null : scanFilter.split(',');
+      let rows = S.rows.filter((r) => (q ? r.symbol.includes(q) : (!allow || allow.includes(r.status))));
+      const total = rows.length; rows = rows.slice(0, 150);
+      if (!rows.length) { const tr = tb.insertRow(); const td = tr.insertCell(); td.colSpan = 9; td.style.fontFamily = 'inherit'; td.style.color = 'var(--muted)';
+        td.textContent = scanFilter === 'buy_signal' ? 'ตอนนี้ไม่มีเหรียญไหนเข้าเงื่อนไขซื้อของกลยุทธ์' : 'ไม่พบเหรียญ'; return; }
+      for (const r of rows) {
+        const tr = tb.insertRow(); tr.insertCell().textContent = r.symbol;
+        const st = tr.insertCell(); st.append(mk('span', 'ct-pill ' + r.status, SCAN_LABEL[r.status] || r.status));
+        const n = (v, f, colored) => { const td = tr.insertCell(); td.className = 'num' + (colored && v != null ? ' ' + cls(v) : ''); td.textContent = v == null ? '–' : f(v); };
+        n(r.price, fmt.px); n(r.change_24h_pct, fmt.pct, true); n(r.vs_ema200_pct, (v) => (v > 0 ? '+' : '') + v.toFixed(1) + '%', true);
+        n(r.rsi14, (v) => v.toFixed(0)); n(r.mom_30d_pct, (v) => (v > 0 ? '+' : '') + v.toFixed(1) + '%', true); n(r.quote_volume_24h, fmt.big);
+        const sg = tr.insertCell(); sg.style.fontFamily = 'inherit';
+        sg.textContent = [r.buy_signals && ('ซื้อ: ' + r.buy_signals), r.sell_signals && ('ถ้าถืออยู่ควรขาย: ' + r.sell_signals)].filter(Boolean).join(' · ') || '–';
+      }
+      if (total > rows.length) { const tr = tb.insertRow(); const td = tr.insertCell(); td.colSpan = 9; td.style.color = 'var(--muted)'; td.textContent = `แสดง ${rows.length} จาก ${total} — พิมพ์ค้นหาเพื่อดูเหรียญอื่น`; }
+    });
+  }
+  document.addEventListener('input', (e) => { if (e.target && e.target.id === 'scan-search' && D) renderScanner(); });
 
   function tipBox(el) { const t = mk('div', 'ct-tip'); t.hidden = true; el.append(t); return t; }
   function placeTip(el, tip, x, y) { tip.hidden = false; tip.style.left = Math.max(0, Math.min(el.clientWidth - tip.offsetWidth, x + 12)) + 'px'; tip.style.top = Math.max(0, y - tip.offsetHeight - 8) + 'px'; }

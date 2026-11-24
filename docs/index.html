@@ -6,6 +6,24 @@
 html,body{margin:0;background:#070a0e;}
 body{padding:16px max(16px,env(safe-area-inset-left)) 24px max(16px,env(safe-area-inset-right));}
 .ct{max-width:1500px;margin:0 auto;}
+.ct-scanbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.ct-tabs{display:flex;flex-wrap:wrap;gap:6px}
+.ct-tab{font:inherit;font-size:12px;padding:5px 10px;border-radius:999px;border:1px solid var(--line);background:var(--panel2);color:var(--muted);cursor:pointer}
+.ct-tab[aria-pressed="true"]{color:var(--fg);border-color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,transparent)}
+.ct-tab:focus-visible,.ct-search:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.ct-search{margin-left:auto;font:inherit;font-size:12.5px;padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:var(--fg);min-width:0;width:200px;max-width:100%}
+.ct-pill{font-family:var(--mono);font-size:11px;padding:2px 7px;border-radius:999px;border:1px solid var(--line);white-space:nowrap}
+.ct-pill.buy_signal{color:#071018;background:var(--up);border-color:var(--up)}
+.ct-pill.uptrend{color:var(--up)} .ct-pill.downtrend{color:var(--down)} .ct-pill.illiquid{color:var(--muted)} .ct-pill.new{color:var(--amber)}
+.ct-an{margin:0;padding-left:18px;display:grid;gap:6px;line-height:1.55;font-size:13px}
+.ct-an li::marker{color:var(--accent)}
+.ct-plans{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+.ct-plan{border:1px solid var(--line);border-left-width:3px;border-radius:10px;padding:10px 12px;background:var(--panel2);display:grid;gap:6px;min-width:0}
+.ct-plan.enter_now{border-left-color:var(--up)} .ct-plan.near{border-left-color:var(--accent)} .ct-plan.wait_btc{border-left-color:var(--amber)}
+.ct-plan .top{display:flex;align-items:center;gap:8px;font-weight:650}
+.ct-plan .kv{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;font-family:var(--mono);font-size:11.5px}
+.ct-plan .kv span:nth-child(odd){color:var(--muted)}
+.ct-plan .txt{font-size:12px;color:var(--muted);line-height:1.5;overflow-wrap:anywhere}
 .ct-err{color:#f0525b;font-family:monospace;padding:12px}
 
   .ct {
@@ -98,6 +116,11 @@ body{padding:16px max(16px,env(safe-area-inset-left)) 24px max(16px,env(safe-are
 
   <p class="ct-take" id="takeaway" data-draw="takeaway">—</p>
 
+  <section class="ct-card" id="analysis" style="margin-bottom:12px">
+    <h3>วิเคราะห์ตลาด (ทั้งกระดาน) <span class="ct-chip" data-draw="regimeChip">—</span><span class="ct-note" data-draw="anMeta">—</span></h3>
+    <ul class="ct-an" data-draw="anLines"></ul>
+  </section>
+
   <div class="ct-grid main">
     <div class="ct-stack">
       <section class="ct-card" id="portfolio">
@@ -176,6 +199,28 @@ body{padding:16px max(16px,env(safe-area-inset-left)) 24px max(16px,env(safe-are
       <p class="ct-empty ct-posempty" hidden>ยังไม่มีสถานะเปิด บอทจะซื้อเมื่อสัญญาณของกลยุทธ์เกิดบนแท่ง 4h ที่ปิดแล้ว และ Sentinel ตรวจผ่าน</p>
     </section>
   </div>
+
+
+  <section class="ct-card" id="plans" style="margin-top:12px">
+    <h3>แผนเทรด: เข้าเมื่อไหร่ ออกเมื่อไหร่ <span class="ct-note">ตามกฎ champion (keltner_trend) · ทุน 500 USDT เสี่ยง 0.5%/ไม้</span></h3>
+    <div class="ct-plans" data-draw="plans"></div>
+    <p class="ct-foot" style="margin-top:8px">⚠️ แผนนี้ใช้กฎเดียวกับที่ผ่าน backtest แต่ไม่รับประกันกำไร ชนะประมาณ 1 ใน 3 ของเทรด กำไรมาจากไม้ที่วิ่งยาว — ต้องตั้ง stop ทุกครั้ง และไม่ควรเสี่ยงเกินที่ระบุ</p>
+  </section>
+
+  <section class="ct-card" id="scanner" style="margin-top:12px">
+    <h3>สแกนทั้งกระดาน (ทุกคู่ USDT บน Binance) <span class="ct-note" data-draw="scanMeta">—</span></h3>
+    <div class="ct-scanbar">
+      <div class="ct-tabs" data-draw="scanTabs"></div>
+      <input class="ct-search" id="scan-search" type="search" placeholder="ค้นหาเหรียญ เช่น SOL" aria-label="ค้นหาเหรียญ">
+    </div>
+    <div class="ct-tablewrap" style="max-height:520px;overflow:auto">
+      <table>
+        <thead><tr><th>เหรียญ</th><th>สถานะ</th><th class="num">ราคา</th><th class="num">24h %</th><th class="num">เทียบ EMA200</th><th class="num">RSI</th><th class="num">30 วัน %</th><th class="num">Volume 24h</th><th>สัญญาณ</th></tr></thead>
+        <tbody data-draw="scanRows"></tbody>
+      </table>
+    </div>
+    <p class="ct-foot" style="margin-top:8px">บอทเทรดเฉพาะ Top 20 ที่ผ่าน backtest แล้ว ตารางนี้ใช้ดูภาพรวมทั้งกระดาน "สภาพคล่องต่ำ" = ซื้อขายวันละไม่ถึง 2 ล้าน USDT (slippage สูง เสี่ยงโดนปั่น) อัปเดตทุกชั่วโมงจากแท่ง 4h ที่ปิดแล้ว</p>
+  </section>
 
   <details class="ct-foot" id="notes">
     <summary>ตัวเลขเหล่านี้มาจากไหน และควรอ่านอย่างไร</summary>
