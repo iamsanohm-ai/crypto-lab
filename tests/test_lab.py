@@ -157,3 +157,9 @@ def test_grok_error_defaults_allow(tmp_path, monkeypatch):
     def boom(b): raise RuntimeError("timeout")
     r = grok.review({"grok": {"enabled": True}}, {}, post=boom)
     assert r["decision"] == "allow" and r.get("error")
+
+
+def test_grok_extract_text_formats():
+    assert grok.extract_text({"output_text": "a"}) == "a"
+    assert grok.extract_text({"output": [{"type": "message", "content": [{"type": "output_text", "text": "b"}]}]}) == "b"
+    assert grok.extract_text({"choices": [{"message": {"content": "c"}}]}) == "c"

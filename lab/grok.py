@@ -15,7 +15,7 @@ from datetime import datetime, timezone
 
 from lab.data import ROOT
 
-API_URL = "https://api.x.ai/v1/chat/completions"
+API_URL = "https://api.x.ai/v1/responses"  # ตามเอกสาร xAI
 USAGE = ROOT / "state" / "grok_usage.json"
 
 SYSTEM = (
@@ -41,6 +41,20 @@ def _usage_ok(limit: int) -> bool:
     return True
 
 
+def extract_text(resp: dict) -> str:
+    """ดึงข้อความจากคำตอบของ /v1/responses (รองรับรูปแบบ chat/completions ด้วย)."""
+    if isinstance(resp.get("output_text"), str):
+        return resp["output_text"]
+    parts = []
+    for item in resp.get("output") or []:
+        for c in item.get("content") or []:
+            if isinstance(c, dict) and isinstance(c.get("text"), str):
+                parts.append(c["text"])
+    if parts:
+        return "\n".join(parts)
+    return resp["choices"][0]["message"]["content"]
+
+
 def parse(text: str) -> dict:
     """ดึง JSON จากคำตอบ; อะไรที่ไม่ใช่รูปแบบที่กำหนด → allow."""
     try:
@@ -61,15 +75,15 @@ def review(cfg: dict, signal: dict, post=None) -> dict | None:
     key = os.environ.get("XAI_API_KEY")
     if not g.get("enabled") or not key or not _usage_ok(int(g.get("max_calls_per_day", 20))):
         return None
-    body = {"model": g.get("model", "grok-4"), "temperature": 0,
-            "messages": [{"role": "system", "content": SYSTEM},
-                         {"role": "user", "content": json.dumps(signal, default=str)}]}
+    body = {"model": g.get("model", "grok-4.7"),
+            "input": [{"role": "system", "content": SYSTEM},
+                      {"role": "user", "content": json.dumps(signal, default=str)}]}
     try:
         if post is None:
             req = urllib.request.Request(API_URL, data=json.dumps(body).encode(),
                                          headers={"Content-Type": "application/json", "Authorization": f"Bearer {key}"})
             with urllib.request.urlopen(req, timeout=60) as r:
-                text = json.loads(r.read())["choices"][0]["message"]["content"]
+                text = extract_text(json.loads(r.read()))
         else:
             text = post(body)
     except Exception as e:
