@@ -7,7 +7,7 @@ on:
     - cron: "35 2 * * 0"    # อาทิตย์ 09:35 เวลาไทย — weekly
   workflow_dispatch:
     inputs:
-      job: {description: "judge | brief | weekly", default: "judge"}
+      job: {description: "judge | brief | weekly | grokcheck", default: "judge"}
 permissions:
   contents: write
 concurrency:
@@ -41,6 +41,9 @@ jobs:
       - name: Morning brief
         if: steps.pick.outputs.job == 'brief'
         run: python -m lab.live && python -m lab.notify && python -m lab.dashboard
+      - name: Grok connectivity check
+        if: steps.pick.outputs.job == 'grokcheck'
+        run: python -m lab.grok_check
       - name: Weekly review
         if: steps.pick.outputs.job == 'weekly'
         run: python -m lab.notify weekly
