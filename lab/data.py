@@ -60,6 +60,8 @@ def candidate_symbols() -> pd.DataFrame:
         if not s["symbol"].isascii() or s["quoteAsset"] != "USDT" or base in STABLES or base.endswith(LEVERAGED) \
                 or base.endswith("USD"):  # stablecoin เกือบทั้งหมดลงท้ายด้วย USD
             continue
+        if any("TRD_GRP_261" in ps for ps in s.get("permissionSets", [])):  # หุ้น/ETF แบบ token (Binance จัดกลุ่มนี้)
+            continue
         rows.append({"symbol": s["symbol"], "base": base, "status": s["status"]})
     return pd.DataFrame(rows)
 

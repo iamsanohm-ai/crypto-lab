@@ -1,239 +1,334 @@
 <!doctype html>
-<html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Crypto Lab Terminal</title>
 <meta name="robots" content="noindex">
+<meta name="theme-color" content="#080b10">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-html,body{margin:0;background:#070a0e;}
-body{padding:16px max(16px,env(safe-area-inset-left)) 24px max(16px,env(safe-area-inset-right));}
-.ct{max-width:1500px;margin:0 auto;}
-.ct-scanbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
-.ct-tabs{display:flex;flex-wrap:wrap;gap:6px}
-.ct-tab{font:inherit;font-size:12px;padding:5px 10px;border-radius:999px;border:1px solid var(--line);background:var(--panel2);color:var(--muted);cursor:pointer}
-.ct-tab[aria-pressed="true"]{color:var(--fg);border-color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,transparent)}
-.ct-tab:focus-visible,.ct-search:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.ct-search{margin-left:auto;font:inherit;font-size:12.5px;padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:var(--fg);min-width:0;width:200px;max-width:100%}
-.ct-pill{font-family:var(--mono);font-size:11px;padding:2px 7px;border-radius:999px;border:1px solid var(--line);white-space:nowrap}
-.ct-pill.buy_signal{color:#071018;background:var(--up);border-color:var(--up)}
-.ct-pill.uptrend{color:var(--up)} .ct-pill.downtrend{color:var(--down)} .ct-pill.illiquid{color:var(--muted)} .ct-pill.new{color:var(--amber)}
-.ct-an{margin:0;padding-left:18px;display:grid;gap:6px;line-height:1.55;font-size:13px}
-.ct-an li::marker{color:var(--accent)}
-.ct-plans{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
-.ct-plan{border:1px solid var(--line);border-left-width:3px;border-radius:10px;padding:10px 12px;background:var(--panel2);display:grid;gap:6px;min-width:0}
-.ct-plan.enter_now{border-left-color:var(--up)} .ct-plan.near{border-left-color:var(--accent)} .ct-plan.wait_btc{border-left-color:var(--amber)}
-.ct-plan .top{display:flex;align-items:center;gap:8px;font-weight:650}
-.ct-plan .kv{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;font-family:var(--mono);font-size:11.5px}
-.ct-plan .kv span:nth-child(odd){color:var(--muted)}
-.ct-plan .txt{font-size:12px;color:var(--muted);line-height:1.5;overflow-wrap:anywhere}
-.ct-err{color:#f0525b;font-family:monospace;padding:12px}
+/* Layout: sticky top bar → "today" hero with decision + KPI tiles → tab bar → one section at a time */
+:root{
+  --bg:#080b10; --panel:#0f141b; --panel2:#0b1016; --line:#1b2530; --grid:#151e27;
+  --fg:#e6edf3; --muted:#8495a6; --dim:#5d6c7b;
+  --up:#22c983; --down:#f0525b; --accent:#33c3b4; --amber:#f2a93b; --violet:#8f7cf2;
+  --sans:"IBM Plex Sans Thai",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--fg)}
+body{font-family:var(--sans);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1360px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 40px}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
 
-  .ct {
-    --bg: #0a0e13; --panel: #10161e; --panel2: #0d1319; --line: #1d2833; --fg: #e4ebf2; --muted: #8696a7;
-    --up: #26d07c; --down: #f0525b; --accent: #2bc4b6; --amber: #f2a93b; --violet: #8f7cf2; --grid: #18222c;
-    --mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
-    background: var(--bg); color: var(--fg); border-radius: 14px; padding: 14px;
-    font-family: var(--font-anthropic-sans, system-ui, sans-serif); font-size: 13px; color-scheme: dark;
-  }
-  .ct * { box-sizing: border-box; }
-  .ct-top { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; padding: 4px 4px 12px; border-bottom: 1px solid var(--line); }
-  .ct-brand { display: flex; align-items: center; gap: 8px; font-weight: 650; font-size: 16px; letter-spacing: .02em; }
-  .ct-brand svg { color: var(--up); }
-  .ct-chip { font-family: var(--mono); font-size: 11px; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); letter-spacing: .04em; }
-  .ct-chip.paper { color: var(--amber); border-color: color-mix(in srgb, var(--amber) 45%, transparent); }
-  .ct-chip.up { color: var(--up); border-color: color-mix(in srgb, var(--up) 45%, transparent); }
-  .ct-chip.down { color: var(--down); border-color: color-mix(in srgb, var(--down) 45%, transparent); }
-  .ct-top .ct-spacer { flex: 1; }
-  .ct-meta { font-family: var(--mono); font-size: 11px; color: var(--muted); }
-  .ct-take { margin: 12px 4px 14px; color: var(--muted); font-size: 13.5px; line-height: 1.5; max-width: 80ch; }
-  .ct-take b { color: var(--fg); font-weight: 600; }
-  .ct-grid { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); }
-  @media (min-width: 900px) { .ct-grid.main { grid-template-columns: minmax(220px, 1fr) minmax(0, 2.4fr) minmax(240px, 1.1fr); } }
-  @media (min-width: 900px) { .ct-grid.lower { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); } }
-  .ct-card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px; min-width: 0; }
-  .ct-card h3 { margin: 0 0 10px; font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; display: flex; align-items: center; gap: 8px; }
-  .ct-card h3 .ct-note { text-transform: none; letter-spacing: 0; font-weight: 400; font-family: var(--mono); font-size: 11px; margin-left: auto; }
-  .ct-stack { display: grid; gap: 12px; align-content: start; min-width: 0; }
-  .ct-big { font-family: var(--mono); font-size: 26px; font-weight: 600; letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
-  .ct-sub { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-top: 2px; }
-  .ct-pos { color: var(--up); } .ct-neg { color: var(--down); } .ct-flat { color: var(--muted); }
-  .ct-acct { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 9px 0; border-top: 1px solid var(--line); }
-  .ct-acct:first-of-type { border-top: 0; }
-  .ct-acct .n { font-weight: 600; font-size: 12.5px; overflow-wrap: anywhere; }
-  .ct-acct .r { font-family: var(--mono); font-size: 11px; color: var(--muted); }
-  .ct-acct .v { font-family: var(--mono); text-align: right; font-variant-numeric: tabular-nums; }
-  .ct-role { font-family: var(--mono); font-size: 10px; padding: 1px 6px; border-radius: 4px; background: var(--panel2); border: 1px solid var(--line); color: var(--accent); margin-left: 6px; }
-  .ct-chartbox { position: relative; min-height: 120px; }
-  .ct-chartbox.tall { min-height: 420px; }
-  .ct-chartbox svg { display: block; width: 100%; overflow: visible; }
-  .ct-chartbox text { fill: var(--muted); font-family: var(--mono); font-size: 10px; }
-  .ct-tip { position: absolute; pointer-events: none; background: #0f151c; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-family: var(--mono); font-size: 11px; color: var(--fg); box-shadow: 0 6px 24px rgba(0,0,0,.45); white-space: nowrap; z-index: 2; }
-  .ct-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-family: var(--mono); font-size: 11px; color: var(--muted); margin-bottom: 6px; }
-  .ct-legend i { display: inline-block; width: 10px; height: 2px; vertical-align: middle; margin-right: 5px; }
-  .ct-ohlc { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
-  .ct-ohlc div { display: grid; gap: 2px; }
-  .ct-ohlc span { font-size: 11px; color: var(--muted); }
-  .ct-ohlc b { font-family: var(--mono); font-weight: 500; font-variant-numeric: tabular-nums; }
-  .ct-feed { display: grid; gap: 8px; max-height: 330px; overflow-y: auto; }
-  .ct-ev { border: 1px solid var(--line); border-left-width: 3px; border-radius: 8px; padding: 8px 10px; background: var(--panel2); font-size: 12px; }
-  .ct-ev.buy { border-left-color: var(--up); } .ct-ev.sell { border-left-color: var(--down); }
-  .ct-ev.warn { border-left-color: var(--amber); } .ct-ev.info { border-left-color: var(--accent); }
-  .ct-ev .h { display: flex; gap: 8px; font-family: var(--mono); font-weight: 600; }
-  .ct-ev .t { margin-left: auto; color: var(--muted); font-weight: 400; font-size: 11px; }
-  .ct-ev .d { color: var(--muted); margin-top: 3px; overflow-wrap: anywhere; }
-  .ct-empty { color: var(--muted); font-size: 12px; line-height: 1.55; border: 1px dashed var(--line); border-radius: 8px; padding: 12px; }
-  .ct-gauges { display: grid; gap: 10px; }
-  .ct-gauge { display: grid; grid-template-columns: 92px 1fr; gap: 10px; align-items: center; }
-  .ct-gauge .lbl { font-size: 12px; font-weight: 600; overflow-wrap: anywhere; }
-  .ct-gauge .lbl small { display: block; font-weight: 400; color: var(--muted); font-family: var(--mono); font-size: 10.5px; margin-top: 2px; }
-  .ct-bar { height: 6px; border-radius: 3px; background: var(--grid); overflow: hidden; margin: 4px 0 2px; }
-  .ct-bar > i { display: block; height: 100%; border-radius: 3px; }
-  .ct-gline { font-family: var(--mono); font-size: 10.5px; color: var(--muted); display: flex; justify-content: space-between; gap: 6px; }
-  .ct-tablewrap { overflow-x: auto; }
-  .ct table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
-  .ct th { text-align: left; font-size: 10.5px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; padding: 6px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
-  .ct td { padding: 6px 8px; border-bottom: 1px solid var(--grid); font-family: var(--mono); font-size: 12px; white-space: nowrap; }
-  .ct td:first-child { font-family: inherit; font-weight: 600; }
-  .ct th.num, .ct td.num { text-align: right; }
-  .ct tr.hl td { background: color-mix(in srgb, var(--accent) 9%, transparent); }
-  .ct tr.bench td { color: var(--muted); }
-  .ct-foot { margin-top: 12px; color: var(--muted); font-size: 11.5px; line-height: 1.55; }
-  .ct-foot summary { cursor: pointer; color: var(--fg); }
-  .ct-foot ul { margin: 8px 0 0; padding-left: 18px; }
-  @media (max-width: 520px) { .ct { padding: 10px; border-radius: 10px; } .ct-big { font-size: 22px; } .ct-gauge { grid-template-columns: 1fr; } }
+/* top bar */
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:20;background:rgba(8,11,16,.92)}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:15;background:rgba(8,11,16,.88);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.bar .wrap{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap;padding-block:10px}
+.brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:16px;letter-spacing:.01em}
+.brand svg{color:var(--up)}
+.chip{font-family:var(--mono);font-size:11px;padding:3px 9px;border-radius:999px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.chip.paper{color:var(--amber);border-color:color-mix(in srgb,var(--amber) 45%,transparent)}
+.chip.up{color:var(--up);border-color:color-mix(in srgb,var(--up) 45%,transparent)}
+.chip.down{color:var(--down);border-color:color-mix(in srgb,var(--down) 45%,transparent)}
+.spacer{flex:1}
+.btc{font-family:var(--mono);font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+.btc small{color:var(--muted);font-weight:400;font-size:11px;margin-right:6px}
+.meta{font-family:var(--mono);font-size:11px;color:var(--dim)}
 
+/* hero */
+.hero{margin-top:18px;display:grid;gap:14px}
+.decision{background:linear-gradient(135deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:16px;padding:18px 20px;display:grid;gap:10px}
+.decision .k{font-size:12px;color:var(--muted);letter-spacing:.06em}
+.decision h1{margin:0;font-size:clamp(20px,3.2vw,28px);line-height:1.3;font-weight:700;text-wrap:balance}
+.decision h1 .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:10px;vertical-align:middle;background:var(--amber)}
+.decision.go h1 .dot{background:var(--up);box-shadow:0 0 0 4px color-mix(in srgb,var(--up) 25%,transparent)}
+.decision.stop h1 .dot{background:var(--down)}
+.decision p{margin:0;color:var(--muted);max-width:75ch}
+.gate{display:grid;gap:6px;margin-top:4px}
+.gate .track{position:relative;height:8px;border-radius:4px;background:var(--grid);overflow:hidden}
+.gate .fill{position:absolute;inset:0 auto 0 0;border-radius:4px;background:linear-gradient(90deg,var(--down),var(--amber))}
+.gate.open .fill{background:var(--up)}
+.gate .lbl{display:flex;justify-content:space-between;gap:10px;font-family:var(--mono);font-size:11px;color:var(--muted);flex-wrap:wrap}
+.tiles{display:grid;gap:10px;grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:860px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:grid;gap:2px;min-width:0}
+.tile .t{font-size:12px;color:var(--muted)}
+.tile .v{font-family:var(--mono);font-size:20px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .s{font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+
+/* tabs */
+.tabs{position:sticky;top:calc(env(safe-area-inset-top,0px) + var(--barh,53px));z-index:10;background:var(--bg);margin-top:18px;border-bottom:1px solid var(--line)}
+.tabs .row{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.tabs .row::-webkit-scrollbar{display:none}
+.tab{flex:none;background:none;border:0;border-bottom:2px solid transparent;padding:11px 14px;color:var(--muted);cursor:pointer;font-weight:500;white-space:nowrap}
+.tab[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--accent)}
+.tab .n{font-family:var(--mono);font-size:11px;margin-left:6px;padding:1px 6px;border-radius:999px;background:var(--panel);color:var(--muted)}
+.tab .n.hot{background:var(--up);color:#06120c}
+section.view{padding-top:16px;display:grid;gap:14px}
+
+/* cards & grids */
+.grid{display:grid;gap:14px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:980px){.g-2-1{grid-template-columns:minmax(0,2fr) minmax(0,1fr)}.g-1-1{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;min-width:0}
+.card h2{margin:0 0 12px;font-size:13px;font-weight:600;color:var(--muted);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.card h2 .note{margin-left:auto;font-family:var(--mono);font-size:11px;font-weight:400;color:var(--dim)}
+.help{margin:10px 0 0;font-size:12px;color:var(--dim);line-height:1.6}
+.pos{color:var(--up)}.neg{color:var(--down)}.flat{color:var(--muted)}
+.empty{color:var(--muted);font-size:13px;line-height:1.6;border:1px dashed var(--line);border-radius:10px;padding:14px}
+
+/* analysis */
+.an{margin:0;padding:0;list-style:none;display:grid;gap:8px}
+.an li{display:grid;grid-template-columns:18px 1fr;gap:6px;line-height:1.55}
+.an li::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--accent);margin-top:8px}
+.an li:last-child{padding-top:8px;border-top:1px solid var(--line);font-weight:500}
+.an li:last-child::before{background:var(--amber)}
+
+/* chart */
+.chartbox{position:relative;min-height:120px}
+.chartbox.tall{min-height:400px}
+.chartbox svg{display:block;width:100%;overflow:visible}
+.chartbox text{fill:var(--muted);font-family:var(--mono);font-size:10px}
+.tip{position:absolute;pointer-events:none;background:#0d131a;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-family:var(--mono);font-size:11px;color:var(--fg);box-shadow:0 8px 28px rgba(0,0,0,.5);white-space:nowrap;z-index:3}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:8px}
+.legend i{display:inline-block;width:12px;height:2px;vertical-align:middle;margin-right:5px}
+.ohlc{display:flex;flex-wrap:wrap;gap:6px 22px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+.ohlc div{display:grid;gap:1px}
+.ohlc span{font-size:11px;color:var(--muted)}
+.ohlc b{font-family:var(--mono);font-weight:500;font-variant-numeric:tabular-nums}
+
+/* tables */
+.tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th{text-align:left;font-size:11px;font-weight:600;color:var(--muted);padding:8px;border-bottom:1px solid var(--line);white-space:nowrap;position:sticky;top:0;background:var(--panel)}
+td{padding:8px;border-bottom:1px solid var(--grid);font-family:var(--mono);font-size:12.5px;white-space:nowrap}
+td:first-child{font-family:var(--sans);font-weight:600}
+th.num,td.num{text-align:right}
+tr.hl td{background:color-mix(in srgb,var(--accent) 8%,transparent)}
+tr.bench td{color:var(--muted)}
+tbody tr:hover td{background:color-mix(in srgb,var(--fg) 3%,transparent)}
+
+/* accounts */
+.acct{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:10px 0;border-top:1px solid var(--line)}
+.acct:first-child{border-top:0;padding-top:0}
+.acct .n{font-weight:600;overflow-wrap:anywhere}
+.acct .r{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.acct .v{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.role{font-family:var(--mono);font-size:10px;padding:1px 6px;border-radius:4px;background:var(--panel2);border:1px solid var(--line);color:var(--accent);margin-left:6px;font-weight:500}
+.bigv{font-family:var(--mono);font-size:28px;font-weight:600;font-variant-numeric:tabular-nums}
+.subv{font-family:var(--mono);font-size:12px;color:var(--muted);margin:2px 0 12px}
+
+/* feed */
+.feed{display:grid;gap:8px;max-height:420px;overflow-y:auto}
+.ev{border:1px solid var(--line);border-left-width:3px;border-radius:8px;padding:8px 10px;background:var(--panel2);font-size:12.5px}
+.ev.buy{border-left-color:var(--up)}.ev.sell{border-left-color:var(--down)}.ev.warn{border-left-color:var(--amber)}.ev.info{border-left-color:var(--accent)}
+.ev .h{display:flex;gap:8px;font-family:var(--mono);font-weight:600}
+.ev .t{margin-left:auto;color:var(--muted);font-weight:400;font-size:11px}
+.ev .d{color:var(--muted);margin-top:3px;overflow-wrap:anywhere}
+
+/* risk */
+.gauges{display:grid;gap:12px}
+.gauge{display:grid;grid-template-columns:104px 1fr;gap:12px;align-items:center}
+.gauge .lbl{font-weight:600;font-size:13px}
+.gauge .lbl small{display:block;font-weight:400;font-family:var(--mono);font-size:10.5px;margin-top:2px}
+.rbar{height:6px;border-radius:3px;background:var(--grid);overflow:hidden;margin:4px 0 2px}
+.rbar>i{display:block;height:100%;border-radius:3px}
+.gline{font-family:var(--mono);font-size:10.5px;color:var(--muted);display:flex;justify-content:space-between;gap:6px}
+
+/* plans */
+.plans{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
+.plan{border:1px solid var(--line);border-top-width:3px;border-radius:12px;padding:14px;background:var(--panel2);display:grid;gap:8px;min-width:0}
+.plan.enter_now{border-top-color:var(--up)}.plan.near{border-top-color:var(--accent)}.plan.wait_btc{border-top-color:var(--amber)}
+.plan .top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-weight:700;font-size:16px}
+.plan .kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-family:var(--mono);font-size:12px}
+.plan .kv span:nth-child(odd){color:var(--muted);font-family:var(--sans)}
+.plan .txt{font-size:12.5px;color:var(--muted);line-height:1.55;overflow-wrap:anywhere}
+.plan .txt b{color:var(--fg);font-weight:600}
+.howto{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.step{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px;font-size:13px;color:var(--muted)}
+.step b{display:block;color:var(--fg);margin-bottom:4px}
+.pill{font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);white-space:nowrap;font-weight:500}
+.pill.buy_signal{color:#06120c;background:var(--up);border-color:var(--up)}
+.pill.uptrend{color:var(--up)}.pill.downtrend{color:var(--down)}.pill.illiquid{color:var(--dim)}.pill.new{color:var(--amber)}
+
+/* scanner */
+.scanbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.ftabs{display:flex;flex-wrap:wrap;gap:6px}
+.ftab{font-size:12.5px;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--panel2);color:var(--muted);cursor:pointer}
+.ftab[aria-pressed="true"]{color:var(--fg);border-color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,transparent)}
+.search{margin-left:auto;font:inherit;font-size:13px;padding:7px 12px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--fg);width:220px;max-width:100%;min-width:0}
+.scroll{max-height:560px;overflow:auto}
+
+details.notes{color:var(--muted);font-size:12.5px;line-height:1.7}
+details.notes summary{cursor:pointer;color:var(--fg)}
+.chartctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.sel{font:inherit;font-size:13px;padding:6px 10px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--fg)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;flex-wrap:wrap}
+.seg button{background:var(--panel2);border:0;border-right:1px solid var(--line);padding:6px 11px;font-size:12.5px;color:var(--muted);cursor:pointer}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:color-mix(in srgb,var(--accent) 18%,var(--panel2));color:var(--fg)}
+.err{color:var(--down);font-family:var(--mono);padding:12px}
+@media (max-width:560px){.bar .wrap{flex-wrap:nowrap}.brand{font-size:15px}.chip.paper{display:none}.card{padding:13px}.bigv{font-size:24px}.gauge{grid-template-columns:1fr}.meta{display:none}.decision{padding:16px}}
+@media (prefers-reduced-motion:no-preference){.gate .fill{transition:width .6s ease}}
 </style></head><body>
-<div class="ct" lang="th" data-read>
-  <header class="ct-top" id="top">
-    <div class="ct-brand">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l5-6 4 4 8-9"/><path d="M15 6h5v5"/></svg>
-      Crypto Lab
+
+<header class="bar"><div class="wrap">
+  <div class="brand"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l5-6 4 4 8-9"/><path d="M15 6h5v5"/></svg>Crypto Lab</div>
+  <span class="chip paper" data-draw="mode">—</span>
+  <span class="spacer"></span>
+  <span class="btc"><small>BTC</small><span data-draw="btc">—</span></span>
+  <span class="meta">อัปเดต <span data-draw="tick">—</span></span>
+</div></header>
+
+<main class="wrap">
+  <div class="hero">
+    <div class="decision" id="today" data-draw="decisionBox">
+      <div class="k">วันนี้ควรทำอะไร</div>
+      <h1 data-draw="heroTitle">—</h1>
+      <p data-draw="heroSub">—</p>
+      <div class="gate" data-draw="gate"></div>
     </div>
-    <span class="ct-chip paper" data-draw="mode">—</span>
-    <span class="ct-chip" data-draw="regime">—</span>
-    <span class="ct-spacer"></span>
-    <span class="ct-meta">BTC <b data-draw="btc">—</b></span>
-    <span class="ct-meta">บอทรันล่าสุด <span data-draw="tick">—</span></span>
-  </header>
+    <div class="tiles" data-draw="tiles"></div>
+  </div>
 
-  <p class="ct-take" id="takeaway" data-draw="takeaway">—</p>
+  <nav class="tabs" aria-label="ส่วนของ dashboard"><div class="row" role="tablist">
+    <button class="tab" role="tab" data-tab="overview">ภาพรวม</button>
+    <button class="tab" role="tab" data-tab="plans">แผนเทรด<span class="n" data-draw="nPlans">0</span></button>
+    <button class="tab" role="tab" data-tab="scan">สแกนกระดาน<span class="n" data-draw="nScan">0</span></button>
+    <button class="tab" role="tab" data-tab="portfolio">พอร์ต &amp; บอท</button>
+    <button class="tab" role="tab" data-tab="strategy">กลยุทธ์ &amp; ผลทดสอบ</button>
+  </div></nav>
 
-  <section class="ct-card" id="analysis" style="margin-bottom:12px">
-    <h3>วิเคราะห์ตลาด (ทั้งกระดาน) <span class="ct-chip" data-draw="regimeChip">—</span><span class="ct-note" data-draw="anMeta">—</span></h3>
-    <ul class="ct-an" data-draw="anLines"></ul>
-  </section>
-
-  <div class="ct-grid main">
-    <div class="ct-stack">
-      <section class="ct-card" id="portfolio">
-        <h3>พอร์ตจำลอง (Paper)</h3>
-        <div class="ct-big" data-draw="total">—</div>
-        <div class="ct-sub" data-draw="totalsub">—</div>
-        <div data-draw="accounts" style="margin-top:10px"></div>
-      </section>
-      <section class="ct-card" id="paper-equity">
-        <h3>Equity paper รายชั่วโมง</h3>
-        <div class="ct-chartbox" data-draw="paperEquity"></div>
-      </section>
+  <!-- ภาพรวม -->
+  <section class="view" id="view-overview" data-view="overview">
+    <div class="grid g-2-1">
+      <div class="card">
+        <h2>วิเคราะห์ตลาด (ทั้งกระดาน) <span class="chip" data-draw="regimeChip">—</span><span class="note" data-draw="anMeta">—</span></h2>
+        <ul class="an" data-draw="anLines"></ul>
+      </div>
+      <div class="card">
+        <h2>สัญญาณ &amp; การตัดสินใจล่าสุด</h2>
+        <div class="feed" data-draw="events"></div>
+      </div>
     </div>
-
-    <section class="ct-card" id="btc-chart">
-      <h3>BTC/USDT · 4h · Binance <span class="ct-note" data-draw="candleTime">—</span></h3>
-      <div class="ct-legend"><span><i style="background:var(--accent)"></i>EMA20</span><span><i style="background:var(--amber)"></i>EMA200 (ตัวกรองขาขึ้น/ขาลง)</span><span><i style="background:var(--violet)"></i>RSI 14</span></div>
-      <div class="ct-chartbox tall" data-draw="candles"></div>
-      <div class="ct-ohlc" id="ohlc">
+    <div class="card">
+      <h2><span data-draw="chartTitle">BTC/USDT · 4 ชั่วโมง</span> <span class="chip" data-draw="chartLive">—</span><span class="note" data-draw="candleTime">—</span></h2>
+      <div class="chartctl">
+        <select class="sel" id="chart-sym" aria-label="เลือกเหรียญ" data-draw="chartSym"></select>
+        <div class="seg" role="group" aria-label="ช่วงเวลาแท่งเทียน">
+          <button type="button" data-tf="1m">1 นาที</button><button type="button" data-tf="5m">5 นาที</button><button type="button" data-tf="15m">15 นาที</button><button type="button" data-tf="1h">1 ชม.</button><button type="button" data-tf="4h" aria-pressed="true">4 ชม.</button>
+        </div>
+      </div>
+      <div class="legend"><span><i style="background:var(--accent)"></i>EMA20</span><span><i style="background:var(--amber)"></i>EMA200 = เส้นแบ่งขาขึ้น/ขาลง</span><span><i style="background:var(--violet)"></i>RSI 14</span></div>
+      <div class="chartbox tall" data-draw="candles"></div>
+      <div class="ohlc">
         <div><span>ราคาปิด</span><b data-draw="o_close">—</b></div>
-        <div><span>เปลี่ยนแปลง 4h</span><b data-draw="o_chg">—</b></div>
+        <div><span>เปลี่ยนแปลงแท่งล่าสุด</span><b data-draw="o_chg">—</b></div>
         <div><span>สูงสุด</span><b data-draw="o_high">—</b></div>
         <div><span>ต่ำสุด</span><b data-draw="o_low">—</b></div>
         <div><span>Volume (USDT)</span><b data-draw="o_vol">—</b></div>
         <div><span>RSI 14</span><b data-draw="o_rsi">—</b></div>
       </div>
-    </section>
-
-    <div class="ct-stack">
-      <section class="ct-card" id="signals">
-        <h3>สัญญาณ &amp; การตัดสินใจของบอท</h3>
-        <div class="ct-feed" data-draw="events"></div>
-      </section>
-      <section class="ct-card" id="risk">
-        <h3>Sentinel · ความเสี่ยง</h3>
-        <div class="ct-gauges" data-draw="risk"></div>
-      </section>
     </div>
-  </div>
-
-  <div class="ct-grid lower" style="margin-top:12px">
-    <section class="ct-card" id="backtest">
-      <h3>Backtest walk-forward (หลังต้นทุน) เทียบ BTC buy &amp; hold <span class="ct-note">เริ่ม 500 USDT</span></h3>
-      <div class="ct-legend" data-draw="btLegend"></div>
-      <div class="ct-chartbox" data-draw="btCurves" style="min-height:240px"></div>
-    </section>
-    <section class="ct-card" id="market">
-      <h3>ตลาด Top 20 (universe ของบอท) <span class="ct-note">24 ชม.</span></h3>
-      <div class="ct-tablewrap">
-        <table>
-          <thead><tr><th>เหรียญ</th><th class="num">ราคา</th><th class="num">24h %</th><th class="num">Volume (USDT)</th></tr></thead>
-          <tbody data-draw="marketRows"></tbody>
-        </table>
-      </div>
-    </section>
-  </div>
-
-  <div class="ct-grid lower" style="margin-top:12px">
-    <section class="ct-card" id="leaderboard">
-      <h3>อันดับกลยุทธ์ (เรียงตาม Sharpe) <span class="ct-note">ทดสอบนอกตัวอย่าง พ.ย. 2023 – ปัจจุบัน</span></h3>
-      <div class="ct-tablewrap">
-        <table>
-          <thead><tr><th>กลยุทธ์</th><th>สถานะ</th><th class="num">ผลตอบแทน %</th><th class="num">Max DD %</th><th class="num">Sharpe</th><th class="num">เทรด</th></tr></thead>
-          <tbody data-draw="leaderRows"></tbody>
-        </table>
-      </div>
-    </section>
-    <section class="ct-card" id="positions">
-      <h3>สถานะที่ถืออยู่</h3>
-      <div class="ct-tablewrap">
-        <table>
-          <thead><tr><th>เหรียญ</th><th>กลยุทธ์</th><th class="num">เข้า</th><th class="num">ล่าสุด</th><th class="num">Stop</th><th class="num">P&amp;L</th></tr></thead>
-          <tbody data-draw="posRows"></tbody>
-        </table>
-      </div>
-      <p class="ct-empty ct-posempty" hidden>ยังไม่มีสถานะเปิด บอทจะซื้อเมื่อสัญญาณของกลยุทธ์เกิดบนแท่ง 4h ที่ปิดแล้ว และ Sentinel ตรวจผ่าน</p>
-    </section>
-  </div>
-
-
-  <section class="ct-card" id="plans" style="margin-top:12px">
-    <h3>แผนเทรด: เข้าเมื่อไหร่ ออกเมื่อไหร่ <span class="ct-note">ตามกฎ champion (keltner_trend) · ทุน 500 USDT เสี่ยง 0.5%/ไม้</span></h3>
-    <div class="ct-plans" data-draw="plans"></div>
-    <p class="ct-foot" style="margin-top:8px">⚠️ แผนนี้ใช้กฎเดียวกับที่ผ่าน backtest แต่ไม่รับประกันกำไร ชนะประมาณ 1 ใน 3 ของเทรด กำไรมาจากไม้ที่วิ่งยาว — ต้องตั้ง stop ทุกครั้ง และไม่ควรเสี่ยงเกินที่ระบุ</p>
+    <div class="card">
+      <h2>Top 20 ที่บอทเทรด <span class="note">ราคาสดทุกวินาที</span></h2>
+      <div class="tablewrap"><table>
+        <thead><tr><th>เหรียญ</th><th class="num">ราคา</th><th class="num">24 ชม.</th><th class="num">Volume 24 ชม.</th></tr></thead>
+        <tbody data-draw="marketRows"></tbody>
+      </table></div>
+    </div>
   </section>
 
-  <section class="ct-card" id="scanner" style="margin-top:12px">
-    <h3>สแกนทั้งกระดาน (ทุกคู่ USDT บน Binance) <span class="ct-note" data-draw="scanMeta">—</span></h3>
-    <div class="ct-scanbar">
-      <div class="ct-tabs" data-draw="scanTabs"></div>
-      <input class="ct-search" id="scan-search" type="search" placeholder="ค้นหาเหรียญ เช่น SOL" aria-label="ค้นหาเหรียญ">
+  <!-- แผนเทรด -->
+  <section class="view" id="view-plans" data-view="plans" hidden>
+    <div class="card">
+      <h2>วิธีใช้แผนเทรด</h2>
+      <div class="howto">
+        <div class="step"><b>1 · รอให้ครบเงื่อนไข</b>BTC ต้องอยู่เหนือ EMA200 และเหรียญต้องปิดแท่ง 4h เหนือ "จุดเข้า" ระบบแจ้งใน Telegram ทันที</div>
+        <div class="step"><b>2 · ซื้อไม่เกินขนาดที่ระบุ</b>คำนวณให้เสียไม่เกิน 0.5% ของทุนถ้าโดน stop (ทุน 500 USDT = เสี่ยงไม้ละ 2.5 USDT)</div>
+        <div class="step"><b>3 · ตั้ง stop ทันทีหลังซื้อ</b>ตั้ง stop-loss บน Binance ที่ราคา Stop เสมอ ห้ามขยับ stop ลง</div>
+        <div class="step"><b>4 · ออกตามกฎ</b>ขายเมื่อแท่ง 4h ปิดต่ำกว่า EMA20 หรือโดน stop ที่ขยับขึ้นตามราคาสูงสุด</div>
+      </div>
     </div>
-    <div class="ct-tablewrap" style="max-height:520px;overflow:auto">
-      <table>
-        <thead><tr><th>เหรียญ</th><th>สถานะ</th><th class="num">ราคา</th><th class="num">24h %</th><th class="num">เทียบ EMA200</th><th class="num">RSI</th><th class="num">30 วัน %</th><th class="num">Volume 24h</th><th>สัญญาณ</th></tr></thead>
+    <div class="card">
+      <h2>แผนตอนนี้ <span class="note">กฎของ champion (keltner_trend) · ทุน 500 USDT · เสี่ยง 0.5%/ไม้</span></h2>
+      <div class="plans" data-draw="plans"></div>
+      <p class="help">⚠️ แผนนี้ใช้กฎเดียวกับที่ผ่าน backtest แต่ไม่รับประกันกำไร — ในอดีตชนะประมาณ 1 ใน 3 ของเทรด กำไรมาจากไม้ที่วิ่งยาว จึงต้องตั้ง stop ทุกครั้ง เหรียญที่ "นอก Top 20" ยังไม่ผ่าน backtest</p>
+    </div>
+  </section>
+
+  <!-- สแกนกระดาน -->
+  <section class="view" id="view-scan" data-view="scan" hidden>
+    <div class="card">
+      <h2>สแกนทุกคู่ USDT บน Binance <span class="note" data-draw="scanMeta">—</span></h2>
+      <div class="scanbar">
+        <div class="ftabs" data-draw="scanTabs"></div>
+        <input class="search" id="scan-search" type="search" placeholder="ค้นหาเหรียญ เช่น SOL" aria-label="ค้นหาเหรียญ">
+      </div>
+      <div class="tablewrap scroll"><table>
+        <thead><tr><th>เหรียญ</th><th>สถานะ</th><th class="num">ราคา</th><th class="num">24 ชม.</th><th class="num">เทียบ EMA200</th><th class="num">RSI</th><th class="num">30 วัน</th><th class="num">Volume 24 ชม.</th><th>สัญญาณ</th></tr></thead>
         <tbody data-draw="scanRows"></tbody>
-      </table>
+      </table></div>
+      <p class="help">"ขาขึ้น" = ราคาอยู่เหนือ EMA200 (4h) · "สภาพคล่องต่ำ" = ซื้อขายวันละไม่ถึง 2 ล้าน USDT (slippage สูง เสี่ยงโดนปั่น) · ไม่รวม stablecoin และหุ้นแบบ token · อัปเดตทุกชั่วโมงจากแท่ง 4h ที่ปิดแล้ว</p>
     </div>
-    <p class="ct-foot" style="margin-top:8px">บอทเทรดเฉพาะ Top 20 ที่ผ่าน backtest แล้ว ตารางนี้ใช้ดูภาพรวมทั้งกระดาน "สภาพคล่องต่ำ" = ซื้อขายวันละไม่ถึง 2 ล้าน USDT (slippage สูง เสี่ยงโดนปั่น) อัปเดตทุกชั่วโมงจากแท่ง 4h ที่ปิดแล้ว</p>
   </section>
 
-  <details class="ct-foot" id="notes">
-    <summary>ตัวเลขเหล่านี้มาจากไหน และควรอ่านอย่างไร</summary>
-    <ul>
-      <li>ทุกอย่างเป็น <b>paper trading</b> (เงินจำลอง 500 USDT ต่อกลยุทธ์) ยังไม่มีเงินจริง เงินจริงต้องรอคุณพิมพ์ "go live" และอนุมัติทุกเทรด</li>
-      <li>ราคาและแท่งเทียนมาจาก Binance (data-api.binance.vision) ข้อมูลบนหน้านี้อัปเดตทุกชั่วโมงโดยบอท ดูเวลาที่ Sources</li>
-      <li>Backtest = walk-forward 3 ปีบนข้อมูลที่ไม่ได้ใช้เลือกพารามิเตอร์ หักค่าธรรมเนียม 0.1% + slippage 0.05% ต่อขา และรวมเหรียญที่ถูกถอด</li>
-      <li>ไม่มีกลยุทธ์ไหนชนะ BTC buy &amp; hold ในแง่ผลตอบแทนดิบ ที่เลือกเพราะชนะเมื่อคิดตามความเสี่ยง (Sharpe, drawdown) และ Sharpe ระดับนี้ยังไม่มีนัยสำคัญทางสถิติ</li>
-      <li>Funding ของ challenger 2 ในการเทรดสดเป็นค่าประมาณจาก premium index (ช้าได้ ~1 วัน)</li>
-    </ul>
-  </details>
-</div>
+  <!-- พอร์ต & บอท -->
+  <section class="view" id="view-portfolio" data-view="portfolio" hidden>
+    <div class="grid g-1-1">
+      <div class="card">
+        <h2>พอร์ตจำลอง (Paper)</h2>
+        <div class="bigv" data-draw="total">—</div>
+        <div class="subv" data-draw="totalsub">—</div>
+        <div data-draw="accounts"></div>
+      </div>
+      <div class="card">
+        <h2>Sentinel · ตัวคุมความเสี่ยง</h2>
+        <div class="gauges" data-draw="risk"></div>
+        <p class="help">บอทหยุดเองเมื่อขาดทุนเกิน 3% ในวันเดียว หรือแพ้ติดกัน 3 ครั้ง (โหมดจำลองจะกลับมาเทรดเองวันถัดไป)</p>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Equity ของบัญชีจำลอง</h2>
+      <div class="chartbox" data-draw="paperEquity"></div>
+    </div>
+    <div class="card">
+      <h2>สถานะที่ถืออยู่</h2>
+      <div class="tablewrap"><table>
+        <thead><tr><th>เหรียญ</th><th>กลยุทธ์</th><th class="num">เข้า</th><th class="num">ล่าสุด</th><th class="num">Stop</th><th class="num">กำไร/ขาดทุน</th></tr></thead>
+        <tbody data-draw="posRows"></tbody>
+      </table></div>
+      <p class="empty posempty" hidden>ยังไม่มีสถานะเปิด — บอทจะซื้อเมื่อกลยุทธ์ให้สัญญาณบนแท่ง 4h ที่ปิดแล้ว และ Sentinel ตรวจผ่าน</p>
+    </div>
+  </section>
 
+  <!-- กลยุทธ์ -->
+  <section class="view" id="view-strategy" data-view="strategy" hidden>
+    <div class="card">
+      <h2>ผล backtest walk-forward หลังหักค่าธรรมเนียม เทียบ BTC ถือยาว <span class="note">เริ่ม 500 USDT · พ.ย. 2023 – ปัจจุบัน</span></h2>
+      <div class="legend" data-draw="btLegend"></div>
+      <div class="chartbox" data-draw="btCurves" style="min-height:260px"></div>
+      <p class="help">BTC ถือยาวได้ผลตอบแทนสูงกว่า แต่เคยร่วงกว่า 50% ระหว่างทาง กลยุทธ์ของบอทถูกเลือกเพราะเสี่ยงต่ำกว่ามาก (ร่วงสูงสุดราว 15%)</p>
+    </div>
+    <div class="card">
+      <h2>อันดับกลยุทธ์ทั้งหมด (เรียงตาม Sharpe)</h2>
+      <div class="tablewrap"><table>
+        <thead><tr><th>กลยุทธ์</th><th>สถานะ</th><th class="num">ผลตอบแทน</th><th class="num">ร่วงสูงสุด</th><th class="num">Sharpe</th><th class="num">จำนวนเทรด</th></tr></thead>
+        <tbody data-draw="leaderRows"></tbody>
+      </table></div>
+    </div>
+    <details class="card notes">
+      <summary>ตัวเลขเหล่านี้มาจากไหน และควรอ่านอย่างไร</summary>
+      <ul>
+        <li>ทุกอย่างเป็น <b>paper trading</b> (เงินจำลอง 500 USDT ต่อกลยุทธ์) ยังไม่มีเงินจริง</li>
+        <li>ราคาและแท่งเทียนมาจาก Binance · ราคาบนหน้านี้สดทุกวินาทีผ่าน WebSocket · ข้อมูลบอทอัปเดตทุกชั่วโมง</li>
+        <li>Backtest = walk-forward 3 ปีบนข้อมูลที่ไม่ได้ใช้เลือกพารามิเตอร์ หักค่าธรรมเนียม 0.1% + slippage 0.05% ต่อขา และรวมเหรียญที่ถูกถอด</li>
+        <li>ไม่มีกลยุทธ์ไหนชนะ BTC ถือยาวในแง่ผลตอบแทนดิบ ที่เลือกเพราะชนะเมื่อคิดตามความเสี่ยง และผลระดับนี้ยังไม่มีนัยสำคัญทางสถิติ</li>
+      </ul>
+    </details>
+  </section>
+</main>
 
 <script src="d3.min.js"></script>
 <script src="app.js"></script>
