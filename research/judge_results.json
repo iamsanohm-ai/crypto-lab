@@ -1,8 +1,8 @@
 {
- "generated_at": "2026-11-22T16:08:05+00:00",
+ "generated_at": "2026-11-24T02:40:00+00:00",
  "oos_period": [
   "2023-11-01 00:00:00+00:00",
-  "2026-11-22 08:00:00+00:00"
+  "2026-11-23 20:00:00+00:00"
  ],
  "costs": {
   "fee_per_side": 0.001,
@@ -17,22 +17,22 @@
  },
  "benchmarks": {
   "btc_buy_hold": {
-   "return": 0.7741306975338771,
+   "return": 0.7801794970132254,
    "max_dd": -0.5475634835625414,
-   "sharpe": 0.6132720850594708,
-   "calmar": 1.4137734176451118,
+   "sharpe": 0.6153635894414302,
+   "calmar": 1.4248201723337075,
    "avg_r": 0.0,
    "profit_factor": NaN,
-   "worst_month": -0.21292665491308416,
+   "worst_month": -0.2102431723226592,
    "worst_month_label": "2026-11",
    "longest_losing_streak": 0,
    "exposure": 0.0
   },
   "top20_equal_weight": {
-   "return": -0.6935976997761412,
+   "return": -0.6894677959582165,
    "max_dd": -0.8872355759769757,
-   "sharpe": -0.16542725742548978,
-   "calmar": -0.7817514519888239,
+   "sharpe": -0.15937298014578896,
+   "calmar": -0.7770966523733136,
    "avg_r": 0.0,
    "profit_factor": NaN,
    "worst_month": -0.30506113901171117,
@@ -41,13 +41,13 @@
    "exposure": 0.0
   },
   "btc_dca_weekly": {
-   "return": -0.15144864779286882,
+   "return": -0.1485555593724015,
    "max_dd": -0.4791358003692975,
-   "sharpe": -0.06801152884985023,
-   "calmar": -0.3160871044829851,
+   "sharpe": -0.06373115491837027,
+   "calmar": -0.31004896577943286,
    "avg_r": 0.0,
    "profit_factor": NaN,
-   "worst_month": -0.21171760240761528,
+   "worst_month": -0.20902999762023167,
    "worst_month_label": "2026-11",
    "longest_losing_streak": 0,
    "exposure": 0.0
@@ -61,7 +61,7 @@
    "metrics": {
     "return": 0.17889368136162553,
     "max_dd": -0.17089665320237524,
-    "sharpe": 0.38587577431019954,
+    "sharpe": 0.3857032456989319,
     "calmar": 1.0467945276247175,
     "trades": 488,
     "win_rate": 0.3176229508196721,
@@ -70,7 +70,7 @@
     "worst_month": -0.06815735839412318,
     "worst_month_label": "2024-10",
     "longest_losing_streak": 24,
-    "exposure": 1.511111111111111
+    "exposure": 1.5090854929997022
    },
    "regimes": {
     "bear": {
@@ -146,7 +146,7 @@
    "metrics": {
     "return": 0.0667445283778223,
     "max_dd": -0.19040997421211803,
-    "sharpe": 0.22784196578724153,
+    "sharpe": 0.22774012263504764,
     "calmar": 0.35053063083485547,
     "trades": 391,
     "win_rate": 0.3145780051150895,
@@ -155,7 +155,7 @@
     "worst_month": -0.06392569580315488,
     "worst_month_label": "2024-10",
     "longest_losing_streak": 14,
-    "exposure": 0.8308724832214766
+    "exposure": 0.8297587131367292
    },
    "regimes": {
     "bear": {
@@ -231,7 +231,7 @@
    "metrics": {
     "return": -0.20178219878334358,
     "max_dd": -0.222994225534762,
-    "sharpe": -1.0388955074396828,
+    "sharpe": -1.0384298228187414,
     "calmar": -0.9048763406292253,
     "trades": 514,
     "win_rate": 0.20622568093385213,
@@ -240,7 +240,7 @@
     "worst_month": -0.0544193490578746,
     "worst_month_label": "2026-10",
     "longest_losing_streak": 31,
-    "exposure": 0.5154362416107383
+    "exposure": 0.514745308310992
    },
    "regimes": {
     "bear": {
@@ -316,7 +316,7 @@
    "metrics": {
     "return": -0.019759553453720047,
     "max_dd": -0.13961135619988652,
-    "sharpe": -0.1005272258457395,
+    "sharpe": -0.100482296301084,
     "calmar": -0.14153256577086462,
     "trades": 138,
     "win_rate": 0.5434782608695652,
@@ -325,7 +325,7 @@
     "worst_month": -0.02973804667944191,
     "worst_month_label": "2024-10",
     "longest_losing_streak": 11,
-    "exposure": 0.1982102908277405
+    "exposure": 0.19794459338695264
    },
    "regimes": {
     "bear": {
@@ -401,7 +401,7 @@
    "metrics": {
     "return": 0.05988699179423196,
     "max_dd": -0.08321804651961773,
-    "sharpe": 0.36606671126622436,
+    "sharpe": 0.36590304615345176,
     "calmar": 0.7196394808440291,
     "trades": 112,
     "win_rate": 0.5178571428571429,
@@ -410,7 +410,7 @@
     "worst_month": -0.02569424637079032,
     "worst_month_label": "2024-04",
     "longest_losing_streak": 8,
-    "exposure": 0.14839671886651754
+    "exposure": 0.14819779565087876
    },
    "regimes": {
     "bear": {
@@ -486,7 +486,7 @@
    "metrics": {
     "return": -0.17999228698539882,
     "max_dd": -0.2331058231476727,
-    "sharpe": -1.079338697504796,
+    "sharpe": -1.0788547708893876,
     "calmar": -0.7721483940423641,
     "trades": 1106,
     "win_rate": 0.6003616636528029,
@@ -495,7 +495,7 @@
     "worst_month": -0.039785970179902375,
     "worst_month_label": "2025-09",
     "longest_losing_streak": 15,
-    "exposure": 0.6240119313944817
+    "exposure": 0.6231754542746499
    },
    "regimes": {
     "bear": {
@@ -569,22 +569,22 @@
    "reason": "funding \u0e15\u0e34\u0e14\u0e25\u0e1a\u0e2b\u0e19\u0e31\u0e01\u0e41\u0e1b\u0e25\u0e27\u0e48\u0e32\u0e04\u0e19 short \u0e41\u0e2d\u0e2d\u0e31\u0e14\u0e41\u0e25\u0e30\u0e15\u0e49\u0e2d\u0e07\u0e08\u0e48\u0e32\u0e22\u0e04\u0e48\u0e32\u0e16\u0e37\u0e2d \u0e40\u0e21\u0e37\u0e48\u0e2d\u0e23\u0e32\u0e04\u0e32\u0e44\u0e21\u0e48\u0e25\u0e07\u0e15\u0e48\u0e2d\u0e08\u0e30\u0e40\u0e01\u0e34\u0e14 short squeeze",
    "kills": "\u0e02\u0e48\u0e32\u0e27\u0e23\u0e49\u0e32\u0e22\u0e08\u0e23\u0e34\u0e07\u0e08\u0e31\u0e07\u0e17\u0e35\u0e48\u0e17\u0e33\u0e43\u0e2b\u0e49 short \u0e16\u0e39\u0e01\u0e15\u0e49\u0e2d\u0e07 (\u0e40\u0e0a\u0e48\u0e19 hack, delist)",
    "metrics": {
-    "return": -0.3326689903489699,
+    "return": -0.33031195048702944,
     "max_dd": -0.37288349438461155,
-    "sharpe": -1.5134084407004946,
-    "calmar": -0.8921526304026687,
+    "sharpe": -1.498703224930248,
+    "calmar": -0.8858315142968716,
     "trades": 560,
     "win_rate": 0.39107142857142857,
-    "avg_r": -0.13761660826857286,
-    "profit_factor": 0.6673040699792779,
+    "avg_r": -0.13651075977543572,
+    "profit_factor": 0.6696588578306963,
     "worst_month": -0.07037824418987881,
     "worst_month_label": "2025-02",
     "longest_losing_streak": 15,
-    "exposure": 1.7403430275913498
+    "exposure": 1.7393506106642835
    },
    "regimes": {
     "bear": {
-     "avg_month": -0.027670488256954447,
+     "avg_month": -0.027353325236669414,
      "months": 11
     },
     "chop": {
@@ -656,7 +656,7 @@
    "metrics": {
     "return": 0.3855240603474601,
     "max_dd": -0.16607163099099997,
-    "sharpe": 0.7004068108630834,
+    "sharpe": 0.7000933591794647,
     "calmar": 2.321432372566709,
     "trades": 320,
     "win_rate": 0.31875,
@@ -665,7 +665,7 @@
     "worst_month": -0.06844008105298327,
     "worst_month_label": "2024-12",
     "longest_losing_streak": 19,
-    "exposure": 0.9488441461595823
+    "exposure": 0.9475722371164731
    },
    "regimes": {
     "bear": {
@@ -741,7 +741,7 @@
    "metrics": {
     "return": 0.20870029307941396,
     "max_dd": -0.16766951679657516,
-    "sharpe": 0.5118012577956644,
+    "sharpe": 0.511572355822014,
     "calmar": 1.2447121997293005,
     "trades": 244,
     "win_rate": 0.29098360655737704,
@@ -750,7 +750,7 @@
     "worst_month": -0.04881502819091155,
     "worst_month_label": "2024-01",
     "longest_losing_streak": 14,
-    "exposure": 0.5852348993288591
+    "exposure": 0.5844504021447721
    },
    "regimes": {
     "bear": {
@@ -826,7 +826,7 @@
    "metrics": {
     "return": 0.034293784449056064,
     "max_dd": -0.09636339616077105,
-    "sharpe": 0.2318076411472811,
+    "sharpe": 0.23170402485863972,
     "calmar": 0.3558797823173531,
     "trades": 105,
     "win_rate": 0.41904761904761906,
@@ -835,7 +835,7 @@
     "worst_month": -0.026079390591194795,
     "worst_month_label": "2024-04",
     "longest_losing_streak": 12,
-    "exposure": 0.13303504847129008
+    "exposure": 0.13285671730711945
    },
    "regimes": {
     "bear": {
@@ -911,7 +911,7 @@
    "metrics": {
     "return": 0.008928053239188438,
     "max_dd": -0.08687692159914695,
-    "sharpe": 0.08504375683230248,
+    "sharpe": 0.08500574775439877,
     "calmar": 0.10276668503958712,
     "trades": 129,
     "win_rate": 0.3953488372093023,
@@ -920,7 +920,7 @@
     "worst_month": -0.026111329814939688,
     "worst_month_label": "2024-01",
     "longest_losing_streak": 10,
-    "exposure": 0.202386278896346
+    "exposure": 0.2021149836163241
    },
    "regimes": {
     "bear": {
@@ -996,7 +996,7 @@
    "metrics": {
     "return": 0.07405003678946276,
     "max_dd": -0.16660827496845065,
-    "sharpe": 0.3197778677078636,
+    "sharpe": 0.31963491036259933,
     "calmar": 0.44445593595807326,
     "trades": 234,
     "win_rate": 0.37606837606837606,
@@ -1005,7 +1005,7 @@
     "worst_month": -0.04157282505905324,
     "worst_month_label": "2025-01",
     "longest_losing_streak": 15,
-    "exposure": 1.1124533929903058
+    "exposure": 1.1109621686029192
    },
    "regimes": {
     "bear": {
@@ -1081,7 +1081,7 @@
    "metrics": {
     "return": 0.18731963600900636,
     "max_dd": -0.2679274441192735,
-    "sharpe": 0.44694314815734465,
+    "sharpe": 0.4467432878971052,
     "calmar": 0.6991431453569837,
     "trades": 979,
     "win_rate": 0.2686414708886619,
@@ -1090,7 +1090,7 @@
     "worst_month": -0.0643817496047302,
     "worst_month_label": "2025-10",
     "longest_losing_streak": 31,
-    "exposure": 1.9054436987322894
+    "exposure": 1.9028894846589217
    },
    "regimes": {
     "bear": {
@@ -1164,22 +1164,22 @@
    "reason": "baseline: \u0e01\u0e25\u0e22\u0e38\u0e17\u0e18\u0e4c\u0e17\u0e35\u0e48\u0e1a\u0e2d\u0e17\u0e15\u0e31\u0e27\u0e41\u0e23\u0e01\u0e43\u0e0a\u0e49\u0e2d\u0e22\u0e39\u0e48 (EMA9/21 + RSI<70) \u2014 \u0e15\u0e49\u0e2d\u0e07\u0e1e\u0e34\u0e2a\u0e39\u0e08\u0e19\u0e4c\u0e27\u0e48\u0e32\u0e21\u0e35 edge \u0e08\u0e23\u0e34\u0e07\u0e2b\u0e23\u0e37\u0e2d\u0e44\u0e21\u0e48",
    "kills": "\u0e15\u0e25\u0e32\u0e14 sideways",
    "metrics": {
-    "return": -0.3960375576089463,
-    "max_dd": -0.436307387836257,
-    "sharpe": -0.8067666157046195,
-    "calmar": -0.907703075056745,
-    "trades": 1124,
-    "win_rate": 0.28380782918149466,
-    "avg_r": -0.0728234395257824,
-    "profit_factor": 0.8564942901903888,
+    "return": -0.4023368614572237,
+    "max_dd": -0.4421866789838834,
+    "sharpe": -0.8244817739444436,
+    "calmar": -0.9098801039908483,
+    "trades": 1128,
+    "win_rate": 0.2828014184397163,
+    "avg_r": -0.07437453133816023,
+    "profit_factor": 0.8545437286537043,
     "worst_month": -0.11594894951640267,
     "worst_month_label": "2026-10",
     "longest_losing_streak": 27,
-    "exposure": 2.1655480984340043
+    "exposure": 2.163538873994638
    },
    "regimes": {
     "bear": {
-     "avg_month": -0.043055396953577206,
+     "avg_month": -0.04394845113028522,
      "months": 11
     },
     "chop": {
@@ -1251,7 +1251,7 @@
    "metrics": {
     "return": 0.342915971791359,
     "max_dd": -0.14026456260466968,
-    "sharpe": 0.81395747829334,
+    "sharpe": 0.8135930379288566,
     "calmar": 2.444779817678216,
     "trades": 267,
     "win_rate": 0.30711610486891383,
@@ -1260,7 +1260,7 @@
     "worst_month": -0.06196944470225041,
     "worst_month_label": "2024-04",
     "longest_losing_streak": 20,
-    "exposure": 2.170469798657718
+    "exposure": 2.1675603217158175
    },
    "regimes": {
     "bear": {
@@ -1336,7 +1336,7 @@
    "metrics": {
     "return": -0.18196756654269008,
     "max_dd": -0.3860846262983214,
-    "sharpe": -0.2608634706424979,
+    "sharpe": -0.2607468620369795,
     "calmar": -0.4713152354377526,
     "trades": 973,
     "win_rate": 0.33504624871531347,
@@ -1345,7 +1345,7 @@
     "worst_month": -0.09239939122707852,
     "worst_month_label": "2024-04",
     "longest_losing_streak": 26,
-    "exposure": 1.6478747203579418
+    "exposure": 1.6456657730116175
    },
    "regimes": {
     "bear": {
@@ -1421,7 +1421,7 @@
    "metrics": {
     "return": 0.38495409790654,
     "max_dd": -0.15483946837767049,
-    "sharpe": 0.8463093844797183,
+    "sharpe": 0.8459304031875965,
     "calmar": 2.486149700330891,
     "trades": 589,
     "win_rate": 0.3463497453310696,
@@ -1430,7 +1430,7 @@
     "worst_month": -0.0610915091075912,
     "worst_month_label": "2026-04",
     "longest_losing_streak": 20,
-    "exposure": 1.395674869500373
+    "exposure": 1.3938039916592195
    },
    "regimes": {
     "bear": {
@@ -1506,7 +1506,7 @@
    "metrics": {
     "return": 0.1568656618532429,
     "max_dd": -0.1745950763593912,
-    "sharpe": 0.3781730212238207,
+    "sharpe": 0.3780039393126448,
     "calmar": 0.8984540980430995,
     "trades": 403,
     "win_rate": 0.315136476426799,
@@ -1515,7 +1515,7 @@
     "worst_month": -0.04585410761108233,
     "worst_month_label": "2026-10",
     "longest_losing_streak": 20,
-    "exposure": 1.223564504101417
+    "exposure": 1.2219243372058386
    },
    "regimes": {
     "bear": {
@@ -1591,7 +1591,7 @@
    "metrics": {
     "return": -0.0005990034676360834,
     "max_dd": -0.07708718391981384,
-    "sharpe": -0.014913318888332153,
+    "sharpe": -0.01490665372416214,
     "calmar": -0.0077704676338827905,
     "trades": 60,
     "win_rate": 0.3333333333333333,
@@ -1600,7 +1600,7 @@
     "worst_month": -0.02628701738347272,
     "worst_month_label": "2024-04",
     "longest_losing_streak": 10,
-    "exposure": 0.2903803131991051
+    "exposure": 0.2899910634495085
    },
    "regimes": {
     "bear": {
@@ -1676,7 +1676,7 @@
    "metrics": {
     "return": -0.015318845303691875,
     "max_dd": -0.020711011876467622,
-    "sharpe": -0.6013150378914629,
+    "sharpe": -0.6010460276338669,
     "calmar": -0.7396473622371651,
     "trades": 10,
     "win_rate": 0.3,
@@ -1685,7 +1685,7 @@
     "worst_month": -0.006070783563026705,
     "worst_month_label": "2026-03",
     "longest_losing_streak": 5,
-    "exposure": 0.00790454884414616
+    "exposure": 0.007893952934167411
    },
    "regimes": {
     "bear": {
@@ -1761,7 +1761,7 @@
    "metrics": {
     "return": 0.15455406149388007,
     "max_dd": -0.1642066834641156,
-    "sharpe": 0.3751979608984723,
+    "sharpe": 0.3750302101735438,
     "calmar": 0.9412166315852488,
     "trades": 330,
     "win_rate": 0.31212121212121213,
@@ -1770,7 +1770,7 @@
     "worst_month": -0.07103989998867999,
     "worst_month_label": "2024-12",
     "longest_losing_streak": 14,
-    "exposure": 1.026696495152871
+    "exposure": 1.0253202263926124
    },
    "regimes": {
     "bear": {
@@ -1846,7 +1846,7 @@
    "metrics": {
     "return": 0.3656809084819317,
     "max_dd": -0.19085638882434508,
-    "sharpe": 0.6278501346766048,
+    "sharpe": 0.6275692283125349,
     "calmar": 1.9160003536401737,
     "trades": 717,
     "win_rate": 0.298465829846583,
@@ -1855,7 +1855,7 @@
     "worst_month": -0.06177263714314318,
     "worst_month_label": "2026-07",
     "longest_losing_streak": 33,
-    "exposure": 1.8181953765846384
+    "exposure": 1.8157581173666963
    },
    "regimes": {
     "bear": {
@@ -1925,7 +1925,7 @@
    "metrics": {
     "return": -0.5401747161822246,
     "max_dd": -0.5668005481980327,
-    "sharpe": -1.5207729418044635,
+    "sharpe": -1.5200889563708155,
     "calmar": -0.9530243361611827,
     "trades": 595,
     "win_rate": 0.30756302521008405,
@@ -1934,7 +1934,7 @@
     "worst_month": -0.10944937186465864,
     "worst_month_label": "2026-06",
     "longest_losing_streak": 26,
-    "exposure": 1.6495152870991796
+    "exposure": 1.6473041406017277
    },
    "regimes": {
     "bear": {
