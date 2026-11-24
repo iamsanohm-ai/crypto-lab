@@ -85,3 +85,6 @@
 {"ts": "2026-11-24T20:07:08+00:00", "strategy": "golden_cross_50_200", "role": "challenger_1", "mode": "paper", "event": "TICK", "equity": 500, "cash": 500, "positions": [], "new_bar": true}
 {"ts": "2026-11-24T20:07:08+00:00", "strategy": "breakout_funding_filter", "role": "challenger_2", "mode": "paper", "event": "SIGNALS", "bar": "2026-11-24 16:00:00+00:00", "candidates": []}
 {"ts": "2026-11-24T20:07:08+00:00", "strategy": "breakout_funding_filter", "role": "challenger_2", "mode": "paper", "event": "TICK", "equity": 500, "cash": 500, "positions": [], "new_bar": true}
+{"ts": "2026-11-24T20:07:51+00:00", "strategy": "keltner_trend", "role": "champion", "mode": "paper", "event": "TICK", "equity": 500, "cash": 500, "positions": [], "new_bar": false}
+{"ts": "2026-11-24T20:07:51+00:00", "strategy": "golden_cross_50_200", "role": "challenger_1", "mode": "paper", "event": "TICK", "equity": 500, "cash": 500, "positions": [], "new_bar": false}
+{"ts": "2026-11-24T20:07:51+00:00", "strategy": "breakout_funding_filter", "role": "challenger_2", "mode": "paper", "event": "TICK", "equity": 500, "cash": 500, "positions": [], "new_bar": false}
