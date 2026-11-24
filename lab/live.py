@@ -312,6 +312,16 @@ def run_once(cfg, champ, cache, dry=False):
             ok, why = sentinel.review_order(order, equity, float(m.close[T, j]))
             if not ok:
                 log("SENTINEL_REJECT", **order, reason=why); continue
+            from lab import grok
+            g = grok.review(cfg, {"symbol": sym, "strategy": champ["name"], "price_now": px,
+                                  "signal_bar_close": float(m.close[T, j]), "stop": px - dist,
+                                  "btc_close": float(m.close[T, m.symbols.index("BTCUSDT")]) if "BTCUSDT" in m.symbols else None,
+                                  "utc_time": now_iso(), "strategy_reason": IDEAS[champ["name"]]["reason"]})
+            if g is not None:
+                gmode = (cfg.get("grok") or {}).get("mode", "shadow")
+                log("GROK_REVIEW", symbol=sym, mode=gmode, **g)
+                if gmode == "veto" and g["decision"] == "veto":
+                    log("GROK_VETO", symbol=sym, reason=g["reason"]); continue
             if dry:
                 log("DRY_BUY", **order); continue
             cost = notional * (1 + c)

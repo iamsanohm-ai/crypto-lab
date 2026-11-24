@@ -79,8 +79,8 @@
     draw('events', (el) => {
       el.replaceChildren();
       if (!D.events.length) { el.append(mk('div', 'ct-empty', 'ยังไม่มีสัญญาณหรือเทรด บอทตรวจทุกชั่วโมง และจะแสดงที่นี่เมื่อกลยุทธ์ส่งสัญญาณซื้อ/ขาย หรือ Sentinel ปฏิเสธ/หยุดการเทรด')); return; }
-      const kind = {BUY: 'buy', SELL: 'sell', SENTINEL_HALT: 'warn', SENTINEL_REJECT: 'warn', ERROR: 'warn'};
-      const name = {BUY: 'ซื้อ', SELL: 'ขาย', SENTINEL_HALT: 'Sentinel หยุด', SENTINEL_REJECT: 'Sentinel ปฏิเสธ', SENTINEL_RESUME: 'กลับมาเทรด', ERROR: 'ข้อผิดพลาด', SIGNALS: 'สัญญาณ'};
+      const kind = {BUY: 'buy', SELL: 'sell', SENTINEL_HALT: 'warn', SENTINEL_REJECT: 'warn', ERROR: 'warn', GROK_VETO: 'warn'};
+      const name = {BUY: 'ซื้อ', SELL: 'ขาย', SENTINEL_HALT: 'Sentinel หยุด', SENTINEL_REJECT: 'Sentinel ปฏิเสธ', SENTINEL_RESUME: 'กลับมาเทรด', ERROR: 'ข้อผิดพลาด', SIGNALS: 'สัญญาณ', GROK_REVIEW: 'Grok ตรวจ', GROK_VETO: 'Grok คัดค้าน'};
       for (const e of D.events) { const card = mk('div', 'ct-ev ' + (kind[e.event] || 'info')); const h = mk('div', 'h');
         h.append(mk('span', null, (name[e.event] || e.event) + (e.symbol ? ' · ' + e.symbol : '')), mk('span', 't', fmt.time(e.time)));
         const bits = [ROLE[e.role] || e.strategy]; if (e.price != null) bits.push('@ ' + fmt.px(e.price));

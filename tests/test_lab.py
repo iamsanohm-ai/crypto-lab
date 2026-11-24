@@ -125,3 +125,35 @@ def test_data_dirs_created():
     from lab.data import DATA
     for sub in ("", "klines", "funding"):
         assert (DATA / sub).is_dir()
+
+
+# ---------- Grok reviewer ----------
+from lab import grok
+
+
+def test_grok_disabled_or_no_key(monkeypatch):
+    monkeypatch.delenv("XAI_API_KEY", raising=False)
+    assert grok.review({"grok": {"enabled": True}}, {}) is None
+    monkeypatch.setenv("XAI_API_KEY", "x")
+    assert grok.review({"grok": {"enabled": False}}, {}) is None
+
+
+def test_grok_parse_and_rules(tmp_path, monkeypatch):
+    monkeypatch.setattr(grok, "USAGE", tmp_path / "u.json")
+    monkeypatch.setenv("XAI_API_KEY", "x")
+    cfg = {"grok": {"enabled": True, "max_calls_per_day": 3, "min_veto_confidence": 0.6}}
+    r = grok.review(cfg, {}, post=lambda b: 'ok {"decision":"veto","confidence":0.9,"reason":"exchange hack"}')
+    assert r["decision"] == "veto"
+    r = grok.review(cfg, {}, post=lambda b: '{"decision":"veto","confidence":0.2,"reason":"meh"}')
+    assert r["decision"] == "allow"                      # veto ความมั่นใจต่ำ → ไม่นับ
+    r = grok.review(cfg, {}, post=lambda b: "BUY 10x leverage now!!")
+    assert r["decision"] == "allow"                      # ตอบผิดรูปแบบ → allow (สั่งซื้อเองไม่ได้)
+    assert grok.review(cfg, {}, post=lambda b: '{"decision":"allow"}') is None   # เกินโควตาวันนี้
+
+
+def test_grok_error_defaults_allow(tmp_path, monkeypatch):
+    monkeypatch.setattr(grok, "USAGE", tmp_path / "u.json")
+    monkeypatch.setenv("XAI_API_KEY", "x")
+    def boom(b): raise RuntimeError("timeout")
+    r = grok.review({"grok": {"enabled": True}}, {}, post=boom)
+    assert r["decision"] == "allow" and r.get("error")

@@ -100,12 +100,12 @@ def build():
     events = []
     for r in reversed(led):
         e = r["event"]
-        if e in ("BUY", "SELL", "SENTINEL_HALT", "SENTINEL_REJECT", "SENTINEL_RESUME", "ERROR") or \
+        if e in ("BUY", "SELL", "SENTINEL_HALT", "SENTINEL_REJECT", "SENTINEL_RESUME", "ERROR", "GROK_REVIEW", "GROK_VETO") or \
                 (e == "SIGNALS" and r.get("candidates")):
             events.append({"time": r["ts"][:16] + "Z", "event": e, "strategy": r.get("strategy", ""),
                            "role": r.get("role", ""), "symbol": (r.get("symbol") or "").replace("USDT", ""),
                            "price": r.get("price"), "pnl": r.get("pnl"),
-                           "detail": r.get("reason") or r.get("error") or ", ".join(r.get("candidates", []))})
+                           "detail": ((r.get("decision", "") + " · ") if e == "GROK_REVIEW" else "") + str(r.get("reason") or r.get("error") or "") or ", ".join(r.get("candidates", []))})
         if len(events) >= 40:
             break
     last_tick = max((r["ts"] for r in led if r["event"] == "TICK"), default=None)

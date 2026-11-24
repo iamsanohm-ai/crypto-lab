@@ -20,3 +20,9 @@ strategies:
   - {role: champion,     name: keltner_trend,           params: {k: 2.0, stop: 3.0}, crowned: "2026-11-22"}
   - {role: challenger_1, name: golden_cross_50_200,     params: {fast: 30, slow: 120}}
   - {role: challenger_2, name: breakout_funding_filter, params: {n: 60, fmax: 0.0001}}   # funding live = ESTIMATE
+grok:                       # Grok (xAI) เป็นผู้ตรวจสอบสัญญาณซื้อ: allow/veto เท่านั้น
+  enabled: false             # เปิดเมื่อใส่ XAI_API_KEY ใน GitHub Secrets แล้ว
+  mode: shadow               # shadow = บันทึกความเห็นอย่างเดียว | veto = ข้ามการซื้อเมื่อ Grok คัดค้าน (เจ้าของต้องอนุมัติก่อนเปลี่ยน)
+  model: grok-4              # ชื่อรุ่นของ xAI — เปลี่ยนให้ตรงกับรุ่นที่บัญชีคุณใช้ได้
+  min_veto_confidence: 0.6
+  max_calls_per_day: 20      # เพดานจำนวนครั้งต่อวัน คุมค่าใช้จ่าย
