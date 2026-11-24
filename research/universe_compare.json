@@ -1,0 +1,92 @@
+{
+ "generated_at": "2026-11-24T15:48:14+00:00",
+ "results": {
+  "top20": {
+   "strategies": {
+    "keltner_trend": {
+     "return": 0.38495409790654,
+     "max_dd": -0.15483946837767049,
+     "sharpe": 0.8455519305693386,
+     "trades": 589,
+     "win_rate": 0.3463497453310696,
+     "longest_losing_streak": 20
+    },
+    "golden_cross_50_200": {
+     "return": 0.342915971791359,
+     "max_dd": -0.14026456260466968,
+     "sharpe": 0.8132290866492623,
+     "trades": 267,
+     "win_rate": 0.30711610486891383,
+     "longest_losing_streak": 20
+    },
+    "breakout_funding_filter": {
+     "return": 0.3855240603474601,
+     "max_dd": -0.16607163099099997,
+     "sharpe": 0.6997803279549982,
+     "trades": 320,
+     "win_rate": 0.31875,
+     "longest_losing_streak": 19
+    }
+   },
+   "equal_weight": -0.6928792261147945
+  },
+  "top50": {
+   "strategies": {
+    "keltner_trend": {
+     "return": 0.22735873265540119,
+     "max_dd": -0.2676409561054499,
+     "sharpe": 0.4602387765795473,
+     "trades": 848,
+     "win_rate": 0.330188679245283,
+     "longest_losing_streak": 23
+    },
+    "golden_cross_50_200": {
+     "return": 0.27402636577135087,
+     "max_dd": -0.1660348104363909,
+     "sharpe": 0.6306094951325033,
+     "trades": 318,
+     "win_rate": 0.2893081761006289,
+     "longest_losing_streak": 19
+    },
+    "breakout_funding_filter": {
+     "return": -0.04527256638546562,
+     "max_dd": -0.3087958928370318,
+     "sharpe": -0.019502250051719322,
+     "trades": 563,
+     "win_rate": 0.27886323268206037,
+     "longest_losing_streak": 19
+    }
+   },
+   "equal_weight": -0.8424762628613123
+  },
+  "top100": {
+   "strategies": {
+    "keltner_trend": {
+     "return": -0.025852225333200085,
+     "max_dd": -0.18347407630529733,
+     "sharpe": 0.01850880163132817,
+     "trades": 1055,
+     "win_rate": 0.30995260663507107,
+     "longest_losing_streak": 16
+    },
+    "golden_cross_50_200": {
+     "return": -0.07642223777804169,
+     "max_dd": -0.20545793382636246,
+     "sharpe": -0.10680020020168132,
+     "trades": 433,
+     "win_rate": 0.2702078521939954,
+     "longest_losing_streak": 23
+    },
+    "breakout_funding_filter": {
+     "return": 0.01838546790618234,
+     "max_dd": -0.2349755359276935,
+     "sharpe": 0.11786895697500387,
+     "trades": 641,
+     "win_rate": 0.29329173166926675,
+     "longest_losing_streak": 18
+    }
+   },
+   "equal_weight": -0.8434543253107751
+  }
+ }
+}
