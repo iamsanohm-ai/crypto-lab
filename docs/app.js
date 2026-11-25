@@ -72,7 +72,7 @@
   document.addEventListener('click', (e) => {
     const b = e.target.closest && e.target.closest('.seg button'); if (!b) return;
     document.querySelectorAll('.seg button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-    chart.tf = b.dataset.tf; loadChart();
+    chart.tf = b.dataset.tf; try { localStorage.setItem('cl.tf', chart.tf); } catch (e) { /* ignore */ } loadChart();
   });
   document.addEventListener('change', (e) => { if (e.target && e.target.id === 'chart-sym') { chart.sym = e.target.value; loadChart(); } });
 
@@ -167,6 +167,7 @@
     draw('o_rsi', (el) => { const b = live().lastBar; el.textContent = b.rsi14 == null ? '—' : Number(b.rsi14).toFixed(1); });
     draw('o_chg', (el) => { const {chg} = live(); el.className = cls(chg); el.textContent = fmt.pct(chg); });
     draw('candles', candles);
+    draw('tickChart', tickChart);
     draw('marketRows', (tb) => {
       tb.replaceChildren();
       for (const r of D.market) { const tr = tb.insertRow(); tr.insertCell().textContent = r.symbol;
@@ -313,7 +314,8 @@
     const src = chartRows();
     if (!src.length) { el.append(mk('div', 'empty', 'โหลดกราฟไม่สำเร็จ — เบราว์เซอร์เชื่อมต่อ Binance ไม่ได้ ลองเลือกใหม่อีกครั้ง')); return; }
     const W = Math.max(280, el.clientWidth);
-    const rows = src.slice(-Math.max(40, Math.min(src.length, Math.floor(W / 6))));
+    const want = ['1m', '5m'].includes(chart.tf) ? Math.floor(W / 12) : chart.tf === '15m' ? Math.floor(W / 10) : Math.floor(W / 6);
+    const rows = src.slice(-Math.max(30, Math.min(src.length, want)));
     const short = ['1m', '5m', '15m'].includes(chart.tf);
     const H = W < 500 ? 340 : 400, mR = 64, mL = 4, top = 6, gap = 8, hVol = 50, hRsi = 62, hMain = H - hVol - hRsi - gap * 2 - 26;
     const yVol0 = top + hMain + gap, yRsi0 = yVol0 + hVol + gap + 4;
@@ -338,6 +340,7 @@
     [['ema20', '#33c3b4', y, 1.4], ['ema200', '#f2a93b', y, 1.8], ['rsi14', '#8f7cf2', yr, 1.3]].forEach(([k, c, sc, w]) => svg.append('path').datum(rows).attr('d', line((r) => r[k], sc)).style('fill', 'none').style('stroke', c).style('stroke-width', w));
     const last = rows[rows.length - 1], tc = last.close >= last.open ? up : down;
     svg.append('line').attr('x1', mL).attr('x2', W - mR).attr('y1', y(last.close)).attr('y2', y(last.close)).style('stroke', tc).style('stroke-dasharray', '2 3').style('opacity', .6);
+    svg.append('circle').attr('cx', x(last.time) + x.bandwidth() / 2).attr('cy', y(last.close)).attr('r', 8).attr('class', 'pulse').style('fill', tc);
     svg.append('rect').attr('x', W - mR + 2).attr('y', y(last.close) - 8).attr('width', mR - 4).attr('height', 16).attr('rx', 3).style('fill', tc);
     svg.append('text').attr('x', W - mR + 6).attr('y', y(last.close) + 4).style('fill', '#06120c').style('font-weight', 600).text(yf(last.close));
     const tip = tipBox(el), cross = svg.append('line').style('stroke', '#3a4757').attr('y1', top).attr('y2', H - 16).style('display', 'none');
@@ -396,10 +399,52 @@
     if (t && age != null) t.textContent = age <= 1 ? 'สด' : `${age} วินาทีที่แล้ว`;
     syncBar();
   }
+  const TICKS = [];   // [{t, p}] BTC price, max 5 minutes
+  function pushTick(p) { const now = Date.now(); const last = TICKS[TICKS.length - 1];
+    if (last && now - last.t < 900) { last.p = p; return; }
+    if (last && last.t > now) { last.p = p; return; }
+    TICKS.push({t: now, p}); while (TICKS.length && now - TICKS[0].t > 300000) TICKS.shift(); }
+  function tickChart(el) {
+    el.replaceChildren();
+    if (TICKS.length < 2) { el.append(mk('div', 'empty', 'กำลังรอราคาสด… (เส้นจะเริ่มไหลภายในไม่กี่วินาที)')); return; }
+    const W = Math.max(280, el.clientWidth), H = 150, mR = 70, now = Date.now(), t0 = now - 300000;
+    const ps = TICKS.map((x) => x.p), lo = Math.min(...ps), hi = Math.max(...ps), pad = Math.max((hi - lo) * 0.15, hi * 0.0002);
+    const x = (t) => (t - t0) / 300000 * (W - mR), y = (v) => 8 + (1 - (v - (lo - pad)) / ((hi + pad) - (lo - pad))) * (H - 26);
+    const svg = d3.select(el).append('svg').attr('viewBox', `0 0 ${W} ${H}`).attr('height', H).attr('role', 'img').attr('aria-label', 'ราคา BTC ทุกวินาที 5 นาทีล่าสุด');
+    [0, 60, 120, 180, 240, 300].forEach((s2) => { const xx = x(now - s2 * 1000); svg.append('line').attr('x1', xx).attr('x2', xx).attr('y1', 4).attr('y2', H - 18).style('stroke', '#121a22');
+      svg.append('text').attr('x', xx).attr('y', H - 4).attr('text-anchor', 'middle').text(s2 ? `-${s2 / 60}m` : 'ตอนนี้'); });
+    const up = ps[ps.length - 1] >= ps[0], col = up ? '#22c983' : '#f0525b';
+    const gid = 'tk' + (up ? 'u' : 'd');
+    const g = svg.append('defs').append('linearGradient').attr('id', gid).attr('x1', 0).attr('x2', 0).attr('y1', 0).attr('y2', 1);
+    g.append('stop').attr('offset', '0%').attr('stop-color', col).attr('stop-opacity', 0.3); g.append('stop').attr('offset', '100%').attr('stop-color', col).attr('stop-opacity', 0);
+    const line = d3.line().x((d) => x(d.t)).y((d) => y(d.p));
+    svg.append('path').datum(TICKS).attr('d', d3.area().x((d) => x(d.t)).y0(H - 18).y1((d) => y(d.p))).style('fill', `url(#${gid})`);
+    svg.append('path').datum(TICKS).attr('d', line).style('fill', 'none').style('stroke', col).style('stroke-width', 2);
+    const L = TICKS[TICKS.length - 1], lx = x(L.t), ly = y(L.p);
+    svg.append('line').attr('x1', 0).attr('x2', W - mR).attr('y1', ly).attr('y2', ly).style('stroke', col).style('stroke-dasharray', '2 3').style('opacity', .5);
+    svg.append('circle').attr('cx', lx).attr('cy', ly).attr('r', 9).attr('class', 'pulse').style('fill', col);
+    svg.append('circle').attr('cx', lx).attr('cy', ly).attr('r', 3.5).style('fill', col);
+    svg.append('rect').attr('x', W - mR + 4).attr('y', ly - 9).attr('width', mR - 6).attr('height', 18).attr('rx', 3).style('fill', col);
+    svg.append('text').attr('x', W - mR + 8).attr('y', ly + 4).style('fill', '#06120c').style('font-weight', 700).text(d3.format(',.0f')(L.p));
+    [hi, lo].forEach((v) => svg.append('text').attr('x', W - mR + 6).attr('y', y(v) + 3).text(d3.format(',.0f')(v)));
+    const ch = (L.p / ps[0] - 1) * 100;
+    const info = document.querySelector('[data-draw="tickInfo"]');
+    if (info) { info.className = 'note ' + cls(ch); info.textContent = `5 นาที ${ch > 0 ? '+' : ''}${ch.toFixed(3)}% · ${TICKS.length} จุด`; }
+  }
+
+  async function seedTicks() {   // fill the last 5 minutes immediately with Binance 1-second candles
+    const k = await restGet('/api/v3/klines?symbol=BTCUSDT&interval=1s&limit=300') || await restGet('/api/v3/klines?symbol=BTCUSDT&interval=1m&limit=6');
+    if (!k || !k.length) return;
+    const seeded = k.map((r) => ({t: r[0] + (k.length > 10 ? 999 : 59999), p: +r[4]}));
+    const later = TICKS.filter((x) => x.t > seeded[seeded.length - 1].t);
+    TICKS.length = 0; TICKS.push(...seeded, ...later);
+    redraw('tickChart');
+  }
+
   function applyTicker(sym, price, open24, qv) {
     const row = D.market.find((r) => r.symbol === sym);
     if (row) { row.last = price; if (open24) row.change_24h_pct = (price / open24 - 1) * 100; if (qv) row.quote_volume_24h = qv; }
-    if (sym === 'BTC') D.status[0].btc_close = price;
+    if (sym === 'BTC') { D.status[0].btc_close = price; pushTick(price); }
   }
   function applyBtc4h(bar) {
     const last = D.candles[D.candles.length - 1];
@@ -462,7 +507,7 @@
     if (!D) return;
     liveChip();
     if (dirty) {
-      dirty = false; ['btc', 'gate', 'marketRows', 'chartLive'].forEach(redraw);
+      dirty = false; ['btc', 'gate', 'marketRows', 'chartLive', 'tickChart'].forEach(redraw);
       const el = document.querySelector('[data-draw="btc"]'), p = D.status[0].btc_close;
       if (el && lastBtc != null && p !== lastBtc) { el.classList.remove('flash-up', 'flash-down'); void el.offsetWidth; el.classList.add(p > lastBtc ? 'flash-up' : 'flash-down'); }
       lastBtc = p;
@@ -476,5 +521,10 @@
 
   window.CL = {data: () => D, showTab: (t) => { history.replaceState(null, '', '#' + t); showTab(t); }, fmt};
   showTab(location.hash.slice(1));
-  load().then(connect); setInterval(load, 5 * 60 * 1000);
+  load().then(() => { connect(); seedTicks();
+    let pref = '15m'; try { pref = localStorage.getItem('cl.tf') || '15m'; } catch (e) { /* ignore */ }
+    if (pref !== '4h') { chart.tf = pref; document.querySelectorAll('.seg button').forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.tf === pref)));
+      loadChart().then(() => { if (!chart.rows || !chart.rows.length) { chart.tf = '4h'; document.querySelectorAll('.seg button').forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.tf === '4h'))); loadChart(); } }); }
+  });
+  setInterval(load, 5 * 60 * 1000);
 })();

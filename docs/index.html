@@ -318,6 +318,37 @@ details.notes summary{cursor:pointer;color:var(--fg)}
 .ov-track i{position:absolute;top:2px;bottom:2px;border-radius:2px}
 .ov-row .n{color:var(--dim);text-align:right}
 .or-hist{margin-top:6px;font-family:var(--sans);font-size:11px;color:var(--muted);line-height:1.45}
+/* alive */
+.livedot{width:8px;height:8px;border-radius:50%;background:var(--up);display:inline-block}
+@media (prefers-reduced-motion:no-preference){
+  .livedot{animation:blink 1.2s ease-in-out infinite}
+  .pulse{animation:pulse 1.6s ease-out infinite;transform-box:fill-box;transform-origin:center}
+  @keyframes blink{50%{opacity:.25}}
+  @keyframes pulse{0%{opacity:.55;transform:scale(.4)}100%{opacity:0;transform:scale(1.8)}}
+}
+.pulse{opacity:.35}
+/* orb motion */
+.orb-clock{font-size:16px;font-weight:700;color:#cfd8e3;letter-spacing:.04em;font-variant-numeric:tabular-nums}
+.scanning{float:right;color:var(--up);letter-spacing:.08em}
+.orb-stage{position:relative;max-width:640px;margin:0 auto;width:100%}
+.orb-sweep{position:absolute;left:3.5%;top:3.5%;right:3.5%;bottom:3.5%;border-radius:50%;pointer-events:none;
+  background:conic-gradient(from 0deg,transparent 0deg,rgba(242,169,59,.0) 300deg,rgba(242,169,59,.22) 356deg,rgba(242,169,59,.55) 359deg,transparent 360deg);
+  -webkit-mask:radial-gradient(circle,transparent 7%,#000 8%);mask:radial-gradient(circle,transparent 7%,#000 8%)}
+.orb-tape{overflow:hidden;border-top:1px solid var(--line);padding-top:8px;white-space:nowrap;font-size:11.5px}
+.tape-track{display:inline-flex;gap:28px}
+.tape-track span b{margin-left:6px}
+.or-auto{font-size:10px;color:var(--dim);margin-top:4px}
+.orb-dot.hot{stroke:#fff;stroke-width:1}
+@media (prefers-reduced-motion:no-preference){
+  .orb-sweep{animation:spin 5s linear infinite}
+  .scanning{animation:blink 1.2s ease-in-out infinite}
+  .tape-track{animation:tape 60s linear infinite}
+  .or-card{animation:cardin .5s ease-out}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  @keyframes cardin{from{opacity:.2;transform:translateY(4px)}to{opacity:1;transform:none}}
+}
+@media (prefers-reduced-motion:reduce){.orb-sweep{display:none}}
 .err{color:var(--down);font-family:var(--mono);padding:12px}
 @media (max-width:560px){.bar .wrap{flex-wrap:nowrap;gap:8px}.brand .bt{display:none}#live{padding:3px 7px}.authbtn{padding:5px 10px;font-size:12px}.btc small{display:none}.brand{font-size:15px}.chip.paper{display:none}.card{padding:13px}.bigv{font-size:24px}.gauge{grid-template-columns:1fr}.meta{display:none}.decision{padding:16px}}
 @media (prefers-reduced-motion:no-preference){.gate .fill{transition:width .6s ease}}
@@ -364,12 +395,16 @@ details.notes summary{cursor:pointer;color:var(--fg)}
         <div class="feed" data-draw="events"></div>
       </div>
     </div>
+    <div class="card livecard">
+      <h2><span class="livedot"></span>BTC ราคาสด · ทุกวินาที <span class="note" data-draw="tickInfo">—</span></h2>
+      <div class="chartbox" data-draw="tickChart" style="min-height:150px"></div>
+    </div>
     <div class="card">
       <h2><span data-draw="chartTitle">BTC/USDT · 4 ชั่วโมง</span> <span class="chip" data-draw="chartLive">—</span><span class="note" data-draw="candleTime">—</span></h2>
       <div class="chartctl">
         <select class="sel" id="chart-sym" aria-label="เลือกเหรียญ" data-draw="chartSym"></select>
         <div class="seg" role="group" aria-label="ช่วงเวลาแท่งเทียน">
-          <button type="button" data-tf="1m">1 นาที</button><button type="button" data-tf="5m">5 นาที</button><button type="button" data-tf="15m">15 นาที</button><button type="button" data-tf="1h">1 ชม.</button><button type="button" data-tf="4h" aria-pressed="true">4 ชม.</button>
+          <button type="button" data-tf="1m">1 นาที</button><button type="button" data-tf="5m">5 นาที</button><button type="button" data-tf="15m" aria-pressed="true">15 นาที</button><button type="button" data-tf="1h">1 ชม.</button><button type="button" data-tf="4h">4 ชม.</button>
         </div>
       </div>
       <div class="legend"><span><i style="background:var(--accent)"></i>EMA20</span><span><i style="background:var(--amber)"></i>EMA200 = เส้นแบ่งขาขึ้น/ขาลง</span><span><i style="background:var(--violet)"></i>RSI 14</span></div>
@@ -416,15 +451,17 @@ details.notes summary{cursor:pointer;color:var(--fg)}
       <div class="orb-bar">
         <div class="orb-brand"><span class="ob-dot"></span>ORB // BINANCE SCANNER</div>
         <div class="orb-head" id="orb-head"></div>
+        <div class="orb-clock" id="orb-clock">--:--:-- UTC</div>
         <label class="check orb-tog"><input type="checkbox" id="orb-illiquid"> แสดงเหรียญสภาพคล่องต่ำในทะเบียน</label>
       </div>
       <div class="orb-grid">
         <aside class="orb-panel"><div class="op-t">ผลตรวจ 5 ด้าน · % เหรียญที่ผ่าน (≥70% ของน้ำหนัก)</div><div id="orb-checks"></div></aside>
-        <div class="orb-panel orb-center"><div class="op-t">THE SCANNER · ใกล้ศูนย์กลาง = คะแนนสูง</div><div id="orb-graph"></div></div>
+        <div class="orb-panel orb-center"><div class="op-t">THE SCANNER · ใกล้ศูนย์กลาง = คะแนนสูง <span class="scanning">● SCANNING</span></div><div class="orb-stage"><div id="orb-graph"></div><div class="orb-sweep" aria-hidden="true"></div></div></div>
         <aside class="orb-panel"><div class="op-t">ทะเบียนคะแนน (VERDICT)</div><div id="orb-reg"></div></aside>
       </div>
       <div class="orb-panel orb-detail" id="orb-detail"></div>
       <div class="orb-panel" id="orb-valid"></div>
+      <div class="orb-tape" aria-hidden="true"><div class="tape-track" id="orb-tape"></div></div>
       <p class="help" style="margin:0">คะแนนนี้ใช้จัดลำดับความน่าสนใจตามกฎของระบบ ไม่ใช่การทำนายราคา · ถูก cap ไม่เกิน 59 เมื่อ: BTC ขาลง, เหรียญอยู่ใต้ EMA200, สภาพคล่องต่ำ หรือข้อมูลไม่พอ</p>
     </div>
     <div class="card">
@@ -645,8 +682,8 @@ details.notes summary{cursor:pointer;color:var(--fg)}
 </dialog>
 
 <script src="d3.min.js"></script>
-<script src="app.js?v=20261125d"></script>
+<script src="app.js?v=20261125f"></script>
 <script src="trade.js?v=20261125c"></script>
 <script src="library.js?v=20261125b"></script>
-<script src="orb.js?v=20261125c"></script>
+<script src="orb.js?v=20261125d"></script>
 </body></html>

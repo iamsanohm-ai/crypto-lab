@@ -68,6 +68,10 @@
       dot.addEventListener('keydown', (e) => { if (e.key === 'Enter') select(r); });
       nodes.append(dot);
     });
+    const hot = rows.filter((r) => r.status !== 'illiquid').slice(0, 5).map((r) => r.symbol);
+    pts.forEach((r, i) => { if (!hot.includes(r.symbol)) return;
+      const ang = (i / n) * Math.PI * 2 - Math.PI / 2, rad = 46 + (1 - Math.min(100, r.raw_score) / 100) * 230;
+      nodes.append(sv('circle', {cx: C + Math.cos(ang) * rad, cy: C + Math.sin(ang) * rad, r: 10, class: 'pulse', fill: STATUS_COL[r.status] || '#888'})); });
     svg.append(rays, nodes);
     svg.append(sv('circle', {cx: C, cy: C, r: 22, fill: '#0b1016', stroke: '#f2a93b', 'stroke-width': 1.5}));
     const tt = sv('text', {x: C, y: C + 4, 'text-anchor': 'middle', fill: '#f2a93b', 'font-size': 12, 'font-family': 'var(--mono)', 'font-weight': 700}); tt.textContent = 'BTC'; svg.append(tt);
@@ -84,6 +88,7 @@
       const bar = mk('div', 'or-bar'); const fill = mk('i'); fill.style.width = r0.score + '%'; bar.append(fill);
       card.append(top, bar);
       if (r0.caps.length) card.append(mk('div', 'or-cap', `CAP ≤59 · raw ${r0.raw_score}`));
+      card.append(Object.assign(mk('div', 'or-auto'), {id: 'orb-auto'}));
       const V = window.CL && window.CL.data().orb_validation;
       const hb = V && V.horizons['30d'] && V.horizons['30d'].buckets.find((b) => b.bucket === bucketOf(r0.score));
       if (hb && hb.mean_pct != null) card.append(mk('div', 'or-hist', `ในอดีต เหรียญคะแนน ${hb.bucket} ให้ผลตอบแทน 30 วันถัดไปเฉลี่ย ${hb.mean_pct > 0 ? '+' : ''}${hb.mean_pct}% (ชนะ ${hb.win_rate_pct}%)`));
@@ -159,7 +164,23 @@
     el.append(grid);
   }
 
-  function select(r) { sel = r; draw(true); }
+  let lastPick = 0, cycleI = 0;
+  function select(r, auto) { sel = r; if (!auto) lastPick = Date.now(); draw(true); }
+  setInterval(() => {
+    const D = window.CL && window.CL.data(); const S = D && D.scanner; if (!S || !S.orb || document.hidden) return;
+    if (Date.now() - lastPick < 20000) return;
+    const top = ranked(S).filter((r) => r.status !== 'illiquid').slice(0, 8); if (!top.length) return;
+    cycleI = (cycleI + 1) % top.length; select(top[cycleI], true);
+    const a = document.getElementById('orb-auto'); if (a) a.textContent = `วนแสดงอัตโนมัติ ${cycleI + 1}/${top.length} · แตะเหรียญเพื่อหยุด 20 วินาที`;
+  }, 5000);
+  setInterval(() => { const c = document.getElementById('orb-clock'); if (c) c.textContent = new Date().toISOString().slice(11, 19) + ' UTC'; }, 1000);
+  function tape(S, rows) {
+    const el = document.getElementById('orb-tape'); if (!el) return; el.replaceChildren();
+    const items = rows.filter((r) => r.status !== 'illiquid').slice(0, 30);
+    for (let k = 0; k < 2; k++) for (const r of items) {
+      const sp = mk('span'); sp.append(r.symbol, mk('b', (r.change_24h_pct || 0) >= 0 ? 'pos' : 'neg', fmtPct(r.change_24h_pct, 2)), mk('b', scoreCls(r.score), String(r.score)));
+      el.append(sp); }
+  }
   function draw(force) {
     const D = window.CL && window.CL.data(); const S = D && D.scanner;
     const root = $('#orb'); if (!root) return;
@@ -171,6 +192,7 @@
     if (sel) sel = rows.find((r) => r.symbol === sel.symbol) || null;
     if (!sel) sel = rows.find((r) => r.status !== 'illiquid') || rows[0];
     header(S, rows); checks(S, rows); graph(S, rows); registry(S, rows); detail(S); validation(D.orb_validation);
+    if (!document.getElementById('orb-tape').childElementCount || force === 'tape') tape(S, rows);
   }
   document.addEventListener('change', (e) => { if (e.target && e.target.id === 'orb-illiquid') { showIlliquid = e.target.checked; draw(true); } });
   window.CLOrb = {render: () => draw(false)};
