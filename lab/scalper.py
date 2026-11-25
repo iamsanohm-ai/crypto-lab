@@ -173,7 +173,7 @@ class Scalper:
                 self.s["shadow"].append(dict(base))
             held = any(p["sym"] == sym for p in self.s["positions"])
             if not g["open"]:
-                self.ev(f"สัญญาณ {sym} → เทรดเงา (ยังไม่ใช้เงิน: ผลเงาล่าสุด {g['n']}/{GATE_N} ครั้ง เฉลี่ย {g['avg_pct']}%)", "info"); continue
+                self.ev(f"สัญญาณ {sym} → เทรดเงา (ยังไม่ใช้เงิน: เก็บผลเงาแล้ว {g['n']}/{GATE_N} ครั้ง" + (f" เฉลี่ย {g['avg_pct']:+.2f}%)" if g['avg_pct'] is not None else ")"), "info"); continue
             if not ok or held or len(self.s["positions"]) >= MAX_POS: continue
             eq = self.equity(); notional = min(eq * RISK / ex["sl"], MAX_NOTIONAL, self.s["cash"] * 0.98)
             if notional < 5: continue
