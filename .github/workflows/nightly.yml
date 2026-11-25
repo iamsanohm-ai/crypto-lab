@@ -37,10 +37,10 @@ jobs:
           echo "job=$J" >> "$GITHUB_OUTPUT"
       - name: Judge (data refresh + walk-forward + final check + cards)
         if: steps.pick.outputs.job == 'judge'
-        run: python -m lab.universe && python -m lab.fetch && python -m pytest -q && python -m lab.nightly && python -m lab.library && python -m lab.orb_backtest && python -m lab.dashboard
+        run: python -m lab.universe && python -m lab.fetch && python -m pytest -q && python -m lab.nightly && python -m lab.library && python -m lab.orb_backtest
       - name: Morning brief
         if: steps.pick.outputs.job == 'brief'
-        run: python -m lab.live && python -m lab.notify && python -m lab.dashboard
+        run: python -m lab.notify
       - name: Grok connectivity check
         if: steps.pick.outputs.job == 'grokcheck'
         run: python -m lab.grok_check
@@ -51,7 +51,7 @@ jobs:
         run: |
           git config user.name "crypto-lab-bot"
           git config user.email "crypto-lab-bot@users.noreply.github.com"
-          git add research state ledger dashboard/data.json docs/data.json docs/library.json
+          git add research docs/library.json   # state/ledger/data.json เขียนโดย bot-loop เท่านั้น (กันชนกัน)
           git diff --cached --quiet && exit 0
           git commit -m "${{ steps.pick.outputs.job }} $(date -u +%Y-%m-%dT%H:%MZ)"
           for i in 1 2 3; do git pull --rebase origin main && git push origin main && exit 0; git rebase --abort 2>/dev/null; sleep 5; done

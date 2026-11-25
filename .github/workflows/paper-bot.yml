@@ -1,8 +1,7 @@
 # บอท paper trading + Sentinel ทุกชั่วโมง — รันบน GitHub Actions (ฟรี, ไม่ใช้ AI)
 name: paper-bot
 on:
-  schedule:
-    - cron: "7 * * * *"      # ทุกชั่วโมงนาทีที่ 7 (UTC)
+  # ปิดตารางเวลาแล้ว — bot-loop เป็นตัวรันหลัก (กันสองตัวเขียน state/ledger ชนกัน); กดรันเองได้จากแท็บ Actions
   workflow_dispatch: {}
 permissions:
   contents: write
