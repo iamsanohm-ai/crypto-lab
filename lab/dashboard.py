@@ -125,6 +125,9 @@ def build():
     scan_p = ROOT / "dashboard" / "scanner.json"
     scanner = json.loads(scan_p.read_text()) if scan_p.exists() else None
 
+    ov_p = ROOT / "research" / "orb_validation.json"
+    orb_validation = json.loads(ov_p.read_text()) if ov_p.exists() else None
+
     curves_p = ROOT / "research" / "bt_curves.json"
     curves = json.loads(curves_p.read_text()) if curves_p.exists() else []
 
@@ -138,7 +141,7 @@ def build():
         "candles": candles(), "market": market(members or ["BTCUSDT", "ETHUSDT", "SOLUSDT"]),
         "accounts": accounts, "equity": equity, "positions": positions, "risk": risk, "events": events,
         "leaderboard": leaderboard, "bt_curves": curves,
-        "scanner": scanner,
+        "scanner": scanner, "orb_validation": orb_validation,
     }
     last_closed = [c for c in out["candles"] if c["closed"]][-1]
     out["status"][0].update(btc_close=last_closed["close"], btc_ema200=last_closed["ema200"],

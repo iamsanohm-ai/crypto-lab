@@ -1,0 +1,96 @@
+{
+ "generated_at": "2026-11-25T13:50:01+00:00",
+ "period": [
+  "2023-11-01",
+  "2026-11-24"
+ ],
+ "universe": "Top 100 ตามสภาพคล่องรายเดือน (point-in-time รวมเหรียญที่ถูกถอด)",
+ "samples": 15893,
+ "weeks": 160,
+ "cost_roundtrip": 0.003,
+ "horizons": {
+  "7d": {
+   "buckets": [
+    {
+     "bucket": "0–39",
+     "n": 7799,
+     "mean_pct": -1.21,
+     "median_pct": -2.72,
+     "win_rate_pct": 41.0
+    },
+    {
+     "bucket": "40–59",
+     "n": 4912,
+     "mean_pct": -0.32,
+     "median_pct": -1.63,
+     "win_rate_pct": 43.4
+    },
+    {
+     "bucket": "60–79",
+     "n": 2423,
+     "mean_pct": -0.59,
+     "median_pct": -2.41,
+     "win_rate_pct": 41.5
+    },
+    {
+     "bucket": "80–100",
+     "n": 658,
+     "mean_pct": -2.53,
+     "median_pct": -4.87,
+     "win_rate_pct": 34.5
+    }
+   ],
+   "ic_mean": 0.064,
+   "ic_positive_weeks_pct": 63.5,
+   "all_mean_pct": -0.9,
+   "top_minus_all_pct": -0.11,
+   "uncapped_70_mean_pct": -1.64,
+   "uncapped_70_n": 1651,
+   "capped_mean_pct": -1.11,
+   "capped_n": 11061
+  },
+  "30d": {
+   "buckets": [
+    {
+     "bucket": "0–39",
+     "n": 7570,
+     "mean_pct": -4.73,
+     "median_pct": -8.9,
+     "win_rate_pct": 35.4
+    },
+    {
+     "bucket": "40–59",
+     "n": 4841,
+     "mean_pct": -0.02,
+     "median_pct": -4.39,
+     "win_rate_pct": 41.7
+    },
+    {
+     "bucket": "60–79",
+     "n": 2423,
+     "mean_pct": -0.16,
+     "median_pct": -6.13,
+     "win_rate_pct": 40.5
+    },
+    {
+     "bucket": "80–100",
+     "n": 658,
+     "mean_pct": -2.95,
+     "median_pct": -8.15,
+     "win_rate_pct": 35.6
+    }
+   ],
+   "ic_mean": 0.117,
+   "ic_positive_weeks_pct": 76.3,
+   "all_mean_pct": -2.47,
+   "top_minus_all_pct": 1.71,
+   "uncapped_70_mean_pct": -1.43,
+   "uncapped_70_n": 1651,
+   "capped_mean_pct": -3.71,
+   "capped_n": 10761
+  }
+ },
+ "best_bucket": "40–59",
+ "verdict": "filter",
+ "verdict_th": "ใช้ได้เป็น 'ตัวกรอง' — เหรียญคะแนน 0–39 ผลตอบแทนแย่ที่สุด (-4.7% ใน 30 วัน) ควรเลี่ยง แต่คะแนนสูงสุดไม่ได้ดีที่สุด (ช่วงที่ดีที่สุดคือ 40–59) เพราะมักเป็นเหรียญที่วิ่งไปไกลแล้ว — อย่าไล่ซื้อเพราะคะแนนสูงอย่างเดียว"
+}

@@ -84,6 +84,9 @@
       const bar = mk('div', 'or-bar'); const fill = mk('i'); fill.style.width = r0.score + '%'; bar.append(fill);
       card.append(top, bar);
       if (r0.caps.length) card.append(mk('div', 'or-cap', `CAP ≤59 · raw ${r0.raw_score}`));
+      const V = window.CL && window.CL.data().orb_validation;
+      const hb = V && V.horizons['30d'] && V.horizons['30d'].buckets.find((b) => b.bucket === bucketOf(r0.score));
+      if (hb && hb.mean_pct != null) card.append(mk('div', 'or-hist', `ในอดีต เหรียญคะแนน ${hb.bucket} ให้ผลตอบแทน 30 วันถัดไปเฉลี่ย ${hb.mean_pct > 0 ? '+' : ''}${hb.mean_pct}% (ชนะ ${hb.win_rate_pct}%)`));
       el.append(card);
     }
     const list = mk('div', 'or-list');
@@ -130,18 +133,44 @@
     el.append(left, mid, right);
   }
 
+  const bucketOf = (v) => v >= 80 ? '80–100' : v >= 60 ? '60–79' : v >= 40 ? '40–59' : '0–39';
+  function validation(V) {
+    const el = $('#orb-valid'); el.replaceChildren();
+    if (!V) { el.append(mk('div', 'empty', 'ยังไม่มีผลทดสอบย้อนหลังของคะแนน (Judge จะสร้างคืนนี้)')); return; }
+    const h = mk('div', 'ov-head');
+    h.append(mk('b', null, 'คะแนนนี้ได้ผลจริงไหม? ทดสอบย้อนหลัง'), mk('span', 'oh-i', `${V.weeks} สัปดาห์ · ${V.samples.toLocaleString()} ตัวอย่าง · ${V.period[0]} → ${V.period[1]} · หักต้นทุน ${(V.cost_roundtrip * 100).toFixed(1)}%`));
+    el.append(h, mk('div', 'ov-verdict ' + V.verdict, V.verdict_th));
+    const grid = mk('div', 'ov-grid');
+    for (const [hk, label] of [['7d', 'ผลตอบแทน 7 วันถัดไป (เฉลี่ย)'], ['30d', 'ผลตอบแทน 30 วันถัดไป (เฉลี่ย)']]) {
+      const hv = V.horizons[hk]; if (!hv) continue;
+      const box = mk('div'); box.append(mk('div', 'ov-h', `${label} · IC ${hv.ic_mean} (บวก ${hv.ic_positive_weeks_pct}% ของสัปดาห์)`));
+      const mx = Math.max(1, ...hv.buckets.map((b) => Math.abs(b.mean_pct || 0)));
+      for (const b of hv.buckets) {
+        const row = mk('div', 'ov-row'), tr = mk('div', 'ov-track'), bar = mk('i');
+        const v = b.mean_pct || 0, w = Math.abs(v) / mx * 50;
+        bar.style.left = (v >= 0 ? 50 : 50 - w) + '%'; bar.style.width = w + '%'; bar.style.background = v >= 0 ? 'var(--up)' : 'var(--down)';
+        tr.append(bar);
+        row.append(mk('span', null, b.bucket), tr, mk('b', v >= 0 ? 'pos' : 'neg', (v > 0 ? '+' : '') + v.toFixed(2) + '%'), mk('span', 'n', `ชนะ ${b.win_rate_pct}%`));
+        box.append(row);
+      }
+      box.append(mk('div', 'ov-h', `ค่าเฉลี่ยทั้งตลาด ${hv.all_mean_pct > 0 ? '+' : ''}${hv.all_mean_pct}% · ช่วงทดสอบเป็นตลาดผสม/ขาลงสำหรับ altcoin ส่วนใหญ่`));
+      grid.append(box);
+    }
+    el.append(grid);
+  }
+
   function select(r) { sel = r; draw(true); }
   function draw(force) {
     const D = window.CL && window.CL.data(); const S = D && D.scanner;
     const root = $('#orb'); if (!root) return;
     if (!S || !S.orb) { root.hidden = true; return; }
     root.hidden = false;
-    const key = S.generated_at + '|' + (sel && sel.symbol) + '|' + showIlliquid;
+    const key = S.generated_at + '|' + (sel && sel.symbol) + '|' + showIlliquid + '|' + (D.orb_validation ? D.orb_validation.generated_at : '');
     if (!force && key === lastKey) return; lastKey = key;
     const rows = ranked(S);
     if (sel) sel = rows.find((r) => r.symbol === sel.symbol) || null;
     if (!sel) sel = rows.find((r) => r.status !== 'illiquid') || rows[0];
-    header(S, rows); checks(S, rows); graph(S, rows); registry(S, rows); detail(S);
+    header(S, rows); checks(S, rows); graph(S, rows); registry(S, rows); detail(S); validation(D.orb_validation);
   }
   document.addEventListener('change', (e) => { if (e.target && e.target.id === 'orb-illiquid') { showIlliquid = e.target.checked; draw(true); } });
   window.CLOrb = {render: () => draw(false)};
