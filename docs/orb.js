@@ -109,39 +109,168 @@
     el.append(f);
   }
 
-  function graph(S, rows) {
-    const el = $('#orb-graph'); el.replaceChildren();
-    const W = 600, C = 300;
-    const svg = sv('svg', {viewBox: `0 0 ${W} ${W}`, class: 'orb-svg', role: 'img', 'aria-label': 'กราฟวงกลม: ใกล้ศูนย์กลาง = คะแนนสูง, มุม = ความสัมพันธ์กับ BTC'});
-    [80, 160, 240].forEach((r) => svg.append(sv('circle', {cx: C, cy: C, r, fill: 'none', stroke: '#16202a', 'stroke-dasharray': '2 4'})));
-    const pts = rows.slice().sort((a, b) => (b.corr_btc ?? -1) - (a.corr_btc ?? -1));
-    const n = pts.length || 1;
-    const rays = sv('g', {}), nodes = sv('g', {});
-    pts.forEach((r, i) => {
-      const ang = (i / n) * Math.PI * 2 - Math.PI / 2;
-      const rad = 46 + (1 - Math.min(100, r.raw_score) / 100) * 230;
-      const x = C + Math.cos(ang) * rad, y = C + Math.sin(ang) * rad;
-      const hiCorr = (r.corr_btc ?? 0) >= 0.5, isSel = sel && sel.symbol === r.symbol;
-      rays.append(sv('line', {x1: C, y1: C, x2: x, y2: y, stroke: isSel ? '#f2a93b' : hiCorr ? '#d9b84a' : '#c9d3dd', 'stroke-opacity': isSel ? 1 : r.status === 'illiquid' ? 0.06 : 0.22, 'stroke-width': isSel ? 2 : 0.7}));
-      const liq = Math.max(6, Math.log10(Math.max(1, r.quote_volume_24h)));
-      const dot = sv('circle', {cx: x, cy: y, r: Math.max(1.6, (liq - 5.5) * 1.6), fill: STATUS_COL[r.status] || '#888', 'fill-opacity': r.status === 'illiquid' ? 0.5 : 0.95, class: 'orb-dot', tabindex: 0});
-      if (isSel) dot.setAttribute('stroke', '#fff'), dot.setAttribute('stroke-width', 2);
-      if ((flashUntil[r.symbol] || 0) > Date.now()) dot.setAttribute('class', 'orb-dot blip');
-      const t = sv('title', {}); t.textContent = `${r.symbol} · คะแนน ${r.score} (raw ${r.raw_score}) · corr BTC ${r.corr_btc ?? '—'}`; dot.append(t);
-      dot.addEventListener('click', () => select(r));
-      dot.addEventListener('keydown', (e) => { if (e.key === 'Enter') select(r); });
-      nodes.append(dot);
-    });
-    const hot = rows.filter((r) => r.status !== 'illiquid').slice(0, 5).map((r) => r.symbol);
-    pts.forEach((r, i) => { if (!hot.includes(r.symbol)) return;
-      const ang = (i / n) * Math.PI * 2 - Math.PI / 2, rad = 46 + (1 - Math.min(100, r.raw_score) / 100) * 230;
-      nodes.append(sv('circle', {cx: C + Math.cos(ang) * rad, cy: C + Math.sin(ang) * rad, r: 10, class: 'pulse', fill: STATUS_COL[r.status] || '#888'})); });
-    svg.append(rays, nodes);
-    svg.append(sv('circle', {cx: C, cy: C, r: 22, fill: '#0b1016', stroke: '#f2a93b', 'stroke-width': 1.5}));
-    const tt = sv('text', {x: C, y: C + 4, 'text-anchor': 'middle', fill: '#f2a93b', 'font-size': 12, 'font-family': 'var(--mono)', 'font-weight': 700}); tt.textContent = 'BTC'; svg.append(tt);
-    const lg = sv('text', {x: 8, y: W - 10, fill: '#5d6c7b', 'font-size': 11, 'font-family': 'var(--mono)'}); lg.textContent = 'ใกล้ศูนย์กลาง = คะแนนสูง · เส้นทอง = วิ่งตาม BTC มาก'; svg.append(lg);
-    el.append(svg);
+  // ================= NEURAL MAP (canvas) =================
+  // neuron = เหรียญ (ใกล้แกนกลาง/สว่าง = คะแนนสูง, มุม = ความสัมพันธ์กับ BTC) · synapse = เพื่อนบ้านใกล้กัน
+  // impulse = กระแสประสาท: ยิงเมื่อคะแนนของเหรียญเปลี่ยนจากราคาสด แล้วแผ่ไปยังเพื่อนบ้าน (+ สัญญาณพื้นหลังเบาๆ)
+  const NET = {nodes: new Map(), edges: [], nbr: new Map(), pulses: [], key: '', canvas: null, ctx: null, W: 0, H: 0, dpr: 1, hover: null, running: false};
+  const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const hash = (s, k) => { let h = 2166136261 ^ k; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return ((h >>> 0) % 10000) / 10000; };
+  const NCOL = {buy_signal: [34, 201, 131], uptrend: [51, 195, 180], downtrend: [240, 82, 91], illiquid: [70, 84, 100], new: [242, 169, 59]};
+
+  function ensureCanvas() {
+    const host = $('#orb-graph'); if (!host) return false;
+    if (!NET.canvas || !host.contains(NET.canvas)) {
+      host.replaceChildren();
+      NET.canvas = document.createElement('canvas'); NET.canvas.className = 'orb-canvas';
+      NET.canvas.setAttribute('role', 'img'); NET.canvas.setAttribute('aria-label', 'แผนที่ประสาท: เหรียญเป็นเซลล์ประสาท ใกล้แกนกลาง = คะแนนสูง จุดวิ่ง = คะแนนเปลี่ยนจากราคาสด');
+      host.append(NET.canvas); NET.ctx = NET.canvas.getContext('2d');
+      NET.canvas.addEventListener('mousemove', (e) => { const n = hit(e); NET.hover = n; NET.canvas.style.cursor = n ? 'pointer' : 'default'; });
+      NET.canvas.addEventListener('mouseleave', () => { NET.hover = null; });
+      NET.canvas.addEventListener('click', (e) => { const n = hit(e); if (n) { fire(n, 3); select(n.row); } });
+    }
+    const w = Math.min(760, host.clientWidth || 600), h = Math.round(w * 0.78);
+    if (w !== NET.W) { NET.W = w; NET.H = h; NET.dpr = Math.min(2, window.devicePixelRatio || 1);
+      NET.canvas.width = w * NET.dpr; NET.canvas.height = h * NET.dpr; NET.canvas.style.width = w + 'px'; NET.canvas.style.height = h + 'px'; NET.key = ''; }
+    return true;
   }
+  function hit(e) {
+    const rc = NET.canvas.getBoundingClientRect(), x = e.clientX - rc.left, y = e.clientY - rc.top; let best = null, bd = 196;
+    for (const n of NET.nodes.values()) { const d = (n.x - x) ** 2 + (n.y - y) ** 2; if (d < bd) { bd = d; best = n; } }
+    return best;
+  }
+  function target(r, i, n, rankPct) {
+    const W = NET.W, C = W / 2, CY = NET.H / 2;
+    if (r.symbol === 'BTC') return [C, CY];
+    const ang = (i / n) * Math.PI * 2 - Math.PI / 2 + (hash(r.symbol, 1) - 0.5) * 0.35;
+    let rad = W * (0.05 + 0.29 * Math.sqrt(rankPct));          // rank → even, dense fill (closer = higher rank)
+    rad *= 1 + (hash(r.symbol, 2) - 0.5) * 0.18;
+    const lobe = 1 + 0.08 * Math.cos(2 * ang) + 0.05 * Math.sin(3 * ang + 0.6) + 0.03 * Math.cos(5 * ang);
+    const cx = Math.cos(ang), side = cx >= 0 ? 1 : -1;            // two hemispheres with a central fissure
+    const x = C + cx * rad * lobe * 1.22 + side * W * 0.016, y = CY + Math.sin(ang) * rad * lobe * 0.98;
+    return [Math.max(10, Math.min(W - 10, x)), Math.max(10, Math.min(NET.H - 10, y))];
+  }
+  function graph(S, rows) {
+    if (!ensureCanvas()) return;
+    const pts = rows.slice().sort((a, b) => (b.corr_btc ?? -1) - (a.corr_btc ?? -1)), n = pts.length || 1;
+    const rank = new Map(rows.slice().sort((a, b) => b.raw_score - a.raw_score || b.score - a.score).map((r, i) => [r.symbol, i / Math.max(1, rows.length - 1)]));
+    const seen = new Set();
+    pts.forEach((r, i) => {
+      const [tx, ty] = target(r, i, n, rank.get(r.symbol)); seen.add(r.symbol);
+      let node = NET.nodes.get(r.symbol);
+      if (!node) { node = {sym: r.symbol, x: tx, y: ty, flash: 0}; NET.nodes.set(r.symbol, node); }
+      if (node.raw != null && node.raw !== r.raw_score) fire(node, 2);
+      Object.assign(node, {tx, ty, row: r, raw: r.raw_score, score: r.score, status: r.status, corr: r.corr_btc});
+    });
+    for (const k of [...NET.nodes.keys()]) if (!seen.has(k)) NET.nodes.delete(k);
+    const key = [...seen].sort().join(',') + '|' + NET.W;
+    if (key !== NET.key) { NET.key = key; buildEdges(); }
+    if (!NET.running) { NET.running = true; requestAnimationFrame(frame); }
+  }
+  function buildEdges() {
+    const ns = [...NET.nodes.values()], edges = [], nbr = new Map(), seenE = new Set();
+    ns.forEach((a) => nbr.set(a.sym, []));
+    const add = (a, b, hub) => { const k = a.sym < b.sym ? a.sym + '|' + b.sym : b.sym + '|' + a.sym; if (seenE.has(k)) return; seenE.add(k);
+      const e = {a, b, hub, bend: (hash(k, 3) - 0.5) * 0.5}; edges.push(e); nbr.get(a.sym).push(e); nbr.get(b.sym).push(e); };
+    for (const a of ns) {
+      const k = a.status === 'illiquid' ? 3 : 5;
+      const near = ns.filter((b) => b !== a).map((b) => [b, (b.tx - a.tx) ** 2 + (b.ty - a.ty) ** 2]).sort((x, y) => x[1] - y[1]).slice(0, k);
+      near.forEach(([b]) => add(a, b, false));
+    }
+    // long-range association fibres (brain-like cross connections)
+    for (let i = 0; i < ns.length; i += 3) { const a = ns[i], b = ns[Math.floor(hash(a.sym, 7) * ns.length)]; if (b && b !== a) add(a, b, false); }
+    const btc = NET.nodes.get('BTC');
+    if (btc) ns.filter((b) => b !== btc && b.status !== 'illiquid').sort((x, y) => (y.corr ?? 0) - (x.corr ?? 0)).slice(0, 26).forEach((b) => add(btc, b, true));
+    NET.edges = edges; NET.nbr = nbr;
+  }
+  function fire(node, hops) {
+    node.flash = 1;
+    if (reduceMotion) return;
+    for (const e of (NET.nbr.get(node.sym) || [])) if (Math.random() < 0.75) NET.pulses.push({e, from: node, t: 0, sp: 0.012 + Math.random() * 0.02, hops: hops - 1, hot: true});
+  }
+  function bez(e, from, t) {
+    const a = from === e.a ? e.a : e.b, b = from === e.a ? e.b : e.a;
+    const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2, dx = b.x - a.x, dy = b.y - a.y;
+    const cx = mx - dy * e.bend, cy = my + dx * e.bend, u = 1 - t;
+    return [u * u * a.x + 2 * u * t * cx + t * t * b.x, u * u * a.y + 2 * u * t * cy + t * t * b.y, b];
+  }
+  function frame(ts) {
+    const c = NET.ctx, W = NET.W, H = NET.H, dpr = NET.dpr;
+    if (!c || !NET.canvas.isConnected) { NET.running = false; return; }
+    requestAnimationFrame(frame);
+    if (document.hidden || !NET.canvas.offsetParent) return;
+    c.setTransform(dpr, 0, 0, dpr, 0, 0);
+    c.clearRect(0, 0, W, H);
+    const C = W / 2, CY = H / 2;
+    const bg = c.createRadialGradient(C, CY, 0, C, CY, W * 0.55); bg.addColorStop(0, 'rgba(242,169,59,0.07)'); bg.addColorStop(0.5, 'rgba(51,195,180,0.025)'); bg.addColorStop(1, 'rgba(0,0,0,0)');
+    c.fillStyle = bg; c.fillRect(0, 0, W, H);
+    // ease neurons toward their score position
+    for (const n of NET.nodes.values()) { const k = reduceMotion ? 1 : 0.06; n.x += (n.tx - n.x) * k; n.y += (n.ty - n.y) * k; n.flash *= 0.94; }
+    // synapses
+    c.lineWidth = 0.6;
+    for (const e of NET.edges) {
+      const a = e.a, b = e.b, mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2, dx = b.x - a.x, dy = b.y - a.y;
+      const act = Math.max(a.flash, b.flash);
+      c.strokeStyle = e.hub ? `rgba(242,169,59,${0.14 + act * 0.5})` : (a.status === 'illiquid' && b.status === 'illiquid') ? `rgba(130,150,170,${0.08 + act * 0.3})` : `rgba(175,200,220,${0.13 + act * 0.55})`;
+      c.beginPath(); c.moveTo(a.x, a.y); c.quadraticCurveTo(mx - dy * e.bend, my + dx * e.bend, b.x, b.y); c.stroke();
+    }
+    // ambient firing (weighted toward high scores)
+    if (!reduceMotion) for (let q = 0; q < 2; q++) if (Math.random() < 0.6) {
+      const pool = [...NET.nodes.values()].filter((n) => n.status !== 'illiquid'); const n = pool[Math.floor(Math.random() * pool.length)];
+      if (n && Math.random() < 0.3 + (n.raw || 0) / 140) for (const e of (NET.nbr.get(n.sym) || []).slice(0, 2)) NET.pulses.push({e, from: n, t: 0, sp: 0.01 + Math.random() * 0.015, hops: 1, hot: false});
+    }
+    // impulses
+    const next = [];
+    c.globalCompositeOperation = 'lighter';
+    for (const p of NET.pulses) {
+      p.t += p.sp;
+      for (let k = 0; k < 5; k++) {
+        const tt = Math.max(0, p.t - k * 0.035), [x, y] = bez(p.e, p.from, Math.min(1, tt));
+        const al = (p.hot ? 0.9 : 0.55) * (1 - k / 5);
+        c.fillStyle = p.e.hub ? `rgba(255,196,90,${al})` : p.hot ? `rgba(255,220,140,${al})` : `rgba(140,230,255,${al})`;
+        c.beginPath(); c.arc(x, y, k ? 1.4 : 2.4, 0, 6.283); c.fill();
+      }
+      if (p.t < 1) next.push(p);
+      else { const [, , dest] = bez(p.e, p.from, 1); dest.flash = Math.max(dest.flash, p.hot ? 0.8 : 0.35);
+        if (p.hops > 0) for (const e of (NET.nbr.get(dest.sym) || [])) if (e !== p.e && Math.random() < 0.45) next.push({e, from: dest, t: 0, sp: p.sp, hops: p.hops - 1, hot: p.hot}); }
+    }
+    NET.pulses = next.slice(-600);
+    // neurons
+    const top = rowsTop();
+    for (const n of NET.nodes.values()) {
+      const col = NCOL[n.status] || [140, 150, 160], s = (n.raw || 0) / 100, ill = n.status === 'illiquid';
+      const rad = ill ? 1.4 : 2.2 + s * 4.5, glow = ill ? 0 : 6 + s * 16 + n.flash * 18;
+      if (glow) { const g = c.createRadialGradient(n.x, n.y, 0, n.x, n.y, glow); g.addColorStop(0, `rgba(${col},${0.35 + n.flash * 0.5})`); g.addColorStop(1, `rgba(${col},0)`);
+        c.fillStyle = g; c.beginPath(); c.arc(n.x, n.y, glow, 0, 6.283); c.fill(); }
+      c.fillStyle = n.flash > 0.3 ? `rgba(255,255,255,${0.6 + n.flash * 0.4})` : `rgba(${col},${ill ? 0.45 : 0.95})`;
+      c.beginPath(); c.arc(n.x, n.y, rad, 0, 6.283); c.fill();
+    }
+    c.globalCompositeOperation = 'source-over';
+    // BTC core
+    const btc = NET.nodes.get('BTC');
+    if (btc) { const pulse = reduceMotion ? 0 : (Math.sin(ts / 600) + 1) / 2;
+      const g = c.createRadialGradient(btc.x, btc.y, 0, btc.x, btc.y, 30 + pulse * 8); g.addColorStop(0, 'rgba(242,169,59,0.55)'); g.addColorStop(1, 'rgba(242,169,59,0)');
+      c.fillStyle = g; c.beginPath(); c.arc(btc.x, btc.y, 30 + pulse * 8, 0, 6.283); c.fill();
+      c.fillStyle = '#0b1016'; c.strokeStyle = '#f2a93b'; c.lineWidth = 1.5; c.beginPath(); c.arc(btc.x, btc.y, 15, 0, 6.283); c.fill(); c.stroke();
+      c.fillStyle = '#f2a93b'; c.font = '700 10px ui-monospace,monospace'; c.textAlign = 'center'; c.fillText('BTC', btc.x, btc.y + 3.5); }
+    // labels: top coins, selection, hover
+    c.font = '600 10px ui-monospace,monospace'; c.textAlign = 'left';
+    const placed = [[C - 22, CY - 22, 44], [C - 22, CY - 7, 44], [C - 22, CY + 8, 44]];   // keep the BTC core clear
+    const lab = (n, color) => {
+      const txt = n.sym + ' ' + n.score, w = c.measureText(txt).width + 8; let lx = n.x + 8, ly = n.y - 8;
+      if (lx + w > W - 2) lx = n.x - 8 - w;
+      for (let tries = 0; tries < 8 && placed.some((b) => lx < b[0] + b[2] && lx + w > b[0] && ly < b[1] + 15 && ly + 15 > b[1]); tries++) ly += 15;
+      placed.push([lx, ly, w]);
+      c.strokeStyle = 'rgba(200,215,230,0.25)'; c.lineWidth = 0.6; c.beginPath(); c.moveTo(n.x, n.y); c.lineTo(lx, ly + 7); c.stroke();
+      c.fillStyle = 'rgba(6,9,13,0.82)'; c.fillRect(lx, ly, w, 14); c.fillStyle = color; c.fillText(txt, lx + 4, ly + 10.5); };
+    const sn = sel && NET.nodes.get(sel.symbol);
+    if (sn) lab(sn, '#f2a93b');
+    for (const sym of top) { const n = NET.nodes.get(sym); if (n && n.sym !== 'BTC' && n !== sn) lab(n, '#cfd8e3'); }
+    if (sn) { c.strokeStyle = '#f2a93b'; c.lineWidth = 1.5; c.beginPath(); c.arc(sn.x, sn.y, 9 + (reduceMotion ? 0 : Math.sin(ts / 250) * 2), 0, 6.283); c.stroke(); }
+    if (NET.hover && NET.hover !== sn) lab(NET.hover, '#ffffff');
+  }
+  let topCache = [], topAt = 0;
+  function rowsTop() { if (Date.now() - topAt > 2000) { topAt = Date.now(); topCache = [...NET.nodes.values()].filter((n) => n.status !== 'illiquid').sort((a, b) => b.score - a.score || b.raw - a.raw).slice(0, 7).map((n) => n.sym); } return topCache; }
+  window.addEventListener('resize', () => { if (NET.canvas) { ensureCanvas(); } });
 
   function registry(S, rows) {
     const el = $('#orb-reg'); const oldList = el.querySelector('.or-list'); const keepScroll = oldList ? oldList.scrollTop : 0; el.replaceChildren();

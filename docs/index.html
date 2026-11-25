@@ -374,6 +374,9 @@ details.notes summary{cursor:pointer;color:var(--fg)}
 .or-row.flash{background:color-mix(in srgb,var(--amber) 22%,transparent)}
 .orb-dot.blip{stroke:#f2a93b;stroke-width:3}
 @media (prefers-reduced-motion:no-preference){.or-row.flash{animation:rowflash 1.8s ease-out}@keyframes rowflash{from{background:color-mix(in srgb,var(--amber) 45%,transparent)}to{background:transparent}}}
+.orb-canvas{display:block;margin:0 auto;max-width:100%;touch-action:manipulation}
+.nm-legend{display:flex;flex-wrap:wrap;gap:6px 14px;justify-content:center;font-size:10.5px;color:var(--dim);margin-top:6px}
+.nm-legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:middle}
 .err{color:var(--down);font-family:var(--mono);padding:12px}
 @media (max-width:560px){#sys-chip{display:none}.bar .wrap{flex-wrap:nowrap;gap:8px}.brand .bt{display:none}#live{padding:3px 7px}.authbtn{padding:5px 10px;font-size:12px}.btc small{display:none}.brand{font-size:15px}.chip.paper{display:none}.card{padding:13px}.bigv{font-size:24px}.gauge{grid-template-columns:1fr}.meta{display:none}.decision{padding:16px}}
 @media (prefers-reduced-motion:no-preference){.gate .fill{transition:width .6s ease}}
@@ -488,7 +491,7 @@ details.notes summary{cursor:pointer;color:var(--fg)}
       </div>
       <div class="orb-grid">
         <aside class="orb-panel"><div class="op-t">ผลตรวจ 5 ด้าน · % เหรียญที่ผ่าน (≥70% ของน้ำหนัก)</div><div id="orb-checks"></div></aside>
-        <div class="orb-panel orb-center"><div class="op-t">THE SCANNER · ใกล้ศูนย์กลาง = คะแนนสูง <span class="scanning">● SCANNING</span></div><div class="orb-stage"><div id="orb-graph"></div><div class="orb-sweep" aria-hidden="true"></div></div></div>
+        <div class="orb-panel orb-center"><div class="op-t">NEURAL MAP · เซลล์ประสาท = เหรียญ <span class="scanning">● THINKING</span></div><div class="orb-stage"><div id="orb-graph"></div></div><div class="nm-legend"><span><i style="background:#33c3b4"></i>ขาขึ้น</span><span><i style="background:#f0525b"></i>ขาลง</span><span><i style="background:#465464"></i>สภาพคล่องต่ำ</span><span><i style="background:#ffdc8c"></i>กระแสประสาท = คะแนนเปลี่ยนจากราคาสด</span><span><i style="background:#8ce6ff"></i>สัญญาณพื้นหลัง</span><span>ใกล้แกนกลาง + สว่าง = คะแนนสูง</span></div></div>
         <aside class="orb-panel"><div class="op-t">ทะเบียนคะแนน (VERDICT)</div><div id="orb-reg"></div></aside>
       </div>
       <div class="orb-panel orb-detail" id="orb-detail"></div>
@@ -717,6 +720,6 @@ details.notes summary{cursor:pointer;color:var(--fg)}
 <script src="app.js?v=20261125h"></script>
 <script src="trade.js?v=20261125h"></script>
 <script src="library.js?v=20261125h"></script>
-<script src="orb.js?v=20261125h"></script>
+<script src="orb.js?v=20261125q"></script>
 <script src="system.js?v=20261125h"></script>
 </body></html>
