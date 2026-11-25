@@ -131,12 +131,13 @@
       NET.canvas = document.createElement('canvas'); NET.canvas.className = 'orb-canvas';
       NET.canvas.setAttribute('role', 'img'); NET.canvas.setAttribute('aria-label', 'แผนที่ประสาท: เหรียญเป็นเซลล์ประสาท ใกล้แกนกลาง = คะแนนสูง จุดวิ่ง = คะแนนเปลี่ยนจากราคาสด');
       host.append(NET.canvas); NET.ctx = NET.canvas.getContext('2d');
+      if ('IntersectionObserver' in window) new IntersectionObserver((es) => { NET.offscreen = !es[0].isIntersecting; }).observe(NET.canvas);
       NET.canvas.addEventListener('mousemove', (e) => { const n = hit(e); NET.hover = n; NET.canvas.style.cursor = n ? 'pointer' : 'default'; });
       NET.canvas.addEventListener('mouseleave', () => { NET.hover = null; });
       NET.canvas.addEventListener('click', (e) => { const n = hit(e); if (n) { fire(n, 3); select(n.row); } });
     }
     const w = Math.min(760, host.clientWidth || 600), h = Math.round(w * 0.78);
-    if (w !== NET.W) { NET.W = w; NET.H = h; NET.dpr = Math.min(2, window.devicePixelRatio || 1);
+    if (w !== NET.W) { NET.W = w; NET.H = h; NET.dpr = Math.min(1.5, window.devicePixelRatio || 1);
       NET.canvas.width = w * NET.dpr; NET.canvas.height = h * NET.dpr; NET.canvas.style.width = w + 'px'; NET.canvas.style.height = h + 'px'; NET.key = ''; }
     return true;
   }
@@ -192,7 +193,7 @@
   function fire(node, hops) {
     node.flash = 1;
     if (reduceMotion) return;
-    for (const e of (NET.nbr.get(node.sym) || [])) if (Math.random() < 0.75) NET.pulses.push({e, from: node, t: 0, sp: 0.012 + Math.random() * 0.02, hops: hops - 1, hot: true});
+    for (const e of (NET.nbr.get(node.sym) || [])) if (Math.random() < 0.6 && NET.pulses.length < 260) NET.pulses.push({e, from: node, t: 0, sp: 0.012 + Math.random() * 0.02, hops: hops - 1, hot: true});
   }
   function bez(e, from, t) {
     const a = from === e.a ? e.a : e.b, b = from === e.a ? e.b : e.a;
@@ -200,11 +201,19 @@
     const cx = mx - dy * e.bend, cy = my + dx * e.bend, u = 1 - t;
     return [u * u * a.x + 2 * u * t * cx + t * t * b.x, u * u * a.y + 2 * u * t * cy + t * t * b.y, b];
   }
+  const SPR = {};
+  function sprite(col) {
+    const k = String(col); if (SPR[k]) return SPR[k];
+    const cv = document.createElement('canvas'); cv.width = cv.height = 64; const g = cv.getContext('2d');
+    const gr = g.createRadialGradient(32, 32, 0, 32, 32, 32); gr.addColorStop(0, `rgba(${col},0.8)`); gr.addColorStop(1, `rgba(${col},0)`);
+    g.fillStyle = gr; g.fillRect(0, 0, 64, 64); return (SPR[k] = cv);
+  }
   function frame(ts) {
     const c = NET.ctx, W = NET.W, H = NET.H, dpr = NET.dpr;
     if (!c || !NET.canvas.isConnected) { NET.running = false; return; }
     requestAnimationFrame(frame);
-    if (document.hidden || !NET.canvas.offsetParent) return;
+    if (document.hidden || NET.offscreen || (NET.view || (NET.view = document.getElementById('view-scan'))).hidden) return;
+    const minGap = W < 600 ? 48 : 32; if (ts - (NET.lastTs || 0) < minGap) return; NET.lastTs = ts;
     c.setTransform(dpr, 0, 0, dpr, 0, 0);
     c.clearRect(0, 0, W, H);
     const C = W / 2, CY = H / 2;
@@ -224,15 +233,20 @@
     for (const n of NET.nodes.values()) { const k = reduceMotion ? 1 : 0.06; n.x += (n.tx - n.x) * k; n.y += (n.ty - n.y) * k; n.flash *= 0.94; }
     // synapses
     c.lineWidth = 0.6;
-    for (const e of NET.edges) {
-      const a = e.a, b = e.b, mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2, dx = b.x - a.x, dy = b.y - a.y;
-      const act = Math.max(a.flash, b.flash);
-      c.strokeStyle = e.hub ? `rgba(242,169,59,${0.14 + act * 0.5})` : (a.status === 'illiquid' && b.status === 'illiquid') ? `rgba(130,150,170,${0.08 + act * 0.3})` : `rgba(175,200,220,${0.13 + act * 0.55})`;
-      c.beginPath(); c.moveTo(a.x, a.y); c.quadraticCurveTo(mx - dy * e.bend, my + dx * e.bend, b.x, b.y); c.stroke();
+    const seg = (e) => { const a = e.a, b = e.b, mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2, dx = b.x - a.x, dy = b.y - a.y;
+      c.moveTo(a.x, a.y); c.quadraticCurveTo(mx - dy * e.bend, my + dx * e.bend, b.x, b.y); };
+    const hot = [];
+    for (const [cls, col] of [[0, 'rgba(175,200,220,0.13)'], [1, 'rgba(130,150,170,0.08)'], [2, 'rgba(242,169,59,0.14)']]) {
+      c.beginPath();
+      for (const e of NET.edges) { const k = e.hub ? 2 : (e.a.status === 'illiquid' && e.b.status === 'illiquid') ? 1 : 0; if (k !== cls) continue;
+        if (cls === 0 && Math.max(e.a.flash, e.b.flash) > 0.15) { hot.push(e); continue; } seg(e); }
+      c.strokeStyle = col; c.stroke();
     }
+    for (const e of hot) { c.strokeStyle = `rgba(200,225,245,${0.13 + Math.max(e.a.flash, e.b.flash) * 0.55})`; c.beginPath(); seg(e); c.stroke(); }
     // ambient firing (weighted toward high scores)
     if (!reduceMotion) for (let q = 0; q < 2; q++) if (Math.random() < 0.6) {
-      const pool = [...NET.nodes.values()].filter((n) => n.status !== 'illiquid'); const n = pool[Math.floor(Math.random() * pool.length)];
+      if (!NET.pool || NET.poolAt !== NET.key + NET.nodes.size) { NET.pool = [...NET.nodes.values()].filter((x) => x.status !== 'illiquid'); NET.poolAt = NET.key + NET.nodes.size; }
+      const pool = NET.pool, n = pool[Math.floor(Math.random() * pool.length)];
       if (n && Math.random() < 0.3 + (n.raw || 0) / 140) for (const e of (NET.nbr.get(n.sym) || []).slice(0, 2)) NET.pulses.push({e, from: n, t: 0, sp: 0.01 + Math.random() * 0.015, hops: 1, hot: false});
     }
     // impulses
@@ -240,34 +254,34 @@
     c.globalCompositeOperation = 'lighter';
     for (const p of NET.pulses) {
       p.t += p.sp;
-      for (let k = 0; k < 5; k++) {
-        const tt = Math.max(0, p.t - k * 0.035), [x, y] = bez(p.e, p.from, Math.min(1, tt));
-        const al = (p.hot ? 0.9 : 0.55) * (1 - k / 5);
+      if (p.t <= p.sp + 1e-9) NET.spawn = (NET.spawn || 0) + 1;
+      for (let k = 0; k < 3; k++) {
+        const tt = Math.max(0, p.t - k * 0.05), [x, y] = bez(p.e, p.from, Math.min(1, tt));
+        const al = (p.hot ? 0.9 : 0.55) * (1 - k / 3);
         c.fillStyle = p.e.hub ? `rgba(255,196,90,${al})` : p.hot ? `rgba(255,220,140,${al})` : `rgba(140,230,255,${al})`;
         c.beginPath(); c.arc(x, y, k ? 1.4 : 2.4, 0, 6.283); c.fill();
       }
       if (p.t < 1) next.push(p);
       else { const [, , dest] = bez(p.e, p.from, 1); dest.flash = Math.max(dest.flash, p.hot ? 0.8 : 0.35);
-        if (p.hops > 0) for (const e of (NET.nbr.get(dest.sym) || [])) if (e !== p.e && Math.random() < 0.45) next.push({e, from: dest, t: 0, sp: p.sp, hops: p.hops - 1, hot: p.hot}); }
+        if (p.hops > 0) for (const e of (NET.nbr.get(dest.sym) || [])) if (e !== p.e && Math.random() < 0.3 && next.length < 260) next.push({e, from: dest, t: 0, sp: p.sp, hops: p.hops - 1, hot: p.hot}); }
     }
-    NET.spawn = (NET.spawn || 0) + NET.pulses.filter((q) => q.t <= q.sp + 1e-9).length;
     if (!NET.ipsAt || ts - NET.ipsAt > 1000) { NET.ips = NET.spawn; NET.spawn = 0; NET.ipsAt = ts; }
-    NET.pulses = next.slice(-600);
+    NET.pulses = next.slice(-260);
     // dendrites: 5 rays = 5 score components (length = component / weight)
     const CW = window.CL && window.CL.data().scanner && window.CL.data().scanner.orb ? window.CL.data().scanner.orb.components : null;
     if (CW) { c.lineWidth = 1.1; c.lineCap = 'round';
-      for (const n of NET.nodes.values()) { if (n.status === 'illiquid' || n.sym === 'BTC' || !n.row || !n.row.components) continue;
-        DK.forEach((k, i) => { const w = CW[k] ? CW[k].weight : 20, v = (n.row.components[k] || 0) / w, ang = -Math.PI / 2 + i * 1.2566;
-          const L = 3 + v * 11; c.strokeStyle = `rgba(${DCOL[i]},${0.25 + v * 0.6})`;
-          c.beginPath(); c.moveTo(n.x + Math.cos(ang) * 2.5, n.y + Math.sin(ang) * 2.5); c.lineTo(n.x + Math.cos(ang) * L, n.y + Math.sin(ang) * L); c.stroke(); }); }
+      DK.forEach((k, i) => { const w = CW[k] ? CW[k].weight : 20, ang = -Math.PI / 2 + i * 1.2566, ca = Math.cos(ang), sa = Math.sin(ang);
+        c.beginPath();
+        for (const n of NET.nodes.values()) { if (n.status === 'illiquid' || n.sym === 'BTC' || !n.row || !n.row.components) continue;
+          const L = 3 + ((n.row.components[k] || 0) / w) * 11; c.moveTo(n.x + ca * 2.5, n.y + sa * 2.5); c.lineTo(n.x + ca * L, n.y + sa * L); }
+        c.strokeStyle = `rgba(${DCOL[i]},0.7)`; c.stroke(); });
       c.lineCap = 'butt'; }
     // neurons
     const top = rowsTop();
     for (const n of NET.nodes.values()) {
       const col = NCOL[n.status] || [140, 150, 160], s = (n.raw || 0) / 100, ill = n.status === 'illiquid';
       const rad = ill ? 1.4 : 2.2 + s * 4.5, glow = ill ? 0 : 6 + s * 16 + n.flash * 18;
-      if (glow) { const g = c.createRadialGradient(n.x, n.y, 0, n.x, n.y, glow); g.addColorStop(0, `rgba(${col},${0.35 + n.flash * 0.5})`); g.addColorStop(1, `rgba(${col},0)`);
-        c.fillStyle = g; c.beginPath(); c.arc(n.x, n.y, glow, 0, 6.283); c.fill(); }
+      if (glow) { c.globalAlpha = Math.min(1, 0.45 + n.flash * 0.6); c.drawImage(sprite(col), n.x - glow, n.y - glow, glow * 2, glow * 2); c.globalAlpha = 1; }
       c.fillStyle = n.flash > 0.3 ? `rgba(255,255,255,${0.6 + n.flash * 0.4})` : `rgba(${col},${ill ? 0.45 : 0.95})`;
       c.beginPath(); c.arc(n.x, n.y, rad, 0, 6.283); c.fill();
     }
@@ -474,7 +488,7 @@
   }
 
   window.CLOrb = {render: () => draw(false)};
-  setInterval(() => { liveStatus(); if (liveDirty && !document.hidden) { liveDirty = false; draw(true); } }, 2000);
+  setInterval(() => { liveStatus(); if (liveDirty && !document.hidden && !document.getElementById('view-scan').hidden) { liveDirty = false; draw(true); } }, 2000);
   setTimeout(connectLive, 1500);
   setInterval(() => draw(false), 3000);
 })();
