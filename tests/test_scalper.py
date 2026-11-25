@@ -53,3 +53,27 @@ def test_breakeven_moves_stop_once():
     assert apply_breakeven(p, 1.0, 0.0015) and abs(p["stop"] - 100.3) < 1e-9   # ทุน + ค่าธรรมเนียมไปกลับ
     assert not apply_breakeven(p, 1.0, 0.0015)                             # ทำครั้งเดียว
     assert not apply_breakeven({"entry": 1, "stop": 0.9, "high_close": 2}, 1.0, 0.0015)   # สถานะเก่าไม่มี risk_dist → ไม่แตะ
+
+
+def test_active_model_trades_on_probation_and_gets_benched(tmp_path, monkeypatch):
+    bot = mkbot(tmp_path, monkeypatch, -0.3)           # ผลเงาติดลบ → ประตูปิด
+    bot.P["active"] = True
+    bot.on_bar()
+    assert len(bot.s["positions"]) == sc.MAX_POS and all(p["mode"] == "probation" for p in bot.s["positions"])
+    p = bot.s["positions"][0]
+    assert p["cost"] <= sc.CAPITAL * sc.RISK_PROBATION / 0.01 * 1.01   # ขนาดครึ่งหนึ่งของปกติ
+    bot.s["positions"] = []; bot.s["cash"] = sc.CAPITAL
+    bot.s["trades"] = [{"net_pct": -0.8, "model": bot.P["id"], "pnl_usdt": -1} for _ in range(20)]
+    bot.on_bar()
+    assert bot.s["positions"] == [] and bot.s["bench"][bot.P["id"]]   # แพ้ 20 ครั้งเฉลี่ยแย่ → พักใช้เงิน
+
+
+def test_trailing_stop_locks_profit(tmp_path, monkeypatch):
+    bot = mkbot(tmp_path, monkeypatch, 0.2)
+    bot.P["exit"] = {"tp": 0.05, "sl": 0.01, "trail": 0.01, "hold": 12}
+    bot.on_bar(); sym = bot.s["positions"][0]["sym"]
+    bot.px[sym] = 103.0; bot.check_exits()                  # ราคาขึ้น → stop ขยับขึ้นมาเหนือทุน
+    assert bot.s["positions"][0]["sl"] > bot.s["positions"][0]["entry"]
+    bot.px[sym] = 101.5; bot.check_exits()
+    t = [x for x in bot.s["trades"] if x["sym"] == sym][0]
+    assert t["reason"] == "trail" and t["pnl_usdt"] > 0

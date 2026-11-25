@@ -2,7 +2,7 @@
 (function () {
   const $ = (s) => document.querySelector(s);
   const mk = (tag, c, text) => { const e = document.createElement(tag); if (c) e.className = c; if (text != null) e.textContent = text; return e; };
-  const COINS = ['BTC', 'ETH', 'SOL', 'BNB', 'XRP', 'DOGE', 'ADA', 'LINK', 'AVAX', 'SUI', 'LTC', 'TRX'];
+  let COINS = ['BTC', 'ETH', 'SOL', 'BNB', 'XRP', 'DOGE', 'ADA', 'LINK', 'AVAX', 'SUI', 'LTC', 'TRX'];
   const FEE = 0.001, SLIP = 0.0005;
   let S = null, R = null, sAt = 0, liveAt = 0, mode = 'off';
   const PX = {}, PREV = {}, FL = {}, SPARK = {};
@@ -51,7 +51,8 @@
       mk('div', 's ' + cls(tot), `${usd(tot, true)} (${pct(tot / S.capital * 100)}) ตั้งแต่เริ่ม · วันนี้ ${day0 ? usd(eq - day0, true) : '—'}`));
     const tiles = mk('div', 'sc-tiles'), st = S.stats || {};
     const t = (k, v, s, c) => { const d = mk('div', 'sc-t'); d.append(mk('span', null, k), mk('b', c || '', v), mk('small', null, s)); tiles.append(d); };
-    t('ใช้เงินจริงในบัญชีจำลอง?', g.open ? 'ใช้เงิน' : 'เทรดเงา', g.open ? 'ผลเงาล่าสุดเป็นบวก' : `รอผลเงาเป็นบวก (${g.n || 0}/${g.need || 30})`, g.open ? 'pos' : 'amber');
+    const act = (S.models || []).find((x) => x.active), benched = act && (S.bench || {})[act.id];
+    t('บอทกำลังเทรดด้วยเงิน?', benched ? 'พักใช้เงิน' : g.open ? 'เต็มขนาด' : 'ช่วงทดลอง', benched ? 'แพ้ 20 ครั้งล่าสุดเฉลี่ยแย่ → กลับไปเทรดเงา' : g.open ? 'ผลพิสูจน์แล้วว่าเป็นบวก' : 'เทรดจริงด้วยขนาดครึ่งหนึ่ง (เสี่ยง 0.25%/ครั้ง)', benched ? 'neg' : 'pos');
     t('ผลเฉลี่ยเงา 30 ครั้งล่าสุด', g.avg_pct == null ? '—' : pct(g.avg_pct, 3), g.win_pct == null ? 'ยังไม่มีข้อมูล' : `ชนะ ${g.win_pct}% · หลังค่าธรรมเนียม`, cls(g.avg_pct));
     t('เทรดที่ใช้เงิน', String(st.trades || 0), `ชนะ ${st.wins || 0} · รวม ${usd(st.pnl_usdt || 0, true)}`, cls(st.pnl_usdt));
     t('Sentinel', sen.halted ? 'หยุดพัก' : 'ปกติ', sen.halted ? sen.halted.reason : `แพ้ติดกัน ${sen.loss_streak || 0}/3`, sen.halted ? 'neg' : 'pos');
@@ -68,11 +69,13 @@
     const el = $('#sc-tape'); if (!el) return;
     if (el.children.length !== COINS.length) { el.replaceChildren(); COINS.forEach((c) => { const d = mk('div', 'sc-c'); d.dataset.s = c; d.append(mk('b'), mk('span', 'p'), mk('canvas'), mk('small')); el.append(d); }); }
     const W = (S && S.watch) || {}, now = Date.now();
+    const order = [...el.children].sort((x, y) => ((W[y.dataset.s] || {}).r1h_pct ?? -99) - ((W[x.dataset.s] || {}).r1h_pct ?? -99));
+    if (order.some((d, i) => el.children[i] !== d)) order.forEach((d) => el.append(d));
     for (const d of el.children) {
       const s = d.dataset.s, w = W[s] || {}, p = PX[s], up = PREV[s] != null && p > PREV[s];
       d.className = 'sc-c' + (now - (FL[s] || 0) < 700 ? (up ? ' fu' : ' fd') : '') + (w.signal ? ' sig' : '');
       d.children[0].textContent = s; d.children[1].textContent = pf(p);
-      d.children[3].textContent = w.trend_up == null ? 'รอข้อมูลบอท' : `${w.trend_up ? 'ขาขึ้น' : 'ขาลง'} ${pct(w.vs_ema200_pct, 1)}` + (w.to_break_pct != null ? ` · ห่างจุดทะลุ ${w.to_break_pct}% · vol ${w.vol_x}x` : '');
+      d.children[3].textContent = w.trend_up == null ? 'รอข้อมูลบอท' : `1 ชม. ${pct(w.r1h_pct, 2)} · ${w.trend_up ? 'ขาขึ้น' : 'ขาลง'} ${pct(w.vs_ema200_pct, 1)}` + (w.to_break_pct != null ? ` · ห่างจุดทะลุ ${w.to_break_pct}% · vol ${w.vol_x}x` : '');
       const cv = d.children[2], a = SPARK[s] || [];
       const r = devicePixelRatio || 1, cw = +cv.dataset.w || +(cv.dataset.w = cv.clientWidth || 100), ch = 22; if (cv.width !== cw * r) { cv.width = cw * r; cv.height = ch * r; }
       const c = cv.getContext('2d'); c.setTransform(r, 0, 0, r, 0, 0); c.clearRect(0, 0, cw, ch);
@@ -145,17 +148,20 @@
 
   function arena() {
     const el = $('#sc-arena'); if (!el || !S || !S.models) return;
-    const G = S.gates || {}, CK = S.checks || {}; const key = JSON.stringify([G, CK, (S.shadow || []).length]); if (el.dataset.k === key) return; el.dataset.k = key; el.replaceChildren();
+    const G = S.gates || {}, CK = S.checks || {}; const key = JSON.stringify([G, CK, (S.shadow || []).length, S.bench, (S.trades || []).length]); if (el.dataset.k === key) return; el.dataset.k = key; el.replaceChildren();
     for (const m of S.models) {
       const g = G[m.id] || {n: 0, need: 30}, ck = CK[m.id], R = m.research || {};
       const open = (S.shadow || []).filter((p) => p.model === m.id).length;
-      const c = mk('div', 'ar-c' + (g.open ? ' open' : ''));
-      const t = mk('div', 't'); t.append(mk('b', null, m.label), mk('span', 'st', g.open ? 'ใช้เงิน' : 'เทรดเงา')); c.append(t);
+      const bn = (S.bench || {})[m.id], live = g.open || (m.active && !bn);
+      const c = mk('div', 'ar-c' + (live ? ' open' : ''));
+      const t = mk('div', 't'); t.append(mk('b', null, m.label), mk('span', 'st', g.open ? 'ใช้เงินเต็ม' : m.active && !bn ? 'ใช้เงิน (ทดลอง)' : bn ? 'พักใช้เงิน' : 'เทรดเงา')); c.append(t);
+      const mt = (S.trades || []).filter((x) => x.model === m.id);
       const k = mk('div', 'ar-k'); const kv = (a, b2, cl) => { k.append(mk('span', null, a)); const x = mk('b', cl || null, b2); k.append(x); };
       kv('ทดสอบย้อนหลัง (ช่วงไม่เคยเห็น)', R.oos_avg_pct == null ? '—' : pct(R.oos_avg_pct, 2) + '/ครั้ง', cls(R.oos_avg_pct));
       kv('ก่อนหักค่าธรรมเนียม', R.oos_gross_pct == null ? '—' : pct(R.oos_gross_pct, 2), cls(R.oos_gross_pct));
       kv('ผลเงาจริงล่าสุด', g.avg_pct == null ? 'ยังไม่มี' : `${pct(g.avg_pct, 2)} · ชนะ ${g.win_pct}%`, cls(g.avg_pct));
       kv('เงาที่เปิดอยู่', String(open));
+      if (mt.length) kv('เทรดด้วยเงิน', `${mt.length} ครั้ง · ${mt.reduce((a2, x) => a2 + x.pnl_usdt, 0) >= 0 ? '+' : ''}${mt.reduce((a2, x) => a2 + x.pnl_usdt, 0).toFixed(2)} USDT`, cls(mt.reduce((a2, x) => a2 + x.pnl_usdt, 0)));
       c.append(k);
       const bar = mk('div', 'ar-bar'); const f = mk('i'); f.style.width = Math.min(100, g.n / (g.need || 30) * 100) + '%'; bar.append(f);
       c.append(bar, mk('small', null, `เก็บผลเงาแล้ว ${g.n}/${g.need || 30} ครั้ง · ${g.open ? 'ผลเป็นบวก → ใช้เงินได้' : 'ต้องครบ 30 และเฉลี่ยเป็นบวกหลังค่าธรรมเนียม'}`
@@ -169,6 +175,6 @@
     const v = $('#view-scalp'); if (!v || v.hidden || !S) return;
     hero(); arena(); tape(); posList('#sc-pos', S.positions, true); posList('#sc-shadow', S.shadow, false); trades(); events(); curve(); learn();
   }
-  function init() { load().then(tick); setInterval(load, 30000); setInterval(tick, 1000); setTimeout(connect, 800); }
+  function init() { load().then(() => { if (S && S.coins && S.coins.length) COINS = S.coins; tick(); connect(); }); setInterval(load, 30000); setInterval(tick, 1000); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();

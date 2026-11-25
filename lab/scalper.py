@@ -28,6 +28,12 @@ from lab.scalp_research import COINS, FEE, SLIP, ema, rsi, signals
 from lab.short_research import signals1h
 
 CAPITAL, RISK, MAX_NOTIONAL, MAX_POS = 500.0, 0.005, 125.0, 3
+RISK_PROBATION = 0.0025          # ช่วงทดลอง: ใช้เงินจริงในบัญชีจำลองครึ่งหนึ่งของปกติ จนกว่าผลจะพิสูจน์ว่าเป็นบวก
+BENCH_N, BENCH_MIN = 20, -0.003  # ใช้เงิน 20 ครั้งล่าสุดเฉลี่ยแย่กว่า -0.4% → พักใช้เงิน กลับไปเทรดเงาจนกว่าผลเงาจะเป็นบวก
+# ทดสอบ 5m จริง 180 วัน: ตัวที่ดีที่สุดใน 120 วันแรก (ขึ้น >2% ใน 1 ชม., เป้า +3%, stop −0.8% แบบขยับตาม) ยังขาดทุน −0.42%/เทรด ใน 60 วันล่าสุด
+# → เทรดด้วยเงินจำลองครึ่งขนาด (ตามที่เจ้าของขอ 2026-11-25) และพักเองเมื่อผล 20 ครั้งล่าสุดแย่กว่า BENCH_MIN
+ROTATION = {"strategy": "momentum_rotation", "params": {"lb": 12, "th": 0.02, "volk": 1.5}, "exit": {"tp": 0.03, "sl": 0.008, "trail": 0.008, "hold": 36},
+            "research": {"oos_avg_pct": -0.416, "oos_gross_pct": None, "oos_trades": 95}}
 GATE_N, GATE_MIN = 30, 0.0005
 POLL = 15
 
@@ -40,13 +46,14 @@ def pick() -> dict:
 
 LABEL = {"momo_burst": "ทะลุจุดสูง + volume พุ่ง", "rsi2_dip": "ซื้อตอนย่อแรง (RSI2)", "ema_cross": "EMA9 ตัด EMA21",
          "bb_bounce": "เด้งจากขอบล่าง Bollinger", "trend_pullback": "ซื้อตอนย่อในขาขึ้น", "range_breakout": "ทะลุกรอบ + volume",
-         "vol_breakout": "Volatility breakout", "dip_reversal": "ร่วงแรงแล้วรอเด้ง"}
+         "vol_breakout": "Volatility breakout", "dip_reversal": "ร่วงแรงแล้วรอเด้ง", "momentum_rotation": "หมุนเลือกเหรียญที่กำลังวิ่ง"}
 SEC = {"5m": 300, "1h": 3600}
 
 
 def models() -> list[dict]:
     """กลยุทธ์ที่ลงสนาม: ตัวที่ดีที่สุดของ 5 นาที + ตัวที่ดีที่สุดของแต่ละแบบบน 1 ชั่วโมง (จากการทดสอบย้อนหลังล่าสุด)."""
-    p5 = pick(); out = [{"id": "5m:" + p5["strategy"], "interval": "5m", **{k: p5[k] for k in ("strategy", "params", "exit")}}]
+    p5 = pick(); out = [{"id": "5m:momentum_rotation", "interval": "5m", "active": True, **ROTATION},
+                        {"id": "5m:" + p5["strategy"], "interval": "5m", **{k: p5[k] for k in ("strategy", "params", "exit")}}]
     f = ROOT / "research" / "short_research.json"
     if f.exists():
         for b in json.loads(f.read_text()).get("best_per_strategy", []):
@@ -54,7 +61,7 @@ def models() -> list[dict]:
                         "research": {"oos_avg_pct": b["oos"]["avg_pct"], "oos_gross_pct": b["oos_gross"]["avg_pct"], "oos_trades": b["oos"]["trades"]}})
     r5 = ROOT / "research" / "scalp_research.json"
     if r5.exists():
-        pk = json.loads(r5.read_text())["pick"]; out[0]["research"] = {"oos_avg_pct": pk["oos"]["avg_pct"], "oos_gross_pct": pk["oos_gross"]["avg_pct"], "oos_trades": pk["oos"]["trades"]}
+        pk = json.loads(r5.read_text())["pick"]; out[1]["research"] = {"oos_avg_pct": pk["oos"]["avg_pct"], "oos_gross_pct": pk["oos_gross"]["avg_pct"], "oos_trades": pk["oos"]["trades"]}
     for m in out:
         m["label"] = f"{m['interval'].replace('5m', '5 นาที').replace('1h', '1 ชม.')} · {LABEL.get(m['strategy'], m['strategy'])}"
     return out
@@ -68,8 +75,15 @@ def bars1h(sym: str) -> pd.DataFrame:
     return df[df.ms + 3_600_000 <= time.time() * 1000].reset_index(drop=True)
 
 
-def prices() -> dict[str, float]:
-    syms = json.dumps([c + "USDT" for c in COINS], separators=(",", ":"))
+def watchlist() -> list[str]:
+    """12 เหรียญหลัก + Top 20 ตามสภาพคล่องเดือนนี้ (ให้บอทเลือกเหรียญที่กำลังวิ่งจากกลุ่มที่ซื้อขายคล่อง)."""
+    f = ROOT / "state" / "paper_keltner_trend.json"
+    uni = (json.loads(f.read_text()).get("universe") or {}).get("members", []) if f.exists() else []
+    return list(dict.fromkeys(COINS + [u[:-4] for u in uni if u.endswith("USDT")]))
+
+
+def prices(coins: list[str] | None = None) -> dict[str, float]:
+    syms = json.dumps([c + "USDT" for c in (coins or COINS)], separators=(",", ":"))
     raw = _get(f"{API}/ticker/price?symbols={syms}")
     return {d["symbol"][:-4]: float(d["price"]) for d in json.loads(raw)}
 
@@ -104,6 +118,7 @@ class Scalper:
             "curve": [], "events": [], "started_at": now_iso(),
             "sentinel": {"day": None, "day_start_equity": CAPITAL, "loss_streak": 0, "halted": None}}
         self.MODELS = models(); self.P = self.MODELS[0]; self.s["model"] = self.P; self.s["models"] = self.MODELS
+        self.coins = watchlist(); self.s["coins"] = self.coins
         self.px: dict[str, float] = {}; self.px_at = 0.0; self.last_bar = self.s.get("last_bar") or 0; self.last_hour = self.s.get("last_hour") or 0
 
     # ---------- helpers ----------
@@ -135,6 +150,15 @@ class Scalper:
              "win_pct": round(float(np.mean([x > 0 for x in last]) * 100), 1) if last else None,
              "open": len(last) >= GATE_N and avg > GATE_MIN, "model": mid}
         return g
+
+    def money_mode(self, m: dict, g: dict) -> str:
+        """full = ผลเงาพิสูจน์แล้วว่าเป็นบวก · probation = บอทหลักระยะสั้นเทรดเงินเลยแต่ขนาดครึ่ง · shadow = ยังไม่ใช้เงิน/ถูกพัก."""
+        mine = [t["net_pct"] for t in self.s["trades"] if t.get("model") == m["id"]][:BENCH_N]
+        benched = len(mine) >= BENCH_N and np.mean(mine) / 100 < BENCH_MIN and not g["open"]
+        self.s.setdefault("bench", {})[m["id"]] = bool(benched)
+        if g["open"]:
+            return "full"
+        return "probation" if m.get("active") and not benched else "shadow"
 
     def sentinel_ok(self) -> bool:
         S = self.s["sentinel"]; day = datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -168,7 +192,7 @@ class Scalper:
         rec.update(qty=p["qty"], pnl_usdt=round(pnl, 4))
         self.s["trades"] = ([rec] + self.s["trades"])[:300]
         S = self.s["sentinel"]; S["loss_streak"] = 0 if pnl > 0 else S["loss_streak"] + 1
-        TH = {"tp": "ถึงเป้ากำไร", "sl": "โดน stop", "time": "ครบเวลาถือ"}
+        TH = {"tp": "ถึงเป้ากำไร", "sl": "โดน stop", "time": "ครบเวลาถือ", "trail": "stop ตามล็อกกำไร"}
         self.ev(f"[{p.get('label', '')}] ขาย {p['sym']} ที่ {exit_px:.6g} ({TH.get(reason, reason)}) · {'+' if pnl >= 0 else ''}{pnl:.2f} USDT ({net * 100:+.2f}%)", "sell")
 
     def check_exits(self, highs_lows: dict | None = None):
@@ -185,8 +209,12 @@ class Scalper:
                     if px <= p["sl"]: hit = (px, "sl")
                     elif px >= p["tp"]: hit = (px, "tp")
                     elif now >= p["deadline"]: hit = (px, "time")
+                if hit and hit[1] == "sl" and p.get("trail") and p["sl"] > p["entry"]: hit = (hit[0], "trail")
                 if hit: self._close(p, hit[0], hit[1], shadow)
-                else: keep.append(p)
+                else:
+                    if px and p.get("trail"):          # trailing stop: ล็อกกำไรเมื่อราคาขึ้น (ไม่เลื่อนลง)
+                        p["best"] = max(p.get("best", p["entry"]), px); p["sl"] = max(p["sl"], p["best"] * (1 - p["trail"]))
+                    keep.append(p)
             self.s[key] = keep
 
     # ---------- entries ----------
@@ -195,7 +223,7 @@ class Scalper:
         if not MS and interval != "5m":
             return
         fired = []; hl = {}; watch = {}; dfs = {}
-        for sym in COINS:
+        for sym in (self.coins if interval == "5m" else COINS):
             try:
                 dfs[sym] = bars5(sym) if interval == "5m" else bars1h(sym)
             except Exception as e:
@@ -213,37 +241,42 @@ class Scalper:
                 else:
                     bu = btc_up[-len(df):] if btc_up is not None and len(btc_up) >= len(df) else None
                     sig = signals1h(df, m["strategy"], m["params"], bu)
-                if sig[-1]: fired.append((m, sym))
+                if sig[-1]:
+                    c_ = df.close.to_numpy(); fired.append((m, sym, float(c_[-1] / c_[-13] - 1) if len(c_) > 13 else 0.0))
             if interval == "5m" and MS:
-                watch[sym] = {"signal": any(s_ == sym for _, s_ in fired), **note(df, MS[0])}
+                c_ = df.close.to_numpy()
+                watch[sym] = {"signal": any(s_ == sym for _, s_, _r in fired), "r1h_pct": round(float(c_[-1] / c_[-13] - 1) * 100, 2), **note(df, MS[0])}
         if interval == "5m":
             self.check_exits(hl); self.s["watch"] = watch
         chk = self.s.setdefault("checks", {})
         for m in MS:
-            f_ = [s_ for mm, s_ in fired if mm is m]
+            f_ = [s_ for mm, s_, _r in fired if mm is m]
             chk[m["id"]] = {"at": now_iso(), "coins": len(dfs), "fired": f_}
         G = self.gates(); ok = self.sentinel_ok()
-        for m, sym in fired:
+        fired.sort(key=lambda x: -x[2])           # เหรียญที่วิ่งแรงสุดก่อน
+        for m, sym, _r in fired:
             px = self.px.get(sym)
             if not px: continue
             ex, g = m["exit"], G[m["id"]]
             entry = px * (1 + SLIP); t0 = time.time()
-            base = {"sym": sym, "entry": round(entry, 8), "tp": entry * (1 + ex["tp"]), "sl": entry * (1 - ex["sl"]), "model": m["id"], "label": m["label"],
+            base = {"sym": sym, "entry": round(entry, 8), "tp": entry * (1 + ex["tp"]), "sl": entry * (1 - ex["sl"]), "model": m["id"], "label": m["label"], "trail": ex.get("trail"),
                     "opened_at": now_iso(), "t0": t0, "deadline": t0 + ex["hold"] * SEC[m["interval"]]}
             if not any(p["sym"] == sym and p.get("model") == m["id"] for p in self.s["shadow"]):
                 self.s["shadow"].append(dict(base))
             held = any(p["sym"] == sym for p in self.s["positions"])
-            if not g["open"]:
+            mode = self.money_mode(m, g)
+            if mode == "shadow":
                 self.ev(f"[{m['label']}] สัญญาณ {sym} → เทรดเงา (ยังไม่ใช้เงิน: เก็บผลเงาแล้ว {g['n']}/{GATE_N} ครั้ง"
                         + (f" เฉลี่ย {g['avg_pct']:+.2f}%)" if g['avg_pct'] is not None else ")"), "info"); continue
             if not ok or held or len(self.s["positions"]) >= MAX_POS: continue
-            eq = self.equity(); notional = min(eq * RISK / ex["sl"], MAX_NOTIONAL, self.s["cash"] * 0.98)
+            eq = self.equity(); notional = min(eq * (RISK if mode == "full" else RISK_PROBATION) / ex["sl"], MAX_NOTIONAL, self.s["cash"] * 0.98)
             if notional < 5: continue
             qty = notional / (entry * (1 + FEE)); cost = qty * entry * (1 + FEE)
             self.s["cash"] -= cost
-            self.s["positions"].append({**base, "qty": qty, "cost": cost})
-            self.ev(f"[{m['label']}] ซื้อ {sym} {notional:.2f} USDT ที่ {entry:.6g} · เป้า +{ex['tp']:.1%} / stop -{ex['sl']:.1%}"
-                    f" · เพราะผลเงาล่าสุดเฉลี่ย {g['avg_pct']:+.2f}% ต่อครั้ง", "buy")
+            self.s["positions"].append({**base, "qty": qty, "cost": cost, "mode": mode})
+            why = f"ขึ้น {_r * 100:+.2f}% ใน 1 ชม. แรงสุดในกลุ่มที่เข้าเงื่อนไข" if m["strategy"] == "momentum_rotation" else "เข้าเงื่อนไขกลยุทธ์"
+            self.ev(f"[{m['label']}] ซื้อ {sym} {notional:.2f} USDT ที่ {entry:.6g} · {why} · เป้า +{ex['tp']:.1%} / stop -{ex['sl']:.1%}"
+                    + (f" (ขยับตาม −{ex['trail']:.1%})" if ex.get("trail") else "") + (" · ช่วงทดลอง: ใช้เงินครึ่งหนึ่ง" if mode == "probation" else ""), "buy")
 
     def save(self):
         eq = self.equity()
@@ -256,7 +289,7 @@ class Scalper:
 
     def step(self):
         try:
-            self.px = prices(); self.px_at = time.time()
+            self.px = prices(self.coins); self.px_at = time.time()
         except Exception as e:
             self.ev(f"ราคาค้าง/ดึงไม่ได้: {e}", "warn")
         if time.time() - self.px_at > 120:

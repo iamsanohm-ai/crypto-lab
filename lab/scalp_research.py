@@ -62,6 +62,10 @@ def signals(df: pd.DataFrame, name: str, p: dict) -> np.ndarray:
     if name == "ema_cross":                  # EMA9 ตัดขึ้น EMA21
         f, s = ema(c, 9), ema(c, 21)
         return up & (f > s) & (np.roll(f, 1) <= np.roll(s, 1))
+    if name == "momentum_rotation":         # เหรียญที่กำลังวิ่ง: ขึ้นเกิน th ใน lb แท่ง + เทรนด์ 5 นาทีขาขึ้น + volume สูง
+        e50 = ema(c, 50); va = pd.Series(v).shift(1).rolling(48).mean().to_numpy()
+        r = c / np.roll(c, p["lb"]) - 1
+        return (r > p["th"]) & (c > e50) & (e50 > ema(c, 200)) & (v > p.get("volk", 1.5) * va)
     if name == "bb_bounce":                  # หลุดขอบล่าง Bollinger ในขาขึ้น
         m = pd.Series(c).rolling(20).mean(); sd = pd.Series(c).rolling(20).std()
         return up & (c < (m - p["k"] * sd).to_numpy())
