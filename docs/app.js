@@ -9,8 +9,8 @@
     time: (s) => { if (!s) return '—'; const d = new Date(s); return isNaN(d) ? s : d.toLocaleString('th-TH', {day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'}); },
   };
   const cls = (v) => v > 0 ? 'pos' : v < 0 ? 'neg' : 'flat';
-  const SERIES = {keltner_trend: '#33c3b4', golden_cross_50_200: '#8f7cf2', breakout_funding_filter: '#f2a93b', 'BTC buy & hold': '#6b7a8a'};
-  const ROLE = {champion: 'Champion', challenger_1: 'Challenger 1', challenger_2: 'Challenger 2'};
+  const SERIES = {keltner_trend: '#33c3b4', golden_cross_50_200: '#8f7cf2', breakout_funding_filter: '#f2a93b', keltner_bold: '#ff7a59', 'BTC buy & hold': '#6b7a8a'};
+  const ROLE = {champion: 'Champion', challenger_1: 'Challenger 1', challenger_2: 'Challenger 2', challenger_3: 'บอทกล้า'};
   const mk = (tag, c, text) => { const e = document.createElement(tag); if (c) e.className = c; if (text != null) e.textContent = text; return e; };
   const DRAWERS = {};
   const draw = (name, fn) => { DRAWERS[name] = fn; document.querySelectorAll(`[data-draw="${name}"]`).forEach((el) => {
@@ -252,7 +252,7 @@
     draw('btLegend', (el) => { el.replaceChildren(); for (const [n, rs] of d3.groups(D.bt_curves, (r) => r.series)) { const sp = mk('span'); const i = mk('i'); i.style.background = SERIES[n] || '#9aa'; sp.append(i, n + ' → ' + d3.format(',.0f')(rs[rs.length - 1].equity)); el.append(sp); } });
     draw('leaderRows', (tb) => {
       tb.replaceChildren();
-      const label = {champion: '👑 Champion', challenger_1: 'Challenger 1', challenger_2: 'Challenger 2', passed: 'ผ่าน (สำรอง)', cut: 'ตัดทิ้ง', benchmark: 'ตัวเทียบ'};
+      const label = {champion: '👑 Champion', challenger_1: 'Challenger 1', challenger_2: 'Challenger 2', challenger_3: '🔥 บอทกล้า', passed: 'ผ่าน (สำรอง)', cut: 'ตัดทิ้ง', benchmark: 'ตัวเทียบ'};
       for (const r of D.leaderboard) { const tr = tb.insertRow();
         if (/^(champion|challenger)/.test(r.status)) tr.className = 'hl'; if (r.status === 'benchmark') tr.className = 'bench';
         tr.insertCell().textContent = r.name; const st = tr.insertCell(); st.textContent = label[r.status] || r.status;

@@ -267,6 +267,21 @@ def keltner_trend(m, k=2.0, stop=2.0):
     return Signals(B(entry) & btc_regime(m), N(a * stop), exit=B(c < mid), trail_atr=N(a * 3))
 
 
+@idea("keltner_bold",
+      "แบบกล้า (เจ้าของขอ 2026-11-25): เหมือน Keltner Trend แต่ซื้อได้แม้ BTC ขาลง ถ้าเหรียญแข็งกว่า BTC เกิน rs ใน 30 วัน · ตอน BTC ขาลงออกเร็วขึ้น (ปิดใต้ EMA10)",
+      [{"k": 2.0, "stop": 3.0, "rs": r} for r in (0.2, 0.3)],
+      "ตลาดขาลงทั้งกระดาน — ทดสอบย้อนหลังเทรดที่เข้าตอน BTC ขาลงขาดทุนเฉลี่ย")
+def keltner_bold(m, k=2.0, stop=3.0, rs=0.2):
+    c = _c(m)
+    a = atr(m, 20)
+    mid = ema(c, 20)
+    entry = (c > mid + k * a) & (c.shift(1) <= mid.shift(1) + k * a.shift(1)) & (c > ema(c, 200))
+    up = btc_regime(m)
+    strong = B(c.pct_change(180).sub(c["BTCUSDT"].pct_change(180), axis=0) > rs)
+    ex = B(c < mid) | (~up & B(c < ema(c, 10)))
+    return Signals(B(entry) & (up | strong), N(a * stop), exit=ex, trail_atr=N(a * 3))
+
+
 @idea("relative_strength_vs_btc",
       "alt ที่ทำ high ใหม่เทียบกับ BTC ขณะที่ BTC ขาขึ้น = มีเงินเฉพาะเจาะจงไหลเข้า (narrative/ข่าว)",
       [{"n": n, "stop": s} for n in (10 * D, 20 * D) for s in (2.0, 3.0)],

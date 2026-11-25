@@ -21,6 +21,7 @@ strategies:
      exit: {breakeven_r: 1.0}}   # กำไรถึง 1R (ราคาปิด 4h) → เลื่อน stop มาที่ทุน+ค่าธรรมเนียม · เจ้าของอนุมัติ 2026-11-25 (research/exit_research.json)
   - {role: challenger_1, name: golden_cross_50_200,     params: {fast: 30, slow: 120}}
   - {role: challenger_2, name: breakout_funding_filter, params: {n: 60, fmax: 0.0001}}   # funding live = ESTIMATE
+  - {role: challenger_3, name: keltner_bold,            params: {k: 2.0, stop: 3.0, rs: 0.2}, exit: {breakeven_r: 1.0}}   # "บอทกล้า" — เจ้าของขอ 2026-11-25 · paper เท่านั้น · ทดสอบย้อนหลังแย่กว่า champion (+34.5% vs +38.3%)
 grok:                       # Grok (xAI) เป็นผู้ตรวจสอบสัญญาณซื้อ: allow/veto เท่านั้น
   enabled: false             # เปิดเมื่อใส่ XAI_API_KEY ใน GitHub Secrets แล้ว
   mode: shadow               # shadow = บันทึกความเห็นอย่างเดียว | veto = ข้ามการซื้อเมื่อ Grok คัดค้าน (เจ้าของต้องอนุมัติก่อนเปลี่ยน)
