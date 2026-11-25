@@ -59,8 +59,8 @@
     t('บอทบนเซิร์ฟเวอร์', ago(S.updated_at), 'เช็คราคาทุก 15 วิ · ส่งขึ้นเว็บทุก 5 นาที', Date.now() - new Date(S.updated_at) < 20 * 60000 ? 'pos' : 'amber');
     const m = S.model || {}, ex = m.exit || {};
     const why = mk('p', 'sc-why');
-    why.append(mk('b', null, 'กติกา: '), `${m.strategy === 'momo_burst' ? 'ซื้อเมื่อราคาทะลุจุดสูงสุด ' + (m.params || {}).n + ' แท่ง (5 นาที) พร้อม volume พุ่ง ' + (m.params || {}).k + ' เท่า ในขาขึ้น' : m.strategy}`
-      + ` → ขายทันทีเมื่อกำไร +${(ex.tp * 100).toFixed(1)}% หรือขาดทุน -${(ex.sl * 100).toFixed(1)}% หรือถือครบ ${ex.hold * 5} นาที · เสี่ยงไม่เกิน 0.5% ต่อครั้ง · ไม่เกิน 125 USDT/ครั้ง · ถือพร้อมกันไม่เกิน 3`);
+    why.append(mk('b', null, 'กติกา: '), `บอททดสอบ ${(S.models || [m]).length} กลยุทธ์ระยะสั้นพร้อมกัน (แท่ง 5 นาทีและ 1 ชม.) ด้วยราคาจริงทุก 15 วินาที — ทุกสัญญาณถูกเทรดเงาเพื่อวัดผลจริง`
+      + ' → ใช้เงินเฉพาะกลยุทธ์ที่ผลเงา 30 ครั้งล่าสุดเป็นบวกหลังค่าธรรมเนียม · ออกทันทีเมื่อถึงเป้ากำไร / stop / ครบเวลาถือ · เสี่ยงไม่เกิน 0.5% ต่อครั้ง · ไม่เกิน 125 USDT/ครั้ง · ถือพร้อมกันไม่เกิน 3');
     el.append(a, tiles, why);
   }
 
@@ -74,7 +74,7 @@
       d.children[0].textContent = s; d.children[1].textContent = pf(p);
       d.children[3].textContent = w.trend_up == null ? 'รอข้อมูลบอท' : `${w.trend_up ? 'ขาขึ้น' : 'ขาลง'} ${pct(w.vs_ema200_pct, 1)}` + (w.to_break_pct != null ? ` · ห่างจุดทะลุ ${w.to_break_pct}% · vol ${w.vol_x}x` : '');
       const cv = d.children[2], a = SPARK[s] || [];
-      const r = devicePixelRatio || 1, cw = cv.clientWidth || 100, ch = 22; if (cv.width !== cw * r) { cv.width = cw * r; cv.height = ch * r; }
+      const r = devicePixelRatio || 1, cw = +cv.dataset.w || +(cv.dataset.w = cv.clientWidth || 100), ch = 22; if (cv.width !== cw * r) { cv.width = cw * r; cv.height = ch * r; }
       const c = cv.getContext('2d'); c.setTransform(r, 0, 0, r, 0, 0); c.clearRect(0, 0, cw, ch);
       if (a.length > 1) { const lo = Math.min(...a), hi = Math.max(...a), k = hi - lo || 1; c.beginPath();
         a.forEach((v, i) => { const x = i / (a.length - 1) * cw, y = ch - 2 - (v - lo) / k * (ch - 4); i ? c.lineTo(x, y) : c.moveTo(x, y); });
@@ -143,10 +143,31 @@
       : 'บทเรียน: ช่วงนี้ไม่มีกลยุทธ์เข้าเร็ว-ออกเร็วตัวไหนทำกำไรหลังค่าธรรมเนียม (ตลาดขาลง ซื้อแล้วโดน stop บ่อย) — ระบบจึง "เทรดเงา" ไปก่อน ไม่ใช้เงิน และจะเริ่มใช้เงินเองเมื่อผลเงาล่าสุดเป็นบวก'));
   }
 
+  function arena() {
+    const el = $('#sc-arena'); if (!el || !S || !S.models) return;
+    const G = S.gates || {}, CK = S.checks || {}; const key = JSON.stringify([G, CK, (S.shadow || []).length]); if (el.dataset.k === key) return; el.dataset.k = key; el.replaceChildren();
+    for (const m of S.models) {
+      const g = G[m.id] || {n: 0, need: 30}, ck = CK[m.id], R = m.research || {};
+      const open = (S.shadow || []).filter((p) => p.model === m.id).length;
+      const c = mk('div', 'ar-c' + (g.open ? ' open' : ''));
+      const t = mk('div', 't'); t.append(mk('b', null, m.label), mk('span', 'st', g.open ? 'ใช้เงิน' : 'เทรดเงา')); c.append(t);
+      const k = mk('div', 'ar-k'); const kv = (a, b2, cl) => { k.append(mk('span', null, a)); const x = mk('b', cl || null, b2); k.append(x); };
+      kv('ทดสอบย้อนหลัง (ช่วงไม่เคยเห็น)', R.oos_avg_pct == null ? '—' : pct(R.oos_avg_pct, 2) + '/ครั้ง', cls(R.oos_avg_pct));
+      kv('ก่อนหักค่าธรรมเนียม', R.oos_gross_pct == null ? '—' : pct(R.oos_gross_pct, 2), cls(R.oos_gross_pct));
+      kv('ผลเงาจริงล่าสุด', g.avg_pct == null ? 'ยังไม่มี' : `${pct(g.avg_pct, 2)} · ชนะ ${g.win_pct}%`, cls(g.avg_pct));
+      kv('เงาที่เปิดอยู่', String(open));
+      c.append(k);
+      const bar = mk('div', 'ar-bar'); const f = mk('i'); f.style.width = Math.min(100, g.n / (g.need || 30) * 100) + '%'; bar.append(f);
+      c.append(bar, mk('small', null, `เก็บผลเงาแล้ว ${g.n}/${g.need || 30} ครั้ง · ${g.open ? 'ผลเป็นบวก → ใช้เงินได้' : 'ต้องครบ 30 และเฉลี่ยเป็นบวกหลังค่าธรรมเนียม'}`
+        + (ck ? ` · ตรวจล่าสุด ${hhmm(ck.at)} (${ck.coins} เหรียญ${ck.fired.length ? ', สัญญาณ: ' + ck.fired.join(', ') : ', ไม่มีสัญญาณ'})` : '')));
+      el.append(c);
+    }
+  }
+
   function tick() {
     if (document.hidden) return;
     const v = $('#view-scalp'); if (!v || v.hidden || !S) return;
-    hero(); tape(); posList('#sc-pos', S.positions, true); posList('#sc-shadow', S.shadow, false); trades(); events(); curve(); learn();
+    hero(); arena(); tape(); posList('#sc-pos', S.positions, true); posList('#sc-shadow', S.shadow, false); trades(); events(); curve(); learn();
   }
   function init() { load().then(tick); setInterval(load, 30000); setInterval(tick, 1000); setTimeout(connect, 800); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();

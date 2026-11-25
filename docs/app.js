@@ -77,7 +77,7 @@
   document.addEventListener('change', (e) => { if (e.target && e.target.id === 'chart-sym') { chart.sym = e.target.value; loadChart(); } });
 
   // ---------------- tabs (hash routing) ----------------
-  const TABS = ['overview', 'plans', 'scan', 'reason', 'scalp', 'trade', 'portfolio', 'strategy'];
+  const TABS = ['overview', 'reason', 'scan', 'scalp', 'plans', 'trade', 'portfolio', 'strategy'];
   function showTab(name) {
     if (!TABS.includes(name)) name = 'overview';
     document.querySelectorAll('[data-view]').forEach((s) => { s.hidden = s.dataset.view !== name; });

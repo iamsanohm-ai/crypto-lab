@@ -8,9 +8,10 @@ import lab.scalper as sc
 def mkbot(tmp_path, monkeypatch, gate_avg):
     monkeypatch.setattr(sc, "ROOT", tmp_path)
     bot = sc.Scalper(tmp_path)
-    bot.s["shadow_closed"] = [{"net_pct": gate_avg} for _ in range(30)]
-    bot.P = {"strategy": "momo_burst", "params": {"n": 36, "k": 3.0}, "exit": {"tp": 0.02, "sl": 0.01, "hold": 12}}
-    df = pd.DataFrame({"time": np.arange(260) * 300_000, "open": 100.0, "high": 101.0, "low": 99.0, "close": 100.0, "volume": 1.0})
+    bot.P = {"id": "5m:momo_burst", "label": "t", "interval": "5m", "strategy": "momo_burst", "params": {"n": 36, "k": 3.0}, "exit": {"tp": 0.02, "sl": 0.01, "hold": 12}}
+    bot.MODELS = [bot.P]
+    bot.s["shadow_closed"] = [{"net_pct": gate_avg, "model": "5m:momo_burst"} for _ in range(30)]
+    df = pd.DataFrame({"time": np.arange(260) * 300_000 + 10**12, "open": 100.0, "high": 101.0, "low": 99.0, "close": 100.0, "volume": 1.0})
     monkeypatch.setattr(sc, "bars5", lambda s: df)
     monkeypatch.setattr(sc, "signals", lambda d, n, p: np.r_[np.zeros(259, bool), True])
     bot.px = {c: 100.0 for c in sc.COINS}
