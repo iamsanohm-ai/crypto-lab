@@ -27,7 +27,7 @@ H4 = timedelta(hours=4)
 CTX = {}
 
 
-ALERT_EVENTS = {"BUY", "SELL", "SENTINEL_HALT", "SENTINEL_RESUME", "ERROR"}
+ALERT_EVENTS = {"BUY", "SELL", "BREAKEVEN", "SENTINEL_HALT", "SENTINEL_RESUME", "ERROR"}
 
 
 def log(event: str, **kw):
@@ -205,6 +205,17 @@ class Sentinel:
         return True, "ok"
 
 
+def apply_breakeven(p: dict, be_r: float | None, cost_per_side: float) -> bool:
+    """กำไรถึง be_r × ระยะ stop เริ่มต้น (วัดจากราคาปิดสูงสุด) → เลื่อน stop มาที่ทุน + ค่าธรรมเนียมไปกลับ. คืน True ถ้าเพิ่งเลื่อน."""
+    dist = p.get("risk_dist")
+    if not be_r or not dist or p.get("breakeven_done"):
+        return False
+    if p["high_close"] >= p["entry"] + be_r * dist:
+        p["stop"] = max(p["stop"], p["entry"] * (1 + 2 * cost_per_side)); p["breakeven_done"] = True
+        return True
+    return False
+
+
 def run_all(dry: bool = False):
     cfg = yaml.safe_load(CONFIG.read_text())
     cache = {}
@@ -283,8 +294,10 @@ def run_once(cfg, champ, cache, dry=False):
                 close_position(sym, price_now(sym), "signal exit"); continue
             if sig.max_hold and p["bars_held"] >= sig.max_hold:
                 close_position(sym, price_now(sym), "time exit"); continue
+            p["high_close"] = max(p["high_close"], float(m.close[T, j]))
+            if apply_breakeven(p, (champ.get("exit") or {}).get("breakeven_r"), c):
+                log("BREAKEVEN", symbol=sym, stop=p["stop"], reason="กำไรถึง 1R → เลื่อน stop มาที่ทุน (เทรดนี้จะไม่ขาดทุนแล้ว)")
             if sig.trail_atr is not None and sig.trail_atr[T, j] > 0:
-                p["high_close"] = max(p["high_close"], float(m.close[T, j]))
                 p["stop"] = max(p["stop"], p["high_close"] - float(sig.trail_atr[T, j]))
 
     # ---- ตรวจบัญชี ----
@@ -329,7 +342,7 @@ def run_once(cfg, champ, cache, dry=False):
             st["positions"][sym] = {"entry": px, "qty": order["qty"], "cost": cost, "stop": px - dist,
                                     "target": px + sig.target_r * dist if sig.target_r else None,
                                     "entry_time": now_iso(), "checked_until": now_iso(), "bars_held": 0,
-                                    "high_close": px, "last_price": px, "signal_bar": last_bar_time}
+                                    "high_close": px, "last_price": px, "signal_bar": last_bar_time, "risk_dist": dist}
             log("BUY", symbol=sym, price=px, qty=order["qty"], notional=round(notional, 2), stop=px - dist,
                 reason=f"{champ['name']} entry on bar {last_bar_time}")
         st["last_bar"] = last_bar_time

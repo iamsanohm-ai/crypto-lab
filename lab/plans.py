@@ -69,7 +69,7 @@ def build(m, rows: list[dict], cfg: dict, btc_up: bool, universe: list[str]) -> 
             "how_to_enter": (f"ซื้อเมื่อแท่ง 4h ปิดเหนือ {px(trigger)}" if state != "enter_now" else "สัญญาณเกิดแล้วบนแท่ง 4h ล่าสุด → เข้าที่ราคาตลาด")
                             + ("" if btc_up else f" และ BTC ต้องกลับขึ้นเหนือ EMA200 ก่อน"),
             "how_to_exit": f"ขายเมื่อแท่ง 4h ปิดต่ำกว่า EMA20 (~{px(ema20_)}) หรือโดน stop {px(stop)} "
-                           f"(ขยับ stop ขึ้นตามราคาปิดสูงสุด − {px(stop_mult * a)})",
+                           f"(กำไรถึง {px(entry + stop_mult * a)} = 1R → เลื่อน stop มาที่ทุน แล้วขยับตามราคาปิดสูงสุด − {px(stop_mult * a)})",
             "note": "" if in_uni else "นอก Top 20 — ยังไม่ผ่าน backtest ความเสี่ยงสูงกว่า",
         })
     order = {"enter_now": 0, "near": 1, "wait_btc": 2}

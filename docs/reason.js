@@ -104,12 +104,12 @@
       el.append(mk('div', 'op-t', 'ทดสอบวิธี "ออก" เพื่อให้ขาดทุนน้อยที่สุดแต่ยังได้กำไร'));
       const tb = mk('table'), hd = mk('tr'); ['วิธีออก', 'ผลตอบแทน', 'Sharpe', 'ลดลงหนักสุด', 'ชนะเฉลี่ย', 'แพ้เฉลี่ย', 'คาดหวัง'].forEach((h, i) => hd.append(mk('th', i ? 'num' : null, h)));
       const th = mk('thead'); th.append(hd); const tbd = mk('tbody');
-      for (const v of ev.exit_variants) { const tr = mk('tr', v.variant === 'base' ? 'cur' : v.variant === ev.best ? 'best' : null);
-        tr.append(mk('td', null, v.label + (v.variant === ev.best ? ' ★' : '')), mk('td', 'num ' + cls(v.return_pct), pct(v.return_pct)), mk('td', 'num', v.sharpe.toFixed(2)), mk('td', 'num neg', pct(v.max_dd_pct)),
+      for (const v of ev.exit_variants) { const tr = mk('tr', v.variant === 'be_1r' ? 'cur' : null);
+        tr.append(mk('td', null, v.label), mk('td', 'num ' + cls(v.return_pct), pct(v.return_pct)), mk('td', 'num', v.sharpe.toFixed(2)), mk('td', 'num neg', pct(v.max_dd_pct)),
           mk('td', 'num pos', '+' + v.avg_win_r + 'R'), mk('td', 'num neg', v.avg_loss_r + 'R'), mk('td', 'num', (v.expectancy_r > 0 ? '+' : '') + v.expectancy_r + 'R'));
         tbd.append(tr); }
       tb.append(th, tbd); const w = mk('div', 'tablewrap'); w.append(tb); el.append(w);
-      el.append(mk('p', 'rs-sub', 'R = จำนวนเงินที่ยอมเสียต่อเทรด (2.5 USDT) · กฎปัจจุบันตัดขาดทุนเร็วอยู่แล้ว (แพ้เฉลี่ยแค่ครึ่งหนึ่งของ R เพราะขายเมื่อปิดต่ำกว่า EMA20 ก่อนถึง stop) · ★ = ดีที่สุด เป็นข้อเสนอรอเจ้าของอนุมัติ · stop แคบลงได้เงินมากขึ้นแต่ขาดทุนต่อครั้งและช่วงติดลบหนักกว่า'));
+      el.append(mk('p', 'rs-sub', 'R = จำนวนเงินที่ยอมเสียต่อเทรด (2.5 USDT) · กฎปัจจุบันตัดขาดทุนเร็วอยู่แล้ว (แพ้เฉลี่ยแค่ครึ่งหนึ่งของ R เพราะขายเมื่อปิดต่ำกว่า EMA20 ก่อนถึง stop) · แถวที่ไฮไลต์ = กฎที่ระบบใช้อยู่ (เจ้าของอนุมัติ 25 พ.ย. 2026) · stop แคบลงได้เงินมากขึ้นแต่ขาดทุนต่อครั้งและช่วงติดลบหนักกว่า'));
     }
   }
 

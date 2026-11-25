@@ -20,7 +20,7 @@ def _evidence() -> dict:
     if not EXIT_R.exists():
         return {}
     r = json.loads(EXIT_R.read_text())
-    base = next((v for v in r["variants"] if v["variant"] == "base"), {})
+    base = next((v for v in r["variants"] if v["variant"] == "be_1r"), None) or next((v for v in r["variants"] if v["variant"] == "base"), {})   # กฎที่ใช้อยู่ (อนุมัติ be_1r แล้ว)
     be = next((v for v in r["variants"] if v["variant"] == "be_1r"), {})
     return {"period": r["period"], "base": base, "be_1r": be, "best": r.get("best"), "mae": r.get("mae", {}), "per_coin": r.get("per_coin", {}),
             "recent": r.get("recent_trades", [])}
@@ -112,7 +112,7 @@ def think(m, rows: list[dict], cfg: dict, plans: list[dict], universe: list[str]
             {"when": "ทันทีที่ซื้อ", "price": stop, "what": f"ตั้ง stop-loss ที่ {px(stop)} → ถ้าผิดทาง เสียไม่เกิน ≈ {worst:.2f} USDT", "kind": "stop"},
             {"when": f"ถ้ากำไรถึง +1R ({px(entry + R)})", "price": entry + R,
              "what": "เลื่อน stop มาที่ทุน + ค่าธรรมเนียม → จากจุดนี้เทรดนี้จะไม่ขาดทุนแล้ว", "kind": "breakeven",
-             "status": "ข้อเสนอ: ทดสอบแล้วดีขึ้นเล็กน้อย รอเจ้าของอนุมัติ"},
+             "status": "ใช้งานแล้ว — เจ้าของอนุมัติ 25 พ.ย. 2026"},
             {"when": "ระหว่างถือ", "price": None, "what": f"stop ขยับขึ้นตาม ราคาปิดสูงสุด − {stop_mult}×ATR ({px(dist)}) ไม่มีวันเลื่อนลง = ล็อกกำไรเมื่อราคาขึ้น", "kind": "trail"},
             {"when": "ทางออกหลัก", "price": mid, "what": f"แท่ง 4h ปิดต่ำกว่า EMA20 (ตอนนี้ ≈ {px(mid)}) → ขาย เพราะแรงซื้อหมดแล้ว", "kind": "ema"},
         ]

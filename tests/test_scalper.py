@@ -43,3 +43,13 @@ def test_sentinel_three_losses(tmp_path, monkeypatch):
     bot.check_exits()
     assert bot.s["sentinel"]["loss_streak"] == 3 and bot.s["cash"] < sc.CAPITAL
     assert not bot.sentinel_ok() and bot.s["sentinel"]["halted"]["reason"].startswith("แพ้ติดกัน")
+
+
+def test_breakeven_moves_stop_once():
+    from lab.live import apply_breakeven
+    p = {"entry": 100.0, "stop": 94.0, "risk_dist": 6.0, "high_close": 105.0}
+    assert not apply_breakeven(p, 1.0, 0.0015) and p["stop"] == 94.0      # ยังไม่ถึง 1R
+    p["high_close"] = 106.0
+    assert apply_breakeven(p, 1.0, 0.0015) and abs(p["stop"] - 100.3) < 1e-9   # ทุน + ค่าธรรมเนียมไปกลับ
+    assert not apply_breakeven(p, 1.0, 0.0015)                             # ทำครั้งเดียว
+    assert not apply_breakeven({"entry": 1, "stop": 0.9, "high_close": 2}, 1.0, 0.0015)   # สถานะเก่าไม่มี risk_dist → ไม่แตะ
