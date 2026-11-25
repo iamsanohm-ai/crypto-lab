@@ -348,3 +348,57 @@ def range_grid(m, days=20, zone=0.2, stop=1.0):
     exit_ = pos > 0.5
     stop_dist = (c - lo) + stop * a  # stop ใต้ขอบล่างของกรอบ
     return Signals(B(entry), N(stop_dist), exit=B(exit_), max_hold=n)
+
+
+# ---------------- กฎคลาสสิกจาก "Open-source trading bots" (ผลเดิมทดสอบบนหุ้นรายวัน 25 ปี) — ทดสอบซ้ำบนคริปโต ----------------
+@idea("classic_sma_crossover",
+      "กฎคลาสสิก: SMA50 ตัดขึ้น SMA200 = เทรนด์ระยะยาวเปลี่ยนเป็นขาขึ้น (ทดสอบซ้ำจากไลบรารีบอทโอเพ่นซอร์สที่ใช้หุ้น 25 ปี)",
+      [{"fast": 50, "slow": 200}], "ตลาดที่เปลี่ยนทิศเร็ว สัญญาณมาช้า")
+def classic_sma_crossover(m, fast=50, slow=200):
+    c = _c(m)
+    f, s = sma(c, fast), sma(c, slow)
+    return Signals(B((f > s) & (f.shift(1) <= s.shift(1))), N(c * 0.20), exit=B(f < s))
+
+
+@idea("classic_rsi_reversion",
+      "กฎคลาสสิก: RSI14 ลงต่ำกว่า 30 = ขายมากเกินไป ซื้อแล้วขายเมื่อ RSI เกิน 70 (ตัวที่ดีที่สุดในไลบรารีหุ้น +133%)",
+      [{"lo": 30, "hi": 70}], "เทรนด์ขาลงที่ RSI ต่ำค้างนาน")
+def classic_rsi_reversion(m, lo=30, hi=70):
+    c = _c(m)
+    r = rsi(c, 14)
+    return Signals(B((r < lo) & (r.shift(1) >= lo)), N(c * 0.20), exit=B(r > hi))
+
+
+@idea("classic_rsi_dip",
+      "กฎคลาสสิก: ซื้อเมื่อ RSI14 < 30 ขณะราคาอยู่เหนือ SMA200 (ย่อในขาขึ้น) ขายเมื่อ RSI > 50",
+      [{"lo": 30}], "ขาลงที่ทะลุ SMA200 ลงมา")
+def classic_rsi_dip(m, lo=30):
+    c = _c(m)
+    r = rsi(c, 14)
+    return Signals(B((r < lo) & (c > sma(c, 200))), N(c * 0.20), exit=B(r > 50))
+
+
+@idea("classic_trend_pullback",
+      "กฎคลาสสิก: ขาขึ้น (เหนือ SMA200) แล้วราคาย่อมาแตะ SMA50 และปิดกลับขึ้นไป = ซื้อตอนย่อ",
+      [{"stop_pct": 0.10}], "จุดกลับตัวของเทรนด์")
+def classic_trend_pullback(m, stop_pct=0.10):
+    c = _c(m)
+    s50 = sma(c, 50)
+    return Signals(B((c > sma(c, 200)) & (m.df("low") <= s50) & (c > s50)), N(c * stop_pct), exit=B(c < sma(c, 200)))
+
+
+@idea("classic_breakout",
+      "กฎคลาสสิก: ปิดเหนือจุดสูงสุด 20 แท่ง = breakout ขายเมื่อหลุดจุดต่ำสุด 20 แท่ง (Turtle แบบย่อ)",
+      [{"n": 20}], "ตลาด sideways ที่ breakout หลอก")
+def classic_breakout(m, n=20):
+    c = _c(m)
+    return Signals(B(c > m.df("high").rolling(n).max().shift(1)), N(c * 0.10), exit=B(c < c.rolling(n).min().shift(1)))
+
+
+@idea("classic_trend_stop5",
+      "กฎคลาสสิก: ซื้อเมื่อราคาข้ามขึ้นเหนือ SMA200 ทุกสถานะมี stop-loss 5% ขายเมื่อหลุด SMA200",
+      [{"stop_pct": 0.05}], "ความผันผวนสูง (stop 5% แคบเกินไปสำหรับคริปโต)")
+def classic_trend_stop5(m, stop_pct=0.05):
+    c = _c(m)
+    s200 = sma(c, 200)
+    return Signals(B((c > s200) & (c.shift(1) <= s200.shift(1))), N(c * stop_pct), exit=B(c < s200))

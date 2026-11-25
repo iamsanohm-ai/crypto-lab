@@ -211,6 +211,50 @@ details.notes summary{cursor:pointer;color:var(--fg)}
 .kvs span:nth-child(odd){color:var(--muted)}
 .kvs span:nth-child(even){font-family:var(--mono)}
 .plan .tradebtn{justify-self:start}
+
+/* strategy library */
+.libhero{background:linear-gradient(135deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:16px;padding:18px 20px;display:grid;gap:14px}
+.lh-top{display:flex;gap:16px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.libhero .k{font-size:12px;color:var(--muted);letter-spacing:.06em}
+.lh-title{margin:2px 0 6px;font-size:clamp(20px,3vw,28px);line-height:1.25;text-wrap:balance}
+.lh-sub{margin:0;color:var(--muted);max-width:72ch}
+.codebtn{white-space:nowrap;font-family:var(--mono)}
+.btn.ghost{background:transparent;text-decoration:none;display:inline-block}
+.libctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.libctl .search{margin-left:0;flex:1 1 220px}
+.libtable td{vertical-align:middle}
+.libname{white-space:normal!important;min-width:240px;max-width:380px}
+.libname .t{font-weight:600;display:flex;gap:8px;align-items:center}
+.libname .d{font-family:var(--sans);font-weight:400;font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.bid{font-family:var(--mono);font-size:10.5px;font-weight:600;padding:1px 6px;border-radius:5px;background:#0a0f14;border:1px solid var(--line);color:var(--muted)}
+.sparkcell{width:120px}
+.spark{display:block;width:110px;height:30px}
+.pill.kind-trend{color:#7ab8ff}.pill.kind-reversion{color:#f08bd0}.pill.kind-breakout{color:var(--amber)}.pill.kind-other{color:var(--muted)}
+.pill.st-champion,.pill.st-chal{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 45%,transparent)}
+.pill.st-passed{color:var(--up)}.pill.st-cut{color:var(--dim)}
+.pill.topbadge{color:#0b0f14;background:#a99bff;border-color:#a99bff}
+.acts{display:flex;gap:6px}
+.emptycell{text-align:center;color:var(--muted);font-family:var(--sans)!important;font-weight:400!important;padding:24px!important}
+.libcards{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(270px,1fr))}
+.libcard{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;display:grid;gap:10px;min-width:0}
+.libcard.good{border-color:color-mix(in srgb,var(--accent) 35%,var(--line))}
+.libcard.top{border-color:#a99bff;box-shadow:0 0 0 1px #a99bff inset}
+.lc-head{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.lc-ret{margin-left:auto;font-family:var(--mono);font-weight:700;font-size:13px}
+.lc-chart{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:6px;height:110px}
+.lc-chart .spark{width:100%;height:96px}
+.libcard h3{margin:0;font-size:17px}
+.lc-tags{display:flex;gap:6px;flex-wrap:wrap}
+.lc-tags span{font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:1px 7px}
+.lc-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px 10px}
+.lc-stats div{display:grid}
+.lc-stats span{font-size:11px;color:var(--muted)}
+.lc-stats b{font-family:var(--mono);font-size:15px;font-weight:600}
+.lc-act{display:flex;gap:8px}
+.dlg.wide{width:min(720px,calc(100vw - 32px))}
+.bigspark{display:block;width:100%;height:auto;background:var(--panel2);border:1px solid var(--line);border-radius:10px;margin:6px 0 12px}
+#lib-detail{display:grid;gap:8px}
+#lib-detail h3{display:flex;gap:8px;align-items:center}
 .err{color:var(--down);font-family:var(--mono);padding:12px}
 @media (max-width:560px){.bar .wrap{flex-wrap:nowrap;gap:8px}.brand .bt{display:none}#live{padding:3px 7px}.authbtn{padding:5px 10px;font-size:12px}.btc small{display:none}.brand{font-size:15px}.chip.paper{display:none}.card{padding:13px}.bigv{font-size:24px}.gauge{grid-template-columns:1fr}.meta{display:none}.decision{padding:16px}}
 @media (prefers-reduced-motion:no-preference){.gate .fill{transition:width .6s ease}}
@@ -242,7 +286,7 @@ details.notes summary{cursor:pointer;color:var(--fg)}
     <button class="tab" role="tab" data-tab="scan">สแกนกระดาน<span class="n" data-draw="nScan">0</span></button>
     <button class="tab" role="tab" data-tab="trade">ซื้อขาย</button>
     <button class="tab" role="tab" data-tab="portfolio">พอร์ต &amp; บอท</button>
-    <button class="tab" role="tab" data-tab="strategy">กลยุทธ์ &amp; ผลทดสอบ</button>
+    <button class="tab" role="tab" data-tab="strategy">คลังกลยุทธ์</button>
   </div></nav>
 
   <!-- ภาพรวม -->
@@ -432,26 +476,53 @@ details.notes summary{cursor:pointer;color:var(--fg)}
 
   <!-- กลยุทธ์ -->
   <section class="view" id="view-strategy" data-view="strategy" hidden>
-    <div class="card">
-      <h2>ผล backtest walk-forward หลังหักค่าธรรมเนียม เทียบ BTC ถือยาว <span class="note">เริ่ม 500 USDT · พ.ย. 2023 – ปัจจุบัน</span></h2>
-      <div class="legend" data-draw="btLegend"></div>
-      <div class="chartbox" data-draw="btCurves" style="min-height:260px"></div>
-      <p class="help">BTC ถือยาวได้ผลตอบแทนสูงกว่า แต่เคยร่วงกว่า 50% ระหว่างทาง กลยุทธ์ของบอทถูกเลือกเพราะเสี่ยงต่ำกว่ามาก (ร่วงสูงสุดราว 15%)</p>
+    <div class="libhero">
+      <div class="lh-top">
+        <div>
+          <div class="k">คลังกลยุทธ์</div>
+          <h2 class="lh-title">บอทเทรดทุกตัวที่ผ่านการทดสอบย้อนหลัง</h2>
+          <p class="lh-sub">แต่ละบอทคือกฎหนึ่งข้อที่แปลงเป็นคำสั่งเข้า/ออกอัตโนมัติ ทดสอบแบบ walk-forward บนข้อมูลคริปโตจริง หักค่าธรรมเนียมแล้ว แสดงทั้งตัวที่ชนะและแพ้ เปิดดูโค้ดได้ทุกตัว</p>
+        </div>
+        <a class="btn ghost codebtn" href="https://github.com/iamsanohm-ai/crypto-lab/blob/main/lab/strategies.py" target="_blank" rel="noopener">&lt;/&gt; ดูโค้ดทั้งหมด</a>
+      </div>
+      <div class="libctl">
+        <input class="search" id="lib-search" type="search" placeholder="ค้นหาชื่อ, ไอเดีย, รหัส เช่น B03" aria-label="ค้นหากลยุทธ์">
+        <div class="ftabs" id="lib-kinds"></div>
+        <select class="sel" id="lib-sort" aria-label="เรียงลำดับ">
+          <option value="return_pct">เรียงตาม: ผลตอบแทน</option>
+          <option value="sharpe">เรียงตาม: Sharpe</option>
+          <option value="max_dd_pct_abs">เรียงตาม: ร่วงน้อยสุด</option>
+          <option value="win_rate_pct">เรียงตาม: อัตราชนะ</option>
+          <option value="pl_ratio">เรียงตาม: P/L</option>
+          <option value="trades">เรียงตาม: จำนวนเทรด</option>
+        </select>
+        <div class="ftabs" id="lib-only">
+          <button type="button" class="ftab" data-only="all">ทุกตัว</button>
+          <button type="button" class="ftab" data-only="passed">ผ่านเกณฑ์</button>
+          <button type="button" class="ftab" data-only="classic">กฎคลาสสิก</button>
+        </div>
+        <div class="seg" id="lib-view" role="group" aria-label="มุมมอง">
+          <button type="button" data-mode="table">ตาราง</button><button type="button" data-mode="cards">การ์ด</button>
+        </div>
+      </div>
+      <p class="help" id="lib-count" style="margin:0">กำลังโหลด…</p>
     </div>
-    <div class="card">
-      <h2>อันดับกลยุทธ์ทั้งหมด (เรียงตาม Sharpe)</h2>
-      <div class="tablewrap"><table>
-        <thead><tr><th>กลยุทธ์</th><th>สถานะ</th><th class="num">ผลตอบแทน</th><th class="num">ร่วงสูงสุด</th><th class="num">Sharpe</th><th class="num">จำนวนเทรด</th></tr></thead>
-        <tbody data-draw="leaderRows"></tbody>
+
+    <div class="card" id="lib-table-wrap" style="padding:0;overflow:hidden">
+      <div class="tablewrap"><table class="libtable">
+        <thead><tr><th>กลยุทธ์</th><th>ประเภท</th><th>กราฟ</th><th class="num">ผลตอบแทน</th><th class="num">ต่อปี</th><th class="num">Sharpe</th><th class="num">Max DD</th><th class="num">ชนะ</th><th class="num">P/L</th><th>สถานะ</th><th></th></tr></thead>
+        <tbody id="lib-rows"></tbody>
       </table></div>
     </div>
+    <div class="libcards" id="lib-cards" hidden></div>
+
     <details class="card notes">
-      <summary>ตัวเลขเหล่านี้มาจากไหน และควรอ่านอย่างไร</summary>
+      <summary>อ่านตัวเลขอย่างไร</summary>
       <ul>
-        <li>ทุกอย่างเป็น <b>paper trading</b> (เงินจำลอง 500 USDT ต่อกลยุทธ์) ยังไม่มีเงินจริง</li>
-        <li>ราคาและแท่งเทียนมาจาก Binance · ราคาบนหน้านี้สดทุกวินาทีผ่าน WebSocket · ข้อมูลบอทอัปเดตทุกชั่วโมง</li>
-        <li>Backtest = walk-forward 3 ปีบนข้อมูลที่ไม่ได้ใช้เลือกพารามิเตอร์ หักค่าธรรมเนียม 0.1% + slippage 0.05% ต่อขา และรวมเหรียญที่ถูกถอด</li>
-        <li>ไม่มีกลยุทธ์ไหนชนะ BTC ถือยาวในแง่ผลตอบแทนดิบ ที่เลือกเพราะชนะเมื่อคิดตามความเสี่ยง และผลระดับนี้ยังไม่มีนัยสำคัญทางสถิติ</li>
+        <li><b>ผลตอบแทน</b> = ทุนจำลอง 500 USDT ในช่วงทดสอบนอกตัวอย่าง · <b>ต่อปี</b> = ผลตอบแทนทบต้นเฉลี่ยต่อปี</li>
+        <li><b>Sharpe</b> = ผลตอบแทนเทียบความผันผวน (สูงกว่าดี) · <b>Max DD</b> = ร่วงสูงสุดจากจุดสูงสุด · <b>P/L</b> = กำไรเฉลี่ยไม้ชนะ ÷ ขาดทุนเฉลี่ยไม้แพ้</li>
+        <li><b>ผ่านเกณฑ์</b> = กำไรหลังต้นทุน และ Sharpe สูงกว่า BTC ถือยาว · ไม่มีตัวไหนชนะ BTC ถือยาวในแง่ผลตอบแทนดิบ (BTC เคยร่วงกว่า 50%)</li>
+        <li>"กฎคลาสสิก" = กฎจากไลบรารีบอทโอเพ่นซอร์สที่เดิมทดสอบบนหุ้น 25 ปี นำมาทดสอบซ้ำบนคริปโต — ส่วนใหญ่ไม่ได้ผล</li>
       </ul>
     </details>
   </section>
@@ -483,6 +554,8 @@ details.notes summary{cursor:pointer;color:var(--fg)}
   </form>
 </dialog>
 
+<dialog id="dlg-lib" class="dlg wide"><div id="lib-detail"></div></dialog>
+
 <dialog id="dlg-confirm" class="dlg">
   <form id="cf-form" novalidate>
     <h3>ยืนยันคำสั่ง</h3>
@@ -496,4 +569,5 @@ details.notes summary{cursor:pointer;color:var(--fg)}
 <script src="d3.min.js"></script>
 <script src="app.js?v=20261125c"></script>
 <script src="trade.js?v=20261125c"></script>
+<script src="library.js?v=20261125b"></script>
 </body></html>

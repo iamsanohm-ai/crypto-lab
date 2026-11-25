@@ -1,8 +1,8 @@
 {
- "generated_at": "2026-11-24T02:40:00+00:00",
+ "generated_at": "2026-11-25T13:28:27+00:00",
  "oos_period": [
   "2023-11-01 00:00:00+00:00",
-  "2026-11-23 20:00:00+00:00"
+  "2026-11-24 08:00:00+00:00"
  ],
  "costs": {
   "fee_per_side": 0.001,
@@ -17,22 +17,22 @@
  },
  "benchmarks": {
   "btc_buy_hold": {
-   "return": 0.7801794970132254,
+   "return": 0.7555833507658694,
    "max_dd": -0.5475634835625414,
-   "sharpe": 0.6153635894414302,
-   "calmar": 1.4248201723337075,
+   "sharpe": 0.6053521974875113,
+   "calmar": 1.3799009127670736,
    "avg_r": 0.0,
    "profit_factor": NaN,
-   "worst_month": -0.2102431723226592,
+   "worst_month": -0.22115497895001957,
    "worst_month_label": "2026-11",
    "longest_losing_streak": 0,
    "exposure": 0.0
   },
   "top20_equal_weight": {
-   "return": -0.6894677959582165,
+   "return": -0.693987765384166,
    "max_dd": -0.8872355759769757,
-   "sharpe": -0.15937298014578896,
-   "calmar": -0.7770966523733136,
+   "sharpe": -0.1657276211482664,
+   "calmar": -0.7821910935210012,
    "avg_r": 0.0,
    "profit_factor": NaN,
    "worst_month": -0.30506113901171117,
@@ -41,13 +41,13 @@
    "exposure": 0.0
   },
   "btc_dca_weekly": {
-   "return": -0.1485555593724015,
+   "return": -0.1603196831690813,
    "max_dd": -0.4791358003692975,
-   "sharpe": -0.06373115491837027,
-   "calmar": -0.31004896577943286,
+   "sharpe": -0.08057544217014538,
+   "calmar": -0.33460176226763627,
    "avg_r": 0.0,
    "profit_factor": NaN,
-   "worst_month": -0.20902999762023167,
+   "worst_month": -0.2199585662777438,
    "worst_month_label": "2026-11",
    "longest_losing_streak": 0,
    "exposure": 0.0
@@ -61,7 +61,7 @@
    "metrics": {
     "return": 0.17889368136162553,
     "max_dd": -0.17089665320237524,
-    "sharpe": 0.3857032456989319,
+    "sharpe": 0.38553094829817613,
     "calmar": 1.0467945276247175,
     "trades": 488,
     "win_rate": 0.3176229508196721,
@@ -70,7 +70,7 @@
     "worst_month": -0.06815735839412318,
     "worst_month_label": "2024-10",
     "longest_losing_streak": 24,
-    "exposure": 1.5090854929997022
+    "exposure": 1.5084114932261425
    },
    "regimes": {
     "bear": {
@@ -146,7 +146,7 @@
    "metrics": {
     "return": 0.0667445283778223,
     "max_dd": -0.19040997421211803,
-    "sharpe": 0.22774012263504764,
+    "sharpe": 0.22763841592946313,
     "calmar": 0.35053063083485547,
     "trades": 391,
     "win_rate": 0.3145780051150895,
@@ -155,7 +155,7 @@
     "worst_month": -0.06392569580315488,
     "worst_month_label": "2024-10",
     "longest_losing_streak": 14,
-    "exposure": 0.8297587131367292
+    "exposure": 0.829388119696293
    },
    "regimes": {
     "bear": {
@@ -231,7 +231,7 @@
    "metrics": {
     "return": -0.20178219878334358,
     "max_dd": -0.222994225534762,
-    "sharpe": -1.0384298228187414,
+    "sharpe": -1.037964763867445,
     "calmar": -0.9048763406292253,
     "trades": 514,
     "win_rate": 0.20622568093385213,
@@ -240,7 +240,7 @@
     "worst_month": -0.0544193490578746,
     "worst_month_label": "2026-10",
     "longest_losing_streak": 31,
-    "exposure": 0.514745308310992
+    "exposure": 0.5145154086645825
    },
    "regimes": {
     "bear": {
@@ -316,7 +316,7 @@
    "metrics": {
     "return": -0.019759553453720047,
     "max_dd": -0.13961135619988652,
-    "sharpe": -0.100482296301084,
+    "sharpe": -0.10043742694487345,
     "calmar": -0.14153256577086462,
     "trades": 138,
     "win_rate": 0.5434782608695652,
@@ -325,7 +325,7 @@
     "worst_month": -0.02973804667944191,
     "worst_month_label": "2024-10",
     "longest_losing_streak": 11,
-    "exposure": 0.19794459338695264
+    "exposure": 0.1978561857972309
    },
    "regimes": {
     "bear": {
@@ -401,7 +401,7 @@
    "metrics": {
     "return": 0.05988699179423196,
     "max_dd": -0.08321804651961773,
-    "sharpe": 0.36590304615345176,
+    "sharpe": 0.36573960036400405,
     "calmar": 0.7196394808440291,
     "trades": 112,
     "win_rate": 0.5178571428571429,
@@ -410,7 +410,7 @@
     "worst_month": -0.02569424637079032,
     "worst_month_label": "2024-04",
     "longest_losing_streak": 8,
-    "exposure": 0.14819779565087876
+    "exposure": 0.1481316063718922
    },
    "regimes": {
     "bear": {
@@ -486,7 +486,7 @@
    "metrics": {
     "return": -0.17999228698539882,
     "max_dd": -0.2331058231476727,
-    "sharpe": -1.0788547708893876,
+    "sharpe": -1.078371494604984,
     "calmar": -0.7721483940423641,
     "trades": 1106,
     "win_rate": 0.6003616636528029,
@@ -495,7 +495,7 @@
     "worst_month": -0.039785970179902375,
     "worst_month_label": "2025-09",
     "longest_losing_streak": 15,
-    "exposure": 0.6231754542746499
+    "exposure": 0.6228971266934643
    },
    "regimes": {
     "bear": {
@@ -569,22 +569,22 @@
    "reason": "funding \u0e15\u0e34\u0e14\u0e25\u0e1a\u0e2b\u0e19\u0e31\u0e01\u0e41\u0e1b\u0e25\u0e27\u0e48\u0e32\u0e04\u0e19 short \u0e41\u0e2d\u0e2d\u0e31\u0e14\u0e41\u0e25\u0e30\u0e15\u0e49\u0e2d\u0e07\u0e08\u0e48\u0e32\u0e22\u0e04\u0e48\u0e32\u0e16\u0e37\u0e2d \u0e40\u0e21\u0e37\u0e48\u0e2d\u0e23\u0e32\u0e04\u0e32\u0e44\u0e21\u0e48\u0e25\u0e07\u0e15\u0e48\u0e2d\u0e08\u0e30\u0e40\u0e01\u0e34\u0e14 short squeeze",
    "kills": "\u0e02\u0e48\u0e32\u0e27\u0e23\u0e49\u0e32\u0e22\u0e08\u0e23\u0e34\u0e07\u0e08\u0e31\u0e07\u0e17\u0e35\u0e48\u0e17\u0e33\u0e43\u0e2b\u0e49 short \u0e16\u0e39\u0e01\u0e15\u0e49\u0e2d\u0e07 (\u0e40\u0e0a\u0e48\u0e19 hack, delist)",
    "metrics": {
-    "return": -0.33031195048702944,
+    "return": -0.3317443324366943,
     "max_dd": -0.37288349438461155,
-    "sharpe": -1.498703224930248,
-    "calmar": -0.8858315142968716,
-    "trades": 560,
-    "win_rate": 0.39107142857142857,
-    "avg_r": -0.13651075977543572,
-    "profit_factor": 0.6696588578306963,
+    "sharpe": -1.506017445907108,
+    "calmar": -0.8896728802227858,
+    "trades": 561,
+    "win_rate": 0.39037433155080214,
+    "avg_r": -0.13693291510287986,
+    "profit_factor": 0.6687019364028172,
     "worst_month": -0.07037824418987881,
     "worst_month_label": "2025-02",
     "longest_losing_streak": 15,
-    "exposure": 1.7393506106642835
+    "exposure": 1.7387226440375168
    },
    "regimes": {
     "bear": {
-     "avg_month": -0.027353325236669414,
+     "avg_month": -0.02754606639166349,
      "months": 11
     },
     "chop": {
@@ -656,7 +656,7 @@
    "metrics": {
     "return": 0.3855240603474601,
     "max_dd": -0.16607163099099997,
-    "sharpe": 0.7000933591794647,
+    "sharpe": 0.6997803279549982,
     "calmar": 2.321432372566709,
     "trades": 320,
     "win_rate": 0.31875,
@@ -665,7 +665,7 @@
     "worst_month": -0.06844008105298327,
     "worst_month_label": "2024-12",
     "longest_losing_streak": 19,
-    "exposure": 0.9475722371164731
+    "exposure": 0.9471490248622897
    },
    "regimes": {
     "bear": {
@@ -741,7 +741,7 @@
    "metrics": {
     "return": 0.20870029307941396,
     "max_dd": -0.16766951679657516,
-    "sharpe": 0.511572355822014,
+    "sharpe": 0.511343760701525,
     "calmar": 1.2447121997293005,
     "trades": 244,
     "win_rate": 0.29098360655737704,
@@ -750,7 +750,7 @@
     "worst_month": -0.04881502819091155,
     "worst_month_label": "2024-01",
     "longest_losing_streak": 14,
-    "exposure": 0.5844504021447721
+    "exposure": 0.584189370254578
    },
    "regimes": {
     "bear": {
@@ -826,7 +826,7 @@
    "metrics": {
     "return": 0.034293784449056064,
     "max_dd": -0.09636339616077105,
-    "sharpe": 0.23170402485863972,
+    "sharpe": 0.23160054739290048,
     "calmar": 0.3558797823173531,
     "trades": 105,
     "win_rate": 0.41904761904761906,
@@ -835,7 +835,7 @@
     "worst_month": -0.026079390591194795,
     "worst_month_label": "2024-04",
     "longest_losing_streak": 12,
-    "exposure": 0.13285671730711945
+    "exposure": 0.13279737978264106
    },
    "regimes": {
     "bear": {
@@ -911,7 +911,7 @@
    "metrics": {
     "return": 0.008928053239188438,
     "max_dd": -0.08687692159914695,
-    "sharpe": 0.08500574775439877,
+    "sharpe": 0.08496778959375402,
     "calmar": 0.10276668503958712,
     "trades": 129,
     "win_rate": 0.3953488372093023,
@@ -920,7 +920,7 @@
     "worst_month": -0.026111329814939688,
     "worst_month_label": "2024-01",
     "longest_losing_streak": 10,
-    "exposure": 0.2021149836163241
+    "exposure": 0.20202471341372635
    },
    "regimes": {
     "bear": {
@@ -996,7 +996,7 @@
    "metrics": {
     "return": 0.07405003678946276,
     "max_dd": -0.16660827496845065,
-    "sharpe": 0.31963491036259933,
+    "sharpe": 0.3194921445740438,
     "calmar": 0.44445593595807326,
     "trades": 234,
     "win_rate": 0.37606837606837606,
@@ -1005,7 +1005,7 @@
     "worst_month": -0.04157282505905324,
     "worst_month_label": "2025-01",
     "longest_losing_streak": 15,
-    "exposure": 1.1109621686029192
+    "exposure": 1.1104659818371296
    },
    "regimes": {
     "bear": {
@@ -1081,7 +1081,7 @@
    "metrics": {
     "return": 0.18731963600900636,
     "max_dd": -0.2679274441192735,
-    "sharpe": 0.4467432878971052,
+    "sharpe": 0.44654369551265755,
     "calmar": 0.6991431453569837,
     "trades": 979,
     "win_rate": 0.2686414708886619,
@@ -1090,7 +1090,7 @@
     "worst_month": -0.0643817496047302,
     "worst_month_label": "2025-10",
     "longest_losing_streak": 31,
-    "exposure": 1.9028894846589217
+    "exposure": 1.9020396010123568
    },
    "regimes": {
     "bear": {
@@ -1164,22 +1164,22 @@
    "reason": "baseline: \u0e01\u0e25\u0e22\u0e38\u0e17\u0e18\u0e4c\u0e17\u0e35\u0e48\u0e1a\u0e2d\u0e17\u0e15\u0e31\u0e27\u0e41\u0e23\u0e01\u0e43\u0e0a\u0e49\u0e2d\u0e22\u0e39\u0e48 (EMA9/21 + RSI<70) \u2014 \u0e15\u0e49\u0e2d\u0e07\u0e1e\u0e34\u0e2a\u0e39\u0e08\u0e19\u0e4c\u0e27\u0e48\u0e32\u0e21\u0e35 edge \u0e08\u0e23\u0e34\u0e07\u0e2b\u0e23\u0e37\u0e2d\u0e44\u0e21\u0e48",
    "kills": "\u0e15\u0e25\u0e32\u0e14 sideways",
    "metrics": {
-    "return": -0.4023368614572237,
-    "max_dd": -0.4421866789838834,
-    "sharpe": -0.8244817739444436,
-    "calmar": -0.9098801039908483,
-    "trades": 1128,
-    "win_rate": 0.2828014184397163,
-    "avg_r": -0.07437453133816023,
-    "profit_factor": 0.8545437286537043,
+    "return": -0.4077990953401418,
+    "max_dd": -0.4472847126853198,
+    "sharpe": -0.8399834721307796,
+    "calmar": -0.9117215137800664,
+    "trades": 1130,
+    "win_rate": 0.28230088495575223,
+    "avg_r": -0.07585372377415578,
+    "profit_factor": 0.8528595411869518,
     "worst_month": -0.11594894951640267,
     "worst_month_label": "2026-10",
     "longest_losing_streak": 27,
-    "exposure": 2.163538873994638
+    "exposure": 2.164061336906357
    },
    "regimes": {
     "bear": {
-     "avg_month": -0.04394845113028522,
+     "avg_month": -0.04472283364949487,
      "months": 11
     },
     "chop": {
@@ -1251,7 +1251,7 @@
    "metrics": {
     "return": 0.342915971791359,
     "max_dd": -0.14026456260466968,
-    "sharpe": 0.8135930379288566,
+    "sharpe": 0.8132290866492623,
     "calmar": 2.444779817678216,
     "trades": 267,
     "win_rate": 0.30711610486891383,
@@ -1260,7 +1260,7 @@
     "worst_month": -0.06196944470225041,
     "worst_month_label": "2024-04",
     "longest_losing_streak": 20,
-    "exposure": 2.1675603217158175
+    "exposure": 2.166592228673515
    },
    "regimes": {
     "bear": {
@@ -1336,7 +1336,7 @@
    "metrics": {
     "return": -0.18196756654269008,
     "max_dd": -0.3860846262983214,
-    "sharpe": -0.2607468620369795,
+    "sharpe": -0.2606304096673285,
     "calmar": -0.4713152354377526,
     "trades": 973,
     "win_rate": 0.33504624871531347,
@@ -1345,7 +1345,7 @@
     "worst_month": -0.09239939122707852,
     "worst_month_label": "2024-04",
     "longest_losing_streak": 26,
-    "exposure": 1.6456657730116175
+    "exposure": 1.644930772666369
    },
    "regimes": {
     "bear": {
@@ -1421,7 +1421,7 @@
    "metrics": {
     "return": 0.38495409790654,
     "max_dd": -0.15483946837767049,
-    "sharpe": 0.8459304031875965,
+    "sharpe": 0.8455519305693386,
     "calmar": 2.486149700330891,
     "trades": 589,
     "win_rate": 0.3463497453310696,
@@ -1430,7 +1430,7 @@
     "worst_month": -0.0610915091075912,
     "worst_month_label": "2026-04",
     "longest_losing_streak": 20,
-    "exposure": 1.3938039916592195
+    "exposure": 1.393181479827304
    },
    "regimes": {
     "bear": {
@@ -1506,7 +1506,7 @@
    "metrics": {
     "return": 0.1568656618532429,
     "max_dd": -0.1745950763593912,
-    "sharpe": 0.3780039393126448,
+    "sharpe": 0.3778350839893026,
     "calmar": 0.8984540980430995,
     "trades": 403,
     "win_rate": 0.315136476426799,
@@ -1515,7 +1515,7 @@
     "worst_month": -0.04585410761108233,
     "worst_month_label": "2026-10",
     "longest_losing_streak": 20,
-    "exposure": 1.2219243372058386
+    "exposure": 1.2213785916331696
    },
    "regimes": {
     "bear": {
@@ -1591,7 +1591,7 @@
    "metrics": {
     "return": -0.0005990034676360834,
     "max_dd": -0.07708718391981384,
-    "sharpe": -0.01490665372416214,
+    "sharpe": -0.014899997488526608,
     "calmar": -0.0077704676338827905,
     "trades": 60,
     "win_rate": 0.3333333333333333,
@@ -1600,7 +1600,7 @@
     "worst_month": -0.02628701738347272,
     "worst_month_label": "2024-04",
     "longest_losing_streak": 10,
-    "exposure": 0.2899910634495085
+    "exposure": 0.28986154533273784
    },
    "regimes": {
     "bear": {
@@ -1676,7 +1676,7 @@
    "metrics": {
     "return": -0.015318845303691875,
     "max_dd": -0.020711011876467622,
-    "sharpe": -0.6010460276338669,
+    "sharpe": -0.6007773780948632,
     "calmar": -0.7396473622371651,
     "trades": 10,
     "win_rate": 0.3,
@@ -1685,7 +1685,7 @@
     "worst_month": -0.006070783563026705,
     "worst_month_label": "2026-03",
     "longest_losing_streak": 5,
-    "exposure": 0.007893952934167411
+    "exposure": 0.00789042727408069
    },
    "regimes": {
     "bear": {
@@ -1761,7 +1761,7 @@
    "metrics": {
     "return": 0.15455406149388007,
     "max_dd": -0.1642066834641156,
-    "sharpe": 0.3750302101735438,
+    "sharpe": 0.37486268425113517,
     "calmar": 0.9412166315852488,
     "trades": 330,
     "win_rate": 0.31212121212121213,
@@ -1770,7 +1770,7 @@
     "worst_month": -0.07103989998867999,
     "worst_month_label": "2024-12",
     "longest_losing_streak": 14,
-    "exposure": 1.0253202263926124
+    "exposure": 1.0248622897126693
    },
    "regimes": {
     "bear": {
@@ -1846,7 +1846,7 @@
    "metrics": {
     "return": 0.3656809084819317,
     "max_dd": -0.19085638882434508,
-    "sharpe": 0.6275692283125349,
+    "sharpe": 0.6272886986523408,
     "calmar": 1.9160003536401737,
     "trades": 717,
     "win_rate": 0.298465829846583,
@@ -1855,7 +1855,7 @@
     "worst_month": -0.06177263714314318,
     "worst_month_label": "2026-07",
     "longest_losing_streak": 33,
-    "exposure": 1.8157581173666963
+    "exposure": 1.8149471490248623
    },
    "regimes": {
     "bear": {
@@ -1925,7 +1925,7 @@
    "metrics": {
     "return": -0.5401747161822246,
     "max_dd": -0.5668005481980327,
-    "sharpe": -1.5200889563708155,
+    "sharpe": -1.5194058930050665,
     "calmar": -0.9530243361611827,
     "trades": 595,
     "win_rate": 0.30756302521008405,
@@ -1934,7 +1934,7 @@
     "worst_month": -0.10944937186465864,
     "worst_month_label": "2026-06",
     "longest_losing_streak": 26,
-    "exposure": 1.6473041406017277
+    "exposure": 1.6465684085157064
    },
    "regimes": {
     "bear": {
@@ -2000,6 +2000,492 @@
      "params": {
       "days": 20,
       "zone": 0.15
+     }
+    }
+   ]
+  },
+  "classic_sma_crossover": {
+   "reason": "\u0e01\u0e0e\u0e04\u0e25\u0e32\u0e2a\u0e2a\u0e34\u0e01: SMA50 \u0e15\u0e31\u0e14\u0e02\u0e36\u0e49\u0e19 SMA200 = \u0e40\u0e17\u0e23\u0e19\u0e14\u0e4c\u0e23\u0e30\u0e22\u0e30\u0e22\u0e32\u0e27\u0e40\u0e1b\u0e25\u0e35\u0e48\u0e22\u0e19\u0e40\u0e1b\u0e47\u0e19\u0e02\u0e32\u0e02\u0e36\u0e49\u0e19 (\u0e17\u0e14\u0e2a\u0e2d\u0e1a\u0e0b\u0e49\u0e33\u0e08\u0e32\u0e01\u0e44\u0e25\u0e1a\u0e23\u0e32\u0e23\u0e35\u0e1a\u0e2d\u0e17\u0e42\u0e2d\u0e40\u0e1e\u0e48\u0e19\u0e0b\u0e2d\u0e23\u0e4c\u0e2a\u0e17\u0e35\u0e48\u0e43\u0e0a\u0e49\u0e2b\u0e38\u0e49\u0e19 25 \u0e1b\u0e35)",
+   "kills": "\u0e15\u0e25\u0e32\u0e14\u0e17\u0e35\u0e48\u0e40\u0e1b\u0e25\u0e35\u0e48\u0e22\u0e19\u0e17\u0e34\u0e28\u0e40\u0e23\u0e47\u0e27 \u0e2a\u0e31\u0e0d\u0e0d\u0e32\u0e13\u0e21\u0e32\u0e0a\u0e49\u0e32",
+   "metrics": {
+    "return": 0.043127345765103575,
+    "max_dd": -0.13961457557942236,
+    "sharpe": 0.23215739401324642,
+    "calmar": 0.30890288915837283,
+    "trades": 151,
+    "win_rate": 0.2980132450331126,
+    "avg_r": 0.06656737553555912,
+    "profit_factor": 1.1471451723765551,
+    "worst_month": -0.038551570562622595,
+    "worst_month_label": "2024-04",
+    "longest_losing_streak": 14,
+    "exposure": 2.65416108381718
+   },
+   "regimes": {
+    "bear": {
+     "avg_month": -0.013985125547631438,
+     "months": 11
+    },
+    "chop": {
+     "avg_month": -0.007808423598086016,
+     "months": 9
+    },
+    "bull": {
+     "avg_month": 0.016251955911153665,
+     "months": 17
+    }
+   },
+   "score": {
+    "wf_profit": 2,
+    "max_dd": 3,
+    "trades": 4,
+    "losing_streak": 1,
+    "bear_chop": 2,
+    "total": 2.4
+   },
+   "beats_buy_hold": false,
+   "chosen": [
+    {
+     "test_start": "2023-11-01",
+     "params": {
+      "fast": 50,
+      "slow": 200
+     }
+    },
+    {
+     "test_start": "2024-05-01",
+     "params": {
+      "fast": 50,
+      "slow": 200
+     }
+    },
+    {
+     "test_start": "2024-11-01",
+     "params": {
+      "fast": 50,
+      "slow": 200
+     }
+    },
+    {
+     "test_start": "2025-05-01",
+     "params": {
+      "fast": 50,
+      "slow": 200
+     }
+    },
+    {
+     "test_start": "2025-11-01",
+     "params": {
+      "fast": 50,
+      "slow": 200
+     }
+    },
+    {
+     "test_start": "2026-05-01",
+     "params": {
+      "fast": 50,
+      "slow": 200
+     }
+    }
+   ]
+  },
+  "classic_rsi_reversion": {
+   "reason": "\u0e01\u0e0e\u0e04\u0e25\u0e32\u0e2a\u0e2a\u0e34\u0e01: RSI14 \u0e25\u0e07\u0e15\u0e48\u0e33\u0e01\u0e27\u0e48\u0e32 30 = \u0e02\u0e32\u0e22\u0e21\u0e32\u0e01\u0e40\u0e01\u0e34\u0e19\u0e44\u0e1b \u0e0b\u0e37\u0e49\u0e2d\u0e41\u0e25\u0e49\u0e27\u0e02\u0e32\u0e22\u0e40\u0e21\u0e37\u0e48\u0e2d RSI \u0e40\u0e01\u0e34\u0e19 70 (\u0e15\u0e31\u0e27\u0e17\u0e35\u0e48\u0e14\u0e35\u0e17\u0e35\u0e48\u0e2a\u0e38\u0e14\u0e43\u0e19\u0e44\u0e25\u0e1a\u0e23\u0e32\u0e23\u0e35\u0e2b\u0e38\u0e49\u0e19 +133%)",
+   "kills": "\u0e40\u0e17\u0e23\u0e19\u0e14\u0e4c\u0e02\u0e32\u0e25\u0e07\u0e17\u0e35\u0e48 RSI \u0e15\u0e48\u0e33\u0e04\u0e49\u0e32\u0e07\u0e19\u0e32\u0e19",
+   "metrics": {
+    "return": -0.1413906135194376,
+    "max_dd": -0.19176073514661685,
+    "sharpe": -0.633168884417307,
+    "calmar": -0.737328282619134,
+    "trades": 316,
+    "win_rate": 0.47468354430379744,
+    "avg_r": -0.09006108097973328,
+    "profit_factor": 0.7764051610689751,
+    "worst_month": -0.04633367431976365,
+    "worst_month_label": "2024-04",
+    "longest_losing_streak": 12,
+    "exposure": 3.5344647908292393
+   },
+   "regimes": {
+    "bear": {
+     "avg_month": -0.021163631535930684,
+     "months": 11
+    },
+    "chop": {
+     "avg_month": -0.0071088858896075635,
+     "months": 9
+    },
+    "bull": {
+     "avg_month": 0.008854997902998707,
+     "months": 17
+    }
+   },
+   "score": {
+    "wf_profit": 1,
+    "max_dd": 2,
+    "trades": 5,
+    "losing_streak": 2,
+    "bear_chop": 1,
+    "total": 2.2
+   },
+   "beats_buy_hold": false,
+   "chosen": [
+    {
+     "test_start": "2023-11-01",
+     "params": {
+      "lo": 30,
+      "hi": 70
+     }
+    },
+    {
+     "test_start": "2024-05-01",
+     "params": {
+      "lo": 30,
+      "hi": 70
+     }
+    },
+    {
+     "test_start": "2024-11-01",
+     "params": {
+      "lo": 30,
+      "hi": 70
+     }
+    },
+    {
+     "test_start": "2025-05-01",
+     "params": {
+      "lo": 30,
+      "hi": 70
+     }
+    },
+    {
+     "test_start": "2025-11-01",
+     "params": {
+      "lo": 30,
+      "hi": 70
+     }
+    },
+    {
+     "test_start": "2026-05-01",
+     "params": {
+      "lo": 30,
+      "hi": 70
+     }
+    }
+   ]
+  },
+  "classic_rsi_dip": {
+   "reason": "\u0e01\u0e0e\u0e04\u0e25\u0e32\u0e2a\u0e2a\u0e34\u0e01: \u0e0b\u0e37\u0e49\u0e2d\u0e40\u0e21\u0e37\u0e48\u0e2d RSI14 < 30 \u0e02\u0e13\u0e30\u0e23\u0e32\u0e04\u0e32\u0e2d\u0e22\u0e39\u0e48\u0e40\u0e2b\u0e19\u0e37\u0e2d SMA200 (\u0e22\u0e48\u0e2d\u0e43\u0e19\u0e02\u0e32\u0e02\u0e36\u0e49\u0e19) \u0e02\u0e32\u0e22\u0e40\u0e21\u0e37\u0e48\u0e2d RSI > 50",
+   "kills": "\u0e02\u0e32\u0e25\u0e07\u0e17\u0e35\u0e48\u0e17\u0e30\u0e25\u0e38 SMA200 \u0e25\u0e07\u0e21\u0e32",
+   "metrics": {
+    "return": 0.0076047517637019,
+    "max_dd": -0.03306167658242909,
+    "sharpe": 0.14682518583274132,
+    "calmar": 0.23001712404819513,
+    "trades": 99,
+    "win_rate": 0.6161616161616161,
+    "avg_r": 0.015974711265387215,
+    "profit_factor": 1.1108055003934905,
+    "worst_month": -0.020269935892112456,
+    "worst_month_label": "2024-08",
+    "longest_losing_streak": 5,
+    "exposure": 0.309215423552181
+   },
+   "regimes": {
+    "bear": {
+     "avg_month": -0.003815323789694261,
+     "months": 11
+    },
+    "chop": {
+     "avg_month": 0.0020712953276753846,
+     "months": 9
+    },
+    "bull": {
+     "avg_month": 0.0018451618349817215,
+     "months": 17
+    }
+   },
+   "score": {
+    "wf_profit": 2,
+    "max_dd": 5,
+    "trades": 3,
+    "losing_streak": 4,
+    "bear_chop": 3,
+    "total": 3.4
+   },
+   "beats_buy_hold": false,
+   "chosen": [
+    {
+     "test_start": "2023-11-01",
+     "params": {
+      "lo": 30
+     }
+    },
+    {
+     "test_start": "2024-05-01",
+     "params": {
+      "lo": 30
+     }
+    },
+    {
+     "test_start": "2024-11-01",
+     "params": {
+      "lo": 30
+     }
+    },
+    {
+     "test_start": "2025-05-01",
+     "params": {
+      "lo": 30
+     }
+    },
+    {
+     "test_start": "2025-11-01",
+     "params": {
+      "lo": 30
+     }
+    },
+    {
+     "test_start": "2026-05-01",
+     "params": {
+      "lo": 30
+     }
+    }
+   ]
+  },
+  "classic_trend_pullback": {
+   "reason": "\u0e01\u0e0e\u0e04\u0e25\u0e32\u0e2a\u0e2a\u0e34\u0e01: \u0e02\u0e32\u0e02\u0e36\u0e49\u0e19 (\u0e40\u0e2b\u0e19\u0e37\u0e2d SMA200) \u0e41\u0e25\u0e49\u0e27\u0e23\u0e32\u0e04\u0e32\u0e22\u0e48\u0e2d\u0e21\u0e32\u0e41\u0e15\u0e30 SMA50 \u0e41\u0e25\u0e30\u0e1b\u0e34\u0e14\u0e01\u0e25\u0e31\u0e1a\u0e02\u0e36\u0e49\u0e19\u0e44\u0e1b = \u0e0b\u0e37\u0e49\u0e2d\u0e15\u0e2d\u0e19\u0e22\u0e48\u0e2d",
+   "kills": "\u0e08\u0e38\u0e14\u0e01\u0e25\u0e31\u0e1a\u0e15\u0e31\u0e27\u0e02\u0e2d\u0e07\u0e40\u0e17\u0e23\u0e19\u0e14\u0e4c",
+   "metrics": {
+    "return": 0.024265102296640917,
+    "max_dd": -0.18059292614588762,
+    "sharpe": 0.11197614249500897,
+    "calmar": 0.1343635258284643,
+    "trades": 448,
+    "win_rate": 0.18526785714285715,
+    "avg_r": 0.025179338838308064,
+    "profit_factor": 1.027611164533523,
+    "worst_month": -0.08188038085314875,
+    "worst_month_label": "2024-01",
+    "longest_losing_streak": 30,
+    "exposure": 3.0415364001786513
+   },
+   "regimes": {
+    "bear": {
+     "avg_month": -0.030123811964380784,
+     "months": 11
+    },
+    "chop": {
+     "avg_month": -0.020798159681113634,
+     "months": 9
+    },
+    "bull": {
+     "avg_month": 0.03431795135062231,
+     "months": 17
+    }
+   },
+   "score": {
+    "wf_profit": 2,
+    "max_dd": 2,
+    "trades": 5,
+    "losing_streak": 1,
+    "bear_chop": 1,
+    "total": 2.2
+   },
+   "beats_buy_hold": false,
+   "chosen": [
+    {
+     "test_start": "2023-11-01",
+     "params": {
+      "stop_pct": 0.1
+     }
+    },
+    {
+     "test_start": "2024-05-01",
+     "params": {
+      "stop_pct": 0.1
+     }
+    },
+    {
+     "test_start": "2024-11-01",
+     "params": {
+      "stop_pct": 0.1
+     }
+    },
+    {
+     "test_start": "2025-05-01",
+     "params": {
+      "stop_pct": 0.1
+     }
+    },
+    {
+     "test_start": "2025-11-01",
+     "params": {
+      "stop_pct": 0.1
+     }
+    },
+    {
+     "test_start": "2026-05-01",
+     "params": {
+      "stop_pct": 0.1
+     }
+    }
+   ]
+  },
+  "classic_breakout": {
+   "reason": "\u0e01\u0e0e\u0e04\u0e25\u0e32\u0e2a\u0e2a\u0e34\u0e01: \u0e1b\u0e34\u0e14\u0e40\u0e2b\u0e19\u0e37\u0e2d\u0e08\u0e38\u0e14\u0e2a\u0e39\u0e07\u0e2a\u0e38\u0e14 20 \u0e41\u0e17\u0e48\u0e07 = breakout \u0e02\u0e32\u0e22\u0e40\u0e21\u0e37\u0e48\u0e2d\u0e2b\u0e25\u0e38\u0e14\u0e08\u0e38\u0e14\u0e15\u0e48\u0e33\u0e2a\u0e38\u0e14 20 \u0e41\u0e17\u0e48\u0e07 (Turtle \u0e41\u0e1a\u0e1a\u0e22\u0e48\u0e2d)",
+   "kills": "\u0e15\u0e25\u0e32\u0e14 sideways \u0e17\u0e35\u0e48 breakout \u0e2b\u0e25\u0e2d\u0e01",
+   "metrics": {
+    "return": -0.2235260335034288,
+    "max_dd": -0.3980167873378907,
+    "sharpe": -0.5100457684482125,
+    "calmar": -0.5615995119162388,
+    "trades": 734,
+    "win_rate": 0.29155313351498635,
+    "avg_r": -0.057352176284214726,
+    "profit_factor": 0.8623899687254524,
+    "worst_month": -0.07055525678018248,
+    "worst_month_label": "2026-10",
+    "longest_losing_streak": 22,
+    "exposure": 3.074586869138008
+   },
+   "regimes": {
+    "bear": {
+     "avg_month": -0.029562651610819793,
+     "months": 11
+    },
+    "chop": {
+     "avg_month": -0.032137286631679446,
+     "months": 9
+    },
+    "bull": {
+     "avg_month": 0.02387604564489241,
+     "months": 17
+    }
+   },
+   "score": {
+    "wf_profit": 1,
+    "max_dd": 1,
+    "trades": 5,
+    "losing_streak": 1,
+    "bear_chop": 1,
+    "total": 1.8
+   },
+   "beats_buy_hold": false,
+   "chosen": [
+    {
+     "test_start": "2023-11-01",
+     "params": {
+      "n": 20
+     }
+    },
+    {
+     "test_start": "2024-05-01",
+     "params": {
+      "n": 20
+     }
+    },
+    {
+     "test_start": "2024-11-01",
+     "params": {
+      "n": 20
+     }
+    },
+    {
+     "test_start": "2025-05-01",
+     "params": {
+      "n": 20
+     }
+    },
+    {
+     "test_start": "2025-11-01",
+     "params": {
+      "n": 20
+     }
+    },
+    {
+     "test_start": "2026-05-01",
+     "params": {
+      "n": 20
+     }
+    }
+   ]
+  },
+  "classic_trend_stop5": {
+   "reason": "\u0e01\u0e0e\u0e04\u0e25\u0e32\u0e2a\u0e2a\u0e34\u0e01: \u0e0b\u0e37\u0e49\u0e2d\u0e40\u0e21\u0e37\u0e48\u0e2d\u0e23\u0e32\u0e04\u0e32\u0e02\u0e49\u0e32\u0e21\u0e02\u0e36\u0e49\u0e19\u0e40\u0e2b\u0e19\u0e37\u0e2d SMA200 \u0e17\u0e38\u0e01\u0e2a\u0e16\u0e32\u0e19\u0e30\u0e21\u0e35 stop-loss 5% \u0e02\u0e32\u0e22\u0e40\u0e21\u0e37\u0e48\u0e2d\u0e2b\u0e25\u0e38\u0e14 SMA200",
+   "kills": "\u0e04\u0e27\u0e32\u0e21\u0e1c\u0e31\u0e19\u0e1c\u0e27\u0e19\u0e2a\u0e39\u0e07 (stop 5% \u0e41\u0e04\u0e1a\u0e40\u0e01\u0e34\u0e19\u0e44\u0e1b\u0e2a\u0e33\u0e2b\u0e23\u0e31\u0e1a\u0e04\u0e23\u0e34\u0e1b\u0e42\u0e15)",
+   "metrics": {
+    "return": -0.3307028637104614,
+    "max_dd": -0.5103379954543514,
+    "sharpe": -0.3234630618181069,
+    "calmar": -0.6480075296295317,
+    "trades": 1010,
+    "win_rate": 0.11386138613861387,
+    "avg_r": -0.04830697980049259,
+    "profit_factor": 0.8243650628919216,
+    "worst_month": -0.17757174971322798,
+    "worst_month_label": "2024-04",
+    "longest_losing_streak": 73,
+    "exposure": 3.0713115974393332
+   },
+   "regimes": {
+    "bear": {
+     "avg_month": -0.08026563838500188,
+     "months": 11
+    },
+    "chop": {
+     "avg_month": -0.05141546247804775,
+     "months": 9
+    },
+    "bull": {
+     "avg_month": 0.06637373453379677,
+     "months": 17
+    }
+   },
+   "score": {
+    "wf_profit": 1,
+    "max_dd": 1,
+    "trades": 5,
+    "losing_streak": 1,
+    "bear_chop": 1,
+    "total": 1.8
+   },
+   "beats_buy_hold": false,
+   "chosen": [
+    {
+     "test_start": "2023-11-01",
+     "params": {
+      "stop_pct": 0.05
+     }
+    },
+    {
+     "test_start": "2024-05-01",
+     "params": {
+      "stop_pct": 0.05
+     }
+    },
+    {
+     "test_start": "2024-11-01",
+     "params": {
+      "stop_pct": 0.05
+     }
+    },
+    {
+     "test_start": "2025-05-01",
+     "params": {
+      "stop_pct": 0.05
+     }
+    },
+    {
+     "test_start": "2025-11-01",
+     "params": {
+      "stop_pct": 0.05
+     }
+    },
+    {
+     "test_start": "2026-05-01",
+     "params": {
+      "stop_pct": 0.05
      }
     }
    ]
