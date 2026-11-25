@@ -212,6 +212,7 @@
 
     // ---- scan ----
     renderScanner();
+    if (window.CLOrb) window.CLOrb.render();
 
     // ---- portfolio ----
     draw('total', (el) => el.textContent = fmt.usd(total) + ' USDT');

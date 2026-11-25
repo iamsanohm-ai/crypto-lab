@@ -17,6 +17,8 @@ from lab.data import API, ROOT, _get, candidate_symbols, now_iso
 from lab.live import build_live_market
 from lab.strategies import IDEAS
 from lab import plans as planmod
+from lab import orb
+from lab.strategies import atr as atr_fn, ema as ema_fn
 
 OUT = ROOT / "dashboard" / "scanner.json"
 MIN_LIQUID_USDT = 2_000_000   # volume 24 ชม. ต่ำกว่านี้ = สภาพคล่องต่ำ (slippage สูง)
@@ -35,6 +37,11 @@ def scan() -> dict:
     lo = (-d.clip(upper=0)).ewm(alpha=1 / 14, adjust=False).mean()
     rsi = 100 - 100 / (1 + g / lo)
     mom30 = c.pct_change(180, fill_method=None) * 100
+    a14 = atr_fn(m, 14)
+    a20 = atr_fn(m, 20)
+    kel_trigger = ema_fn(c, 20) + 2.0 * a20
+    rets = c.pct_change(fill_method=None).iloc[-180:]
+    corr_btc = rets.corrwith(rets["BTCUSDT"]) if "BTCUSDT" in rets else None
     sigs = {}
     for s in cfg["strategies"]:
         try:
@@ -76,6 +83,29 @@ def scan() -> dict:
             "mom_30d_pct": None if np.isnan(mom30.iloc[T, j]) else round(float(mom30.iloc[T, j]), 1),
             "buy_signals": ", ".join(buy), "sell_signals": ", ".join(sell),
         })
+        r = rows[-1]
+        atr_pct = float(a14.iloc[T, j] / close * 100) if not np.isnan(a14.iloc[T, j]) else None
+        trig = kel_trigger.iloc[T, j]
+        entry_dist = float((trig / close - 1) * 100) if not np.isnan(trig) else None
+        caps = []
+        if not liquid:
+            caps.append("illiquid")
+        if trend is None:
+            caps.append("no_data")
+        elif trend == "down":
+            caps.append("below_ema200")
+        if btc_up is False:
+            caps.append("btc_down")
+        o = orb.score({"trend": r["vs_ema200_pct"], "momentum": r["mom_30d_pct"],
+                       "liquidity": float(np.log10(qv24)) if qv24 > 0 else None,
+                       "volatility": atr_pct, "entry": entry_dist}, caps)
+        cb = corr_btc.iloc[j] if corr_btc is not None else np.nan
+        r.update({"score": o["score"], "raw_score": o["raw"], "components": o["components"], "caps": o["caps"],
+                  "atr_pct": None if atr_pct is None else round(atr_pct, 2),
+                  "entry_dist_pct": None if entry_dist is None else round(entry_dist, 2),
+                  "corr_btc": None if np.isnan(cb) else round(float(cb), 2)})
+        if liquid:
+            r["spark"] = [round(float(v), 8) for v in c.iloc[-60:, j].ffill().to_numpy()]
     order = {"buy_signal": 0, "uptrend": 1, "downtrend": 2, "new": 3, "illiquid": 4}
     rows.sort(key=lambda r: (order[r["status"]], -(r["mom_30d_pct"] if r["mom_30d_pct"] is not None else -1e9)))
     counts = pd.Series([r["status"] for r in rows]).value_counts().to_dict()
@@ -89,6 +119,8 @@ def scan() -> dict:
         print("plan alert failed", e)
     out = {"generated_at": now_iso(), "bar": str(m.times[T]), "btc_regime_up": btc_up, "total": len(rows),
            "counts": counts, "min_liquid_usdt": MIN_LIQUID_USDT, "analysis": analysis, "plans": plans, "rows": rows,
+           "orb": {"components": {k: {"weight": v[0], "full": v[1], "zero": v[2], "label": v[3]} for k, v in orb.COMPONENTS.items()},
+                   "cap_reasons": orb.CAP_REASONS},
            "source": f"{API}/klines 4h + {API}/ticker/24hr (Binance spot, USDT pairs)"}
     OUT.write_text(json.dumps(out, separators=(",", ":")))
     return out

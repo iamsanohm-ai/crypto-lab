@@ -163,3 +163,17 @@ def test_grok_extract_text_formats():
     assert grok.extract_text({"output_text": "a"}) == "a"
     assert grok.extract_text({"output": [{"type": "message", "content": [{"type": "output_text", "text": "b"}]}]}) == "b"
     assert grok.extract_text({"choices": [{"message": {"content": "c"}}]}) == "c"
+
+
+# ---------- ORB score ----------
+from lab import orb
+
+
+def test_orb_component_formula_and_cap():
+    assert orb.component("trend", 15) == 25 and orb.component("trend", -10) == 0
+    assert orb.component("trend", 2.5) == 12.5                      # ครึ่งทาง → ครึ่งน้ำหนัก
+    assert orb.component("volatility", 1.0) == 15 and orb.component("volatility", 9) == 0   # ต่ำดีกว่า
+    assert orb.component("entry", -3) == 20                         # ทะลุจุดเข้าแล้ว = เต็ม
+    good = {"trend": 20, "momentum": 50, "liquidity": 8, "volatility": 1, "entry": 0}
+    assert orb.score(good, [])["score"] == 100
+    assert orb.score(good, ["btc_down"])["score"] == 59 and orb.score(good, ["btc_down"])["raw"] == 100
