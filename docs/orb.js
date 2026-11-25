@@ -16,10 +16,12 @@
   // ---------- LIVE SCORING: ราคาทุกเหรียญจาก Binance (ทุกวินาที) → คำนวณคะแนนใหม่ทุก 2 วินาที ----------
   const LIVE = {};            // SYMBOLUSDT -> {c, o, q, t}
   let liveMode = 'off', liveMsgAt = 0, liveDirty = false, changes = 0;
-  const prevScore = {}, flashUntil = {}, CHANGES = [];
+  const prevScore = {}, flashUntil = {}, CHANGES = [], KICK = {};
   function onTickers(arr) {
     const now = Date.now();
-    for (const t of arr) { if (!t.s || !t.s.endsWith('USDT')) continue; LIVE[t.s] = {c: +t.c, o: +t.o, q: +t.q, t: now}; }
+    for (const t of arr) { if (!t.s || !t.s.endsWith('USDT')) continue; const c = +t.c, pv = LIVE[t.s];
+      if (pv && pv.c && c !== pv.c) { const sym = t.s.slice(0, -4), r = c / pv.c - 1; KICK[sym] = Math.max(-2.5, Math.min(2.5, (KICK[sym] || 0) + Math.sign(r) * -Math.min(1, Math.abs(r) * 600))); }
+      LIVE[t.s] = {c, o: +t.o, q: +t.q, t: now}; }
     liveMsgAt = now; liveDirty = true;
   }
   function connectLive() {
@@ -148,9 +150,8 @@
   }
   function target(r, i, n, rankPct) {
     const W = NET.W, C = W / 2, CY = NET.H / 2;
-    if (r.symbol === 'BTC') return [C, CY];
     const ang = (i / n) * Math.PI * 2 - Math.PI / 2 + (hash(r.symbol, 1) - 0.5) * 0.35;
-    let rad = W * (0.05 + 0.29 * Math.sqrt(rankPct));          // rank → even, dense fill (closer = higher rank)
+    let rad = W * (0.085 + 0.27 * Math.sqrt(rankPct));          // rank → even, dense fill (closer = higher rank)
     rad *= 1 + (hash(r.symbol, 2) - 0.5) * 0.18;
     const lobe = 1 + 0.08 * Math.cos(2 * ang) + 0.05 * Math.sin(3 * ang + 0.6) + 0.03 * Math.cos(5 * ang);
     const cx = Math.cos(ang), side = cx >= 0 ? 1 : -1;            // two hemispheres with a central fissure
@@ -160,18 +161,25 @@
   function graph(S, rows) {
     if (!ensureCanvas()) return;
     const pts = rows.slice().sort((a, b) => (b.corr_btc ?? -1) - (a.corr_btc ?? -1)), n = pts.length || 1;
-    const rank = new Map(rows.slice().sort((a, b) => b.raw_score - a.raw_score || b.score - a.score).map((r, i) => [r.symbol, i / Math.max(1, rows.length - 1)]));
+    const pullOf = (r) => (r.status === 'illiquid' ? -40 : 0) + (r.raw_score || 0) + Math.max(-15, Math.min(15, r.change_24h_pct || 0)) * 1.5;
+    const byPull = rows.slice().sort((a, b) => pullOf(b) - pullOf(a));
+    const rank = new Map(byPull.map((r, i) => [r.symbol, i / Math.max(1, rows.length - 1)]));
+    const TH = window.CL && window.CL.data().scanner && window.CL.data().scanner.thinking;
+    const verdict = new Map(((TH && TH.items) || []).map((x) => [x.symbol, x.verdict]));
+    const hubSet = byPull.filter((r) => r.status !== 'illiquid').slice(0, 20).map((r) => r.symbol);
     const seen = new Set();
     pts.forEach((r, i) => {
       const [tx, ty] = target(r, i, n, rank.get(r.symbol)); seen.add(r.symbol);
       let node = NET.nodes.get(r.symbol);
       if (!node) { node = {sym: r.symbol, x: tx, y: ty, flash: 0}; NET.nodes.set(r.symbol, node); }
       if (node.raw != null && node.raw !== r.raw_score) fire(node, 2);
-      Object.assign(node, {tx, ty, row: r, raw: r.raw_score, score: r.score, status: r.status, corr: r.corr_btc});
+      Object.assign(node, {tx, ty, row: r, raw: r.raw_score, score: r.score, status: r.status, corr: r.corr_btc, pull: pullOf(r), verdict: verdict.get(r.symbol)});
     });
     for (const k of [...NET.nodes.keys()]) if (!seen.has(k)) NET.nodes.delete(k);
-    const key = [...seen].sort().join(',') + '|' + NET.W;
-    if (key !== NET.key) { NET.key = key; buildEdges(); }
+    NET.hubSet = hubSet;
+    const key = [...seen].sort().join(',') + '|' + NET.W, hk = hubSet.join(',');
+    if (key !== NET.key) { NET.key = key; NET.hk = hk; buildEdges(); }
+    else if (hk !== NET.hk) { NET.hk = hk; hubEdges(); }
     if (!NET.running) { NET.running = true; requestAnimationFrame(frame); }
   }
   function buildEdges() {
@@ -180,15 +188,20 @@
     const add = (a, b, hub) => { const k = a.sym < b.sym ? a.sym + '|' + b.sym : b.sym + '|' + a.sym; if (seenE.has(k)) return; seenE.add(k);
       const e = {a, b, hub, bend: (hash(k, 3) - 0.5) * 0.5}; edges.push(e); nbr.get(a.sym).push(e); nbr.get(b.sym).push(e); };
     for (const a of ns) {
-      const k = a.status === 'illiquid' ? 3 : 5;
+      const k = a.status === 'illiquid' ? 2 : 4;
       const near = ns.filter((b) => b !== a).map((b) => [b, (b.tx - a.tx) ** 2 + (b.ty - a.ty) ** 2]).sort((x, y) => x[1] - y[1]).slice(0, k);
       near.forEach(([b]) => add(a, b, false));
     }
     // long-range association fibres (brain-like cross connections)
-    for (let i = 0; i < ns.length; i += 3) { const a = ns[i], b = ns[Math.floor(hash(a.sym, 7) * ns.length)]; if (b && b !== a) add(a, b, false); }
-    const btc = NET.nodes.get('BTC');
-    if (btc) ns.filter((b) => b !== btc && b.status !== 'illiquid').sort((x, y) => (y.corr ?? 0) - (x.corr ?? 0)).slice(0, 26).forEach((b) => add(btc, b, true));
-    NET.edges = edges; NET.nbr = nbr;
+    for (let i = 0; i < ns.length; i += 4) { const a = ns[i], b = ns[Math.floor(hash(a.sym, 7) * ns.length)]; if (b && b !== a) add(a, b, false); }
+    NET.baseEdges = edges; NET.nbr = nbr; hubEdges();
+  }
+  function hubEdges() {   // เส้นทอง: แกนตัดสินใจ ↔ 20 เหรียญที่น่าสนใจที่สุด (เปลี่ยนตามราคาสด)
+    const core = NET.core || (NET.core = {sym: '__CORE', x: NET.W / 2, y: NET.H / 2, tx: NET.W / 2, ty: NET.H / 2, flash: 0, status: 'core'});
+    for (const [k, list] of NET.nbr) if (k !== '__CORE') NET.nbr.set(k, list.filter((e) => !e.hub));
+    const hub = [];
+    (NET.hubSet || []).forEach((sym) => { const b = NET.nodes.get(sym); if (!b) return; const e = {a: b, b: core, hub: true, bend: (hash(sym, 3) - 0.5) * 0.5}; hub.push(e); NET.nbr.get(sym).push(e); });
+    NET.nbr.set('__CORE', hub); NET.edges = NET.baseEdges.concat(hub);
   }
   function fire(node, hops) {
     node.flash = 1;
@@ -217,32 +230,49 @@
     c.setTransform(dpr, 0, 0, dpr, 0, 0);
     c.clearRect(0, 0, W, H);
     const C = W / 2, CY = H / 2;
-    const bg = c.createRadialGradient(C, CY, 0, C, CY, W * 0.55); bg.addColorStop(0, 'rgba(242,169,59,0.07)'); bg.addColorStop(0.5, 'rgba(51,195,180,0.025)'); bg.addColorStop(1, 'rgba(0,0,0,0)');
-    c.fillStyle = bg; c.fillRect(0, 0, W, H);
-    // rank guide rings (closer to BTC = higher rank)
+    const seg = (g, e) => { const a = e.a, b = e.b, mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2, dx = b.x - a.x, dy = b.y - a.y;
+      g.moveTo(a.x, a.y); g.quadraticCurveTo(mx - dy * e.bend, my + dx * e.bend, b.x, b.y); };
+    // ชั้นพื้นหลัง (พื้น + วงแหวน + เส้นประสาททั้งหมด) วาดใหม่ ~6 ครั้ง/วินาที แล้ววางทับ — ประหยัด CPU มาก
+    if (!NET.layer) NET.layer = document.createElement('canvas');
+    const L = NET.layer;
+    if (L.width !== NET.canvas.width || L.height !== NET.canvas.height) { L.width = NET.canvas.width; L.height = NET.canvas.height; NET.layerAt = 0; }
+    if (ts - (NET.layerAt || 0) > 160) {
+      NET.layerAt = ts; const g = L.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
+    const bg = g.createRadialGradient(C, CY, 0, C, CY, W * 0.55); bg.addColorStop(0, 'rgba(242,169,59,0.07)'); bg.addColorStop(0.5, 'rgba(51,195,180,0.025)'); bg.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = bg; g.fillRect(0, 0, W, H);
+    // rank guide rings (closer to the decision core = more attractive)
     const nAll = Math.max(1, NET.nodes.size - 1);
-    c.setLineDash([3, 5]); c.lineWidth = 1; c.font = '600 10px ui-monospace,monospace'; c.textAlign = 'left';
+    g.setLineDash([3, 5]); g.lineWidth = 1; g.font = '600 10px ui-monospace,monospace'; g.textAlign = 'left';
     for (const [k, label] of [[10, 'Top 10'], [50, 'Top 50'], [150, 'Top 150']]) {
       if (k >= nAll) continue;
-      const rr = W * (0.05 + 0.29 * Math.sqrt(k / nAll));
-      c.strokeStyle = 'rgba(150,170,190,0.22)'; c.beginPath(); c.ellipse(C, CY, rr * 1.22, rr * 0.98, 0, 0, 6.283); c.stroke();
-      c.fillStyle = 'rgba(160,180,200,0.65)'; c.fillText(label, C + rr * 1.22 + 4, CY - 3);
+      const rr = W * (0.085 + 0.27 * Math.sqrt(k / nAll));
+      g.strokeStyle = 'rgba(150,170,190,0.22)'; g.beginPath(); g.ellipse(C, CY, rr * 1.22, rr * 0.98, 0, 0, 6.283); g.stroke();
+      g.fillStyle = 'rgba(160,180,200,0.55)'; g.textAlign = 'center'; g.fillText(label, C, CY - rr * 0.98 - 3); g.textAlign = 'left';
     }
-    c.setLineDash([]);
+    g.setLineDash([]);
+      g.lineWidth = 0.6;
+      for (const [cls, col] of [[0, 'rgba(175,200,220,0.13)'], [1, 'rgba(130,150,170,0.08)'], [2, 'rgba(242,169,59,0.16)']]) {
+        g.beginPath();
+        for (const e of NET.edges) { const k = e.hub ? 2 : (e.a.status === 'illiquid' && e.b.status === 'illiquid') ? 1 : 0; if (k === cls) seg(g, e); }
+        g.strokeStyle = col; g.stroke();
+      }
+    }
+    c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(L, 0, 0); c.setTransform(dpr, 0, 0, dpr, 0, 0);
     // ease neurons toward their score position
-    for (const n of NET.nodes.values()) { const k = reduceMotion ? 1 : 0.06; n.x += (n.tx - n.x) * k; n.y += (n.ty - n.y) * k; n.flash *= 0.94; }
-    // synapses
-    c.lineWidth = 0.6;
-    const seg = (e) => { const a = e.a, b = e.b, mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2, dx = b.x - a.x, dy = b.y - a.y;
-      c.moveTo(a.x, a.y); c.quadraticCurveTo(mx - dy * e.bend, my + dx * e.bend, b.x, b.y); };
-    const hot = [];
-    for (const [cls, col] of [[0, 'rgba(175,200,220,0.13)'], [1, 'rgba(130,150,170,0.08)'], [2, 'rgba(242,169,59,0.14)']]) {
-      c.beginPath();
-      for (const e of NET.edges) { const k = e.hub ? 2 : (e.a.status === 'illiquid' && e.b.status === 'illiquid') ? 1 : 0; if (k !== cls) continue;
-        if (cls === 0 && Math.max(e.a.flash, e.b.flash) > 0.15) { hot.push(e); continue; } seg(e); }
-      c.strokeStyle = col; c.stroke();
+    if (NET.core) { NET.core.x = NET.core.tx = C; NET.core.y = NET.core.ty = CY; NET.core.flash *= 0.94; }
+    for (const n of NET.nodes.values()) {
+      const kk = KICK[n.sym] || 0; if (kk) KICK[n.sym] = Math.abs(kk) < 0.02 ? 0 : kk * 0.95;
+      const dx = n.tx - C, dy = n.ty - CY, d = Math.hypot(dx, dy) || 1, off = reduceMotion ? 0 : kk * W * 0.014;
+      const k = reduceMotion ? 1 : 0.06; n.x += (n.tx + dx / d * off - n.x) * k; n.y += (n.ty + dy / d * off - n.y) * k; n.flash *= 0.94;
     }
-    for (const e of hot) { c.strokeStyle = `rgba(200,225,245,${0.13 + Math.max(e.a.flash, e.b.flash) * 0.55})`; c.beginPath(); seg(e); c.stroke(); }
+    // ความคิด: ส่งกระแสจากเหรียญที่น่าสนใจเข้าหาแกนตัดสินใจ
+    if (!reduceMotion && NET.core && Math.random() < 0.35) { const hubs = NET.nbr.get('__CORE') || []; const e = hubs[Math.floor(Math.random() * hubs.length)];
+      if (e && NET.pulses.length < 260) NET.pulses.push({e, from: e.a === NET.core ? e.b : e.a, t: 0, sp: 0.012 + Math.random() * 0.01, hops: 0, hot: true}); }
+    // synapses ที่กำลังทำงาน (วาดสดทุกเฟรม)
+    c.lineWidth = 0.8;
+    { const hp = new Path2D(), np = new Path2D(); let nh = 0;
+      for (const e of NET.edges) { if (Math.max(e.a.flash, e.b.flash) < 0.4 || nh > 120) continue; nh++; seg(e.hub ? hp : np, e); }
+      if (nh) { c.strokeStyle = 'rgba(255,200,110,0.6)'; c.stroke(hp); c.strokeStyle = 'rgba(200,225,245,0.45)'; c.stroke(np); } }
     // ambient firing (weighted toward high scores)
     if (!reduceMotion) for (let q = 0; q < 2; q++) if (Math.random() < 0.6) {
       if (!NET.pool || NET.poolAt !== NET.key + NET.nodes.size) { NET.pool = [...NET.nodes.values()].filter((x) => x.status !== 'illiquid'); NET.poolAt = NET.key + NET.nodes.size; }
@@ -250,21 +280,19 @@
       if (n && Math.random() < 0.3 + (n.raw || 0) / 140) for (const e of (NET.nbr.get(n.sym) || []).slice(0, 2)) NET.pulses.push({e, from: n, t: 0, sp: 0.01 + Math.random() * 0.015, hops: 1, hot: false});
     }
     // impulses
-    const next = [];
+    const next = [], PB = [[new Path2D(), new Path2D()], [new Path2D(), new Path2D()], [new Path2D(), new Path2D()]];
     c.globalCompositeOperation = 'lighter';
     for (const p of NET.pulses) {
       p.t += p.sp;
       if (p.t <= p.sp + 1e-9) NET.spawn = (NET.spawn || 0) + 1;
-      for (let k = 0; k < 3; k++) {
-        const tt = Math.max(0, p.t - k * 0.05), [x, y] = bez(p.e, p.from, Math.min(1, tt));
-        const al = (p.hot ? 0.9 : 0.55) * (1 - k / 3);
-        c.fillStyle = p.e.hub ? `rgba(255,196,90,${al})` : p.hot ? `rgba(255,220,140,${al})` : `rgba(140,230,255,${al})`;
-        c.beginPath(); c.arc(x, y, k ? 1.4 : 2.4, 0, 6.283); c.fill();
-      }
+      const bucket = PB[p.e.hub ? 0 : p.hot ? 1 : 2];
+      for (let k = 0; k < 2; k++) { const [x, y] = bez(p.e, p.from, Math.min(1, Math.max(0, p.t - k * 0.06))), r = k ? 1.3 : 2.3;
+        const path = k ? bucket[1] : bucket[0]; path.moveTo(x + r, y); path.arc(x, y, r, 0, 6.283); }
       if (p.t < 1) next.push(p);
       else { const [, , dest] = bez(p.e, p.from, 1); dest.flash = Math.max(dest.flash, p.hot ? 0.8 : 0.35);
         if (p.hops > 0) for (const e of (NET.nbr.get(dest.sym) || [])) if (e !== p.e && Math.random() < 0.3 && next.length < 260) next.push({e, from: dest, t: 0, sp: p.sp, hops: p.hops - 1, hot: p.hot}); }
     }
+    [['255,196,90', 0], ['255,220,140', 1], ['140,230,255', 2]].forEach(([col, i]) => { c.fillStyle = `rgba(${col},0.9)`; c.fill(PB[i][0]); c.fillStyle = `rgba(${col},0.4)`; c.fill(PB[i][1]); });
     if (!NET.ipsAt || ts - NET.ipsAt > 1000) { NET.ips = NET.spawn; NET.spawn = 0; NET.ipsAt = ts; }
     NET.pulses = next.slice(-260);
     // dendrites: 5 rays = 5 score components (length = component / weight)
@@ -272,30 +300,34 @@
     if (CW) { c.lineWidth = 1.1; c.lineCap = 'round';
       DK.forEach((k, i) => { const w = CW[k] ? CW[k].weight : 20, ang = -Math.PI / 2 + i * 1.2566, ca = Math.cos(ang), sa = Math.sin(ang);
         c.beginPath();
-        for (const n of NET.nodes.values()) { if (n.status === 'illiquid' || n.sym === 'BTC' || !n.row || !n.row.components) continue;
+        for (const n of NET.nodes.values()) { if (n.status === 'illiquid' || !n.row || !n.row.components) continue;
           const L = 3 + ((n.row.components[k] || 0) / w) * 11; c.moveTo(n.x + ca * 2.5, n.y + sa * 2.5); c.lineTo(n.x + ca * L, n.y + sa * L); }
         c.strokeStyle = `rgba(${DCOL[i]},0.7)`; c.stroke(); });
       c.lineCap = 'butt'; }
     // neurons
-    const top = rowsTop();
+    const top = rowsTop(), DOT = {};
     for (const n of NET.nodes.values()) {
       const col = NCOL[n.status] || [140, 150, 160], s = (n.raw || 0) / 100, ill = n.status === 'illiquid';
-      const rad = ill ? 1.4 : 2.2 + s * 4.5, glow = ill ? 0 : 6 + s * 16 + n.flash * 18;
+      const rad = ill ? 1.4 : 2.2 + s * 4.5, glow = ill || (!top.includes(n.sym) && n.flash < 0.2 && s < 0.45) ? 0 : 6 + s * 16 + n.flash * 18;
       if (glow) { c.globalAlpha = Math.min(1, 0.45 + n.flash * 0.6); c.drawImage(sprite(col), n.x - glow, n.y - glow, glow * 2, glow * 2); c.globalAlpha = 1; }
-      c.fillStyle = n.flash > 0.3 ? `rgba(255,255,255,${0.6 + n.flash * 0.4})` : `rgba(${col},${ill ? 0.45 : 0.95})`;
-      c.beginPath(); c.arc(n.x, n.y, rad, 0, 6.283); c.fill();
+      if (n.flash > 0.3) { c.fillStyle = `rgba(255,255,255,${0.6 + n.flash * 0.4})`; c.beginPath(); c.arc(n.x, n.y, rad, 0, 6.283); c.fill(); continue; }
+      const kk = n.status + (ill ? 'i' : ''); const pth = DOT[kk] || (DOT[kk] = {p: new Path2D(), col: `rgba(${col},${ill ? 0.45 : 0.95})`});
+      pth.p.moveTo(n.x + rad, n.y); pth.p.arc(n.x, n.y, rad, 0, 6.283);
     }
+    for (const k in DOT) { c.fillStyle = DOT[k].col; c.fill(DOT[k].p); }
     c.globalCompositeOperation = 'source-over';
-    // BTC core
-    const btc = NET.nodes.get('BTC');
-    if (btc) { const pulse = reduceMotion ? 0 : (Math.sin(ts / 600) + 1) / 2;
-      const g = c.createRadialGradient(btc.x, btc.y, 0, btc.x, btc.y, 30 + pulse * 8); g.addColorStop(0, 'rgba(242,169,59,0.55)'); g.addColorStop(1, 'rgba(242,169,59,0)');
-      c.fillStyle = g; c.beginPath(); c.arc(btc.x, btc.y, 30 + pulse * 8, 0, 6.283); c.fill();
-      c.fillStyle = '#0b1016'; c.strokeStyle = '#f2a93b'; c.lineWidth = 1.5; c.beginPath(); c.arc(btc.x, btc.y, 15, 0, 6.283); c.fill(); c.stroke();
-      c.fillStyle = '#f2a93b'; c.font = '700 10px ui-monospace,monospace'; c.textAlign = 'center'; c.fillText('BTC', btc.x, btc.y + 3.5); }
+    // decision core (สมองตัดสินใจซื้อ): ยิ่งเหรียญอยู่ใกล้ = ระบบยิ่งอยากซื้อ
+    { const pulse = reduceMotion ? 0 : (Math.sin(ts / 600) + 1) / 2, fl = NET.core ? NET.core.flash : 0, rr = 30 + pulse * 6 + fl * 10;
+      c.globalAlpha = 0.6 + fl * 0.4; c.drawImage(sprite([242, 169, 59]), C - rr, CY - rr, rr * 2, rr * 2); c.globalAlpha = 1;
+      c.fillStyle = '#0b1016'; c.strokeStyle = '#f2a93b'; c.lineWidth = 1.5; c.beginPath(); c.arc(C, CY, 17, 0, 6.283); c.fill(); c.stroke();
+      c.fillStyle = '#f2a93b'; c.font = '700 11px "IBM Plex Sans Thai",system-ui,sans-serif'; c.textAlign = 'center'; c.fillText('ซื้อ?', C, CY + 4); }
+    // ring: เหรียญที่ระบบคิดแล้วว่า "เข้าได้" = วงเขียว, "รอ" = วงเหลือง
+    c.lineWidth = 1.2;
+    for (const n of NET.nodes.values()) { if (!n.verdict || n.verdict === 'no') continue;
+      c.strokeStyle = n.verdict === 'enter' || n.verdict === 'hold' ? '#22c983' : 'rgba(242,169,59,0.85)'; c.beginPath(); c.arc(n.x, n.y, 8, 0, 6.283); c.stroke(); }
     // labels: top coins, selection, hover
     c.font = '600 10px ui-monospace,monospace'; c.textAlign = 'left';
-    const placed = [[C - 22, CY - 22, 44], [C - 22, CY - 7, 44], [C - 22, CY + 8, 44]];   // keep the BTC core clear
+    const placed = [[C - 22, CY - 22, 44], [C - 22, CY - 7, 44], [C - 22, CY + 8, 44]];   // keep the decision core clear
     const lab = (n, color) => {
       const txt = n.sym + ' ' + n.score, w = c.measureText(txt).width + 8; let lx = n.x + 8, ly = n.y - 8;
       if (lx + w > W - 2) lx = n.x - 8 - w;
@@ -305,18 +337,19 @@
       c.fillStyle = 'rgba(6,9,13,0.82)'; c.fillRect(lx, ly, w, 14); c.fillStyle = color; c.fillText(txt, lx + 4, ly + 10.5); };
     const sn = sel && NET.nodes.get(sel.symbol);
     c.font = '500 8.5px ui-monospace,monospace'; c.textAlign = 'center';
-    for (const n of NET.nodes.values()) { if (n.status === 'illiquid' || n.sym === 'BTC' || top.includes(n.sym) || n === sn) continue;
+    for (const n of NET.nodes.values()) { if (n.status === 'illiquid' || top.includes(n.sym) || n === sn) continue;
       c.fillStyle = n.flash > 0.3 ? '#ffe2a0' : 'rgba(190,205,220,0.6)'; c.fillText(String(n.score), n.x, n.y + 15); }
     c.font = '600 10px ui-monospace,monospace'; c.textAlign = 'left';
     if (sn) lab(sn, '#f2a93b');
-    for (const sym of top) { const n = NET.nodes.get(sym); if (n && n.sym !== 'BTC' && n !== sn) lab(n, '#cfd8e3'); }
+    for (const sym of top) { const n = NET.nodes.get(sym); if (n && n !== sn) lab(n, n.sym === 'BTC' ? '#f2a93b' : '#cfd8e3'); }
     if (sn) { c.strokeStyle = '#f2a93b'; c.lineWidth = 1.5; c.beginPath(); c.arc(sn.x, sn.y, 9 + (reduceMotion ? 0 : Math.sin(ts / 250) * 2), 0, 6.283); c.stroke(); }
     if (NET.hover) {
       const r = NET.hover.row || {}, ST = {buy_signal: 'มีสัญญาณซื้อ', uptrend: 'ขาขึ้น', downtrend: 'ขาลง', illiquid: 'สภาพคล่องต่ำ', new: 'ข้อมูลไม่พอ'};
       const CAP = {btc_down: 'BTC ขาลง', below_ema200: 'อยู่ใต้ EMA200', illiquid: 'สภาพคล่องต่ำ', no_data: 'ข้อมูลไม่พอ'};
       const lines = [`${r.symbol}  คะแนน ${r.score}${r.caps && r.caps.length ? ` (ดิบ ${r.raw_score})` : ''}`, `สถานะ: ${ST[r.status] || r.status}`,
         `24 ชม. ${r.change_24h_pct == null ? '—' : (r.change_24h_pct > 0 ? '+' : '') + r.change_24h_pct.toFixed(2) + '%'} · เทียบ EMA200 ${r.vs_ema200_pct == null ? '—' : (r.vs_ema200_pct > 0 ? '+' : '') + r.vs_ema200_pct + '%'}`,
-        r.caps && r.caps.length ? 'ถูกจำกัดคะแนนเพราะ: ' + r.caps.map((x) => CAP[x] || x).join(', ') : 'ไม่ถูกจำกัดคะแนน', 'แตะเพื่อดูรายละเอียด'];
+        r.caps && r.caps.length ? 'ถูกจำกัดคะแนนเพราะ: ' + r.caps.map((x) => CAP[x] || x).join(', ') : 'ไม่ถูกจำกัดคะแนน',
+        `แรงดึงเข้าหาการซื้อ: ${Math.round(NET.hover.pull || 0)} (คะแนนดิบ + กำไร 24 ชม.)` + (NET.hover.verdict ? ` · ระบบคิด: ${{enter: 'เข้าได้', wait: 'รอ', no: 'ไม่ซื้อ', hold: 'ถืออยู่'}[NET.hover.verdict]}` : ''), 'แตะเพื่อดูรายละเอียด'];
       c.font = '12px ui-monospace,monospace'; const bw = Math.max(...lines.map((t) => c.measureText(t).width)) + 18, bh = lines.length * 17 + 12;
       let bx = NET.hover.x + 14, by = NET.hover.y + 14; if (bx + bw > W - 4) bx = NET.hover.x - 14 - bw; if (by + bh > H - 4) by = NET.hover.y - 14 - bh;
       c.fillStyle = 'rgba(8,12,17,0.94)'; c.strokeStyle = 'rgba(242,169,59,0.6)'; c.lineWidth = 1; c.fillRect(bx, by, bw, bh); c.strokeRect(bx, by, bw, bh);
@@ -324,7 +357,7 @@
     }
   }
   let topCache = [], topAt = 0;
-  function rowsTop() { if (Date.now() - topAt > 2000) { topAt = Date.now(); topCache = [...NET.nodes.values()].filter((n) => n.status !== 'illiquid').sort((a, b) => b.score - a.score || b.raw - a.raw).slice(0, 12).map((n) => n.sym); } return topCache; }
+  function rowsTop() { if (Date.now() - topAt > 2000) { topAt = Date.now(); topCache = [...NET.nodes.values()].filter((n) => n.status !== 'illiquid').sort((a, b) => b.pull - a.pull).slice(0, 12).map((n) => n.sym); if (!topCache.includes('BTC') && NET.nodes.has('BTC')) topCache.push('BTC'); } return topCache; }
   window.addEventListener('resize', () => { if (NET.canvas) { ensureCanvas(); } });
 
   function registry(S, rows) {
@@ -432,6 +465,7 @@
   function draw(force) {
     const D = window.CL && window.CL.data(); const S = D && D.scanner;
     const root = $('#orb'); if (!root) return;
+    const vs = document.getElementById('view-scan'); if (vs && vs.hidden) { lastKey = ''; return; }   // ไม่วาดตอนซ่อน — วาดเมื่อเปิดแท็บ
     if (!S || !S.orb) { root.hidden = true; return; }
     root.hidden = false;
     const key = S.generated_at + '|' + (sel && sel.symbol) + '|' + showIlliquid + '|' + (D.orb_validation ? D.orb_validation.generated_at : '');
@@ -454,7 +488,7 @@
     const top = liq.slice(0, 5), capped = top.length && top.every((r) => r.caps.includes('btc_down'));
     el.replaceChildren();
     const sum = mk('div', 'nm-sum');
-    const p1 = mk('p'); p1.append(mk('b', null, 'อ่านภาพนี้: '), 'จุดแต่ละจุดคือเหรียญ 1 ตัว ยิ่งอยู่ใกล้ BTC ตรงกลางและสว่าง = คะแนนยิ่งสูง (น่าสนใจกว่า) · สีเขียว = ขาขึ้น, สีแดง = ขาลง · จุดเรืองแสงที่วิ่งไปตามเส้น = คะแนนของเหรียญนั้นเพิ่งเปลี่ยนจากราคาสด');
+    const p1 = mk('p'); p1.append(mk('b', null, 'อ่านภาพนี้: '), 'ตรงกลาง "ซื้อ?" คือสมองตัดสินใจ — เหรียญถูกดึงเข้าหาตามแรงดึงดูด (คะแนนดิบ + กำไร 24 ชม.) ยิ่งใกล้ = ระบบยิ่งอยากซื้อ · ราคาสดขึ้น = เหรียญกระตุกเข้าหาศูนย์กลาง, ลง = ถูกผลักออก · เส้นทอง = 20 เหรียญที่ระบบกำลังคิด กระแสวิ่งเข้าศูนย์กลาง · วงเขียว/เหลือง = ระบบคิดแล้วว่า "เข้าได้"/"รอ" (ดูแท็บ เหตุผล) · สีจุด: เขียว = ขาขึ้น, แดง = ขาลง');
     const p2 = mk('p'); p2.append(mk('b', null, 'ตอนนี้: '), `ใน ${liq.length} เหรียญที่ซื้อขายคล่อง มี ${up} ตัว (${liq.length ? Math.round(up / liq.length * 100) : 0}%) เป็นขาขึ้น · 5 อันดับแรก: ${top.map((r) => `${r.symbol} ${r.score}`).join(', ') || '—'}`);
     const p3 = mk('p', capped ? 'nm-warn' : 'nm-ok');
     p3.append(mk('b', null, 'แปลว่า: '), capped ? 'ทุกเหรียญถูกจำกัดคะแนนไว้ไม่เกิน 59 เพราะ BTC ยังเป็นขาลง — ระบบแนะนำให้ "เฝ้าดู" ยังไม่ใช่จังหวะซื้อ' : top.some((r) => r.score >= 70) ? 'มีเหรียญคะแนน 70+ — ดูแผนเทรดก่อนตัดสินใจ (ในอดีตคะแนนสูงมากอาจหมายถึงวิ่งไปไกลแล้ว)' : 'ยังไม่มีเหรียญคะแนนสูงพอ — เฝ้าดูต่อ');
@@ -480,7 +514,7 @@
       const hue = s >= 70 ? 150 : s >= 50 ? 170 - (70 - s) * 2 : s >= 30 ? 40 : 355;
       b.style.background = ill ? '#1a222b' : `hsl(${hue} ${45 + s / 3}% ${14 + s * 0.38}%)`;
       b.className = 'hm-c' + ((flashUntil[r.symbol] || 0) > now ? ' fl' : '') + (sel && sel.symbol === r.symbol ? ' on' : '');
-      b.textContent = r.symbol.slice(0, 4); if (ill) b.style.color = '#4a5866';
+      const tx = r.symbol.slice(0, 4); if (b.textContent !== tx) b.textContent = tx; if (ill) b.style.color = '#4a5866';
       b.title = `${r.symbol} · คะแนน ${s}${r.caps.length ? ' (ดิบ ' + r.raw_score + ')' : ''} · 24ชม. ${r.change_24h_pct == null ? '—' : r.change_24h_pct.toFixed(2) + '%'}`;
       b.onclick = () => select(r); });
     const cap = document.getElementById('nm-heat-cap');

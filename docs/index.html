@@ -351,23 +351,26 @@ details.notes summary{cursor:pointer;color:var(--fg)}
 @media (prefers-reduced-motion:reduce){.orb-sweep{display:none}}
 /* system status */
 .syscard h2 .note{color:var(--accent);text-decoration:none}
-.sys-grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}
-.sys-t{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--panel2);display:grid;gap:2px}
-.sys-h{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted)}
-.sys-dot{width:8px;height:8px;border-radius:50%;background:var(--up);flex:none}
+.sys-grid{display:grid;gap:8px;grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (min-width:700px){.sys-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (min-width:1100px){.sys-grid{grid-template-columns:repeat(6,minmax(0,1fr))}}
+.sys-t{border:1px solid var(--line);border-radius:10px;padding:9px 11px;background:var(--panel2);display:grid;gap:1px;min-width:0}
+.sys-h{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sys-dot{flex:none;width:6px;height:6px;border-radius:50%;background:var(--up)}
 .sys-t.warn .sys-dot{background:var(--amber)} .sys-t.bad .sys-dot{background:var(--down)}
-.sys-v{font-family:var(--mono);font-size:17px;font-weight:600;font-variant-numeric:tabular-nums}
-.sys-s{font-size:11.5px;color:var(--dim)}
-.sys-runs-wrap{margin-top:12px}
-.sys-runs{display:grid;gap:4px}
-.gh-run{display:grid;grid-template-columns:22px minmax(0,180px) 1fr;gap:8px;align-items:center;padding:6px 8px;border-radius:8px;background:var(--panel2);color:var(--fg);text-decoration:none;font-size:12.5px}
-.gh-run:hover{outline:1px solid var(--line)}
-.gh-ic{width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700}
+.sys-v{font-family:var(--mono);font-size:18px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.sys-s{font-size:11px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sys-runs-wrap{margin-top:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.sys-runs-wrap .op-t{margin:0}
+.sys-runs{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.gh-run{display:inline-flex;gap:6px;align-items:center;padding:3px 10px 3px 4px;border-radius:999px;border:1px solid var(--line);background:var(--panel2);color:var(--fg);text-decoration:none;font-size:11.5px;white-space:nowrap}
+.gh-run:hover{border-color:var(--muted)}
+.gh-ic{width:16px;height:16px;border-radius:50%;display:grid;place-items:center;font-size:10px;font-weight:700}
 .gh-run.ok .gh-ic{background:color-mix(in srgb,var(--up) 25%,transparent);color:var(--up)}
 .gh-run.bad .gh-ic{background:color-mix(in srgb,var(--down) 25%,transparent);color:var(--down)}
-.gh-run.cxl .gh-ic{background:var(--grid);color:var(--muted)}
-.gh-run.run .gh-ic{border:2px solid var(--amber);border-top-color:transparent}
-.gh-s{color:var(--muted);font-family:var(--mono);font-size:11.5px}
+.gh-run.run .gh-ic{border:2px solid var(--amber);border-top-color:transparent;width:12px;height:12px;margin:2px}
+.gh-s{color:var(--dim);font-family:var(--mono);font-size:10.5px}
+.gh-sum{font-size:11px;color:var(--dim)}.gh-sum.ok{color:color-mix(in srgb,var(--up) 70%,var(--dim))}.gh-sum.bad{color:var(--down)}
 @media (prefers-reduced-motion:no-preference){.gh-run.run .gh-ic{animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}}
 .orb-live{font-size:11px;color:var(--dim);letter-spacing:.04em}
 .orb-live.on{color:var(--up)}
@@ -459,6 +462,17 @@ details.notes summary{cursor:pointer;color:var(--fg)}
 .rs-qa b{color:#fff}.rs-qa p{margin:0;color:#c4cfda}
 .rs-sub{font-size:12px;color:var(--muted);line-height:1.6;margin:10px 0 6px}
 tr.cur td{background:color-mix(in srgb,var(--accent) 10%,transparent)}tr.best td{background:color-mix(in srgb,var(--amber) 10%,transparent)}
+.mkt{font-size:12.5px}.mkt th,.mkt td{white-space:nowrap;padding:7px 9px}
+.mkt .stick{position:sticky;left:0;background:var(--panel);z-index:1}
+.mkt td.stick b{cursor:pointer}.mkt td.stick b:hover{color:var(--accent)}
+.mkt svg{display:block}
+.mkt .rng{position:relative;width:110px;height:6px;border-radius:3px;background:linear-gradient(90deg,color-mix(in srgb,var(--down) 50%,#1b2530),#2a3542,color-mix(in srgb,var(--up) 50%,#1b2530))}
+.mkt .rng i{position:absolute;top:-3px;width:3px;height:12px;margin-left:-1.5px;background:#fff;border-radius:2px}
+.mkt .rngw{display:grid;gap:2px}.mkt .rngw small{font-family:var(--mono);font-size:10px;color:var(--dim)}
+.mkt td.fu{background:color-mix(in srgb,var(--up) 14%,transparent)}.mkt td.fd{background:color-mix(in srgb,var(--down) 14%,transparent)}
+.mkt .tr{font-size:11px;padding:1px 7px;border-radius:999px;border:1px solid var(--line)}
+.mkt .tr.up{color:var(--up);border-color:color-mix(in srgb,var(--up) 45%,transparent)}.mkt .tr.down{color:var(--down);border-color:color-mix(in srgb,var(--down) 45%,transparent)}
+.mkt .hot{color:var(--amber)}
 .err{color:var(--down);font-family:var(--mono);padding:12px}
 @media (max-width:560px){#sys-chip{display:none}.bar .wrap{flex-wrap:nowrap;gap:8px}.brand .bt{display:none}#live{padding:3px 7px}.authbtn{padding:5px 10px;font-size:12px}.btc small{display:none}.brand{font-size:15px}.chip.paper{display:none}.card{padding:13px}.bigv{font-size:24px}.gauge{grid-template-columns:1fr}.meta{display:none}.decision{padding:16px}}
 @media (prefers-reduced-motion:no-preference){.gate .fill{transition:width .6s ease}}
@@ -486,7 +500,7 @@ tr.cur td{background:color-mix(in srgb,var(--accent) 10%,transparent)}tr.best td
     <section class="card syscard" id="system">
       <h2><span class="livedot"></span>สถานะระบบ · ทำงานอัตโนมัติ 24 ชม. <a class="note" href="https://github.com/iamsanohm-ai/crypto-lab/actions" target="_blank" rel="noopener">ดูทั้งหมดบน GitHub ↗</a></h2>
       <div class="sys-grid" id="sys-tiles"></div>
-      <div class="sys-runs-wrap"><div class="op-t">งานบน GitHub Actions (สด)</div><div id="sys-runs" class="sys-runs"></div></div>
+      <div class="sys-runs-wrap"><div class="op-t">GitHub Actions</div><div id="sys-runs" class="sys-runs"></div></div>
     </section>
   </div>
 
@@ -537,11 +551,13 @@ tr.cur td{background:color-mix(in srgb,var(--accent) 10%,transparent)}tr.best td
       </div>
     </div>
     <div class="card">
-      <h2>Top 20 ที่บอทเทรด <span class="note">ราคาสดทุกวินาที</span></h2>
-      <div class="tablewrap"><table>
-        <thead><tr><th>เหรียญ</th><th class="num">ราคา</th><th class="num">24 ชม.</th><th class="num">Volume 24 ชม.</th></tr></thead>
-        <tbody data-draw="marketRows"></tbody>
+      <h2>Top 20 ที่บอทเทรด · ละเอียดทุกช่วงเวลา <span class="note" id="mkt-note">ราคาสดทุกวินาที</span></h2>
+      <div class="tablewrap mkt-wrap"><table class="mkt">
+        <thead><tr><th class="stick">เหรียญ</th><th>10 วัน (4h)</th><th class="num">ราคา</th><th class="num">1 ชม.</th><th class="num">4 ชม.</th><th class="num">24 ชม.</th><th class="num">7 วัน</th><th class="num">30 วัน</th>
+          <th>ช่วง 24 ชม. (ต่ำ → สูง)</th><th class="num">Volume 24 ชม.</th><th class="num">เทียบ EMA200</th><th class="num">RSI 14</th><th>แนวโน้ม</th><th class="num">คะแนน</th></tr></thead>
+        <tbody id="mkt-rows"></tbody>
       </table></div>
+      <p class="help">1 ชม. / 4 ชม. / 7 วัน = เปลี่ยนแปลงแบบช่วงเวลาเลื่อน (rolling) จาก Binance อัปเดตทุก 1 นาที · 24 ชม. และราคา = สดทุกวินาที · 30 วัน, EMA200, RSI, คะแนน = จากแท่ง 4h ล่าสุด ปรับด้วยราคาสด · RSI &gt; 70 = ร้อนแรง, &lt; 30 = ขายมาก · แตะชื่อเหรียญเพื่อเปิดกราฟ</p>
     </div>
   </section>
 
@@ -575,7 +591,7 @@ tr.cur td{background:color-mix(in srgb,var(--accent) 10%,transparent)}tr.best td
       </div>
       <div class="orb-grid">
         <aside class="orb-panel"><div class="op-t">ผลตรวจ 5 ด้าน · % เหรียญที่ผ่าน (≥70% ของน้ำหนัก)</div><div id="orb-checks"></div></aside>
-        <div class="orb-panel orb-center"><div class="op-t">NEURAL MAP · เซลล์ประสาท = เหรียญ <span class="scanning">● THINKING</span></div><div class="orb-stage"><div id="orb-graph"></div></div><div id="nm-insight" class="nm-insight"></div><div class="nm-heatw"><div class="op-t">HEATMAP · ทุกเหรียญบนกระดาน</div><div id="nm-heat" class="nm-heat"></div><div id="nm-heat-cap" class="nm-heat-cap"></div></div><div class="nm-legend"><span><i style="background:#33c3b4"></i>ขาขึ้น</span><span><i style="background:#f0525b"></i>ขาลง</span><span><i style="background:#465464"></i>สภาพคล่องต่ำ</span><span><i style="background:#ffdc8c"></i>กระแสประสาท = คะแนนเปลี่ยนจากราคาสด</span><span><i style="background:#8ce6ff"></i>สัญญาณพื้นหลัง</span><span>ใกล้แกนกลาง + สว่าง = คะแนนสูง</span><span>ใย 5 เส้นรอบเซลล์ (ยาว = ดี): <b style="color:#33c3b4">แนวโน้ม</b> <b style="color:#f2a93b">Momentum</b> <b style="color:#78aaff">สภาพคล่อง</b> <b style="color:#c882ff">ผันผวน</b> <b style="color:#ff78a0">จุดเข้า</b></span></div></div>
+        <div class="orb-panel orb-center"><div class="op-t">NEURAL MAP · เหรียญวิ่งเข้าหาสมองตัดสินใจซื้อ <span class="scanning">● THINKING</span></div><div class="orb-stage"><div id="orb-graph"></div></div><div id="nm-insight" class="nm-insight"></div><div class="nm-heatw"><div class="op-t">HEATMAP · ทุกเหรียญบนกระดาน</div><div id="nm-heat" class="nm-heat"></div><div id="nm-heat-cap" class="nm-heat-cap"></div></div><div class="nm-legend"><span><i style="background:#33c3b4"></i>ขาขึ้น</span><span><i style="background:#f0525b"></i>ขาลง</span><span><i style="background:#465464"></i>สภาพคล่องต่ำ</span><span><i style="background:#ffdc8c"></i>กระแสประสาท = คะแนนเปลี่ยนจากราคาสด</span><span><i style="background:#8ce6ff"></i>สัญญาณพื้นหลัง</span><span>ใกล้แกน "ซื้อ?" = ระบบอยากซื้อมาก (คะแนน + กำไร)</span><span><i style="background:none;border:1.5px solid #22c983"></i>ระบบคิดว่าเข้าได้</span><span><i style="background:none;border:1.5px solid #f2a93b"></i>รอ</span><span>ใย 5 เส้นรอบเซลล์ (ยาว = ดี): <b style="color:#33c3b4">แนวโน้ม</b> <b style="color:#f2a93b">Momentum</b> <b style="color:#78aaff">สภาพคล่อง</b> <b style="color:#c882ff">ผันผวน</b> <b style="color:#ff78a0">จุดเข้า</b></span></div></div>
         <aside class="orb-panel"><div class="op-t">ทะเบียนคะแนน (VERDICT)</div><div id="orb-reg"></div></aside>
       </div>
       <div class="orb-panel orb-detail" id="orb-detail"></div>
@@ -826,11 +842,12 @@ tr.cur td{background:color-mix(in srgb,var(--accent) 10%,transparent)}tr.best td
 </dialog>
 
 <script src="d3.min.js"></script>
-<script src="app.js?v=20261125j"></script>
+<script src="app.js?v=20261126a"></script>
 <script src="trade.js?v=20261125h"></script>
 <script src="library.js?v=20261125h"></script>
-<script src="orb.js?v=20261125v"></script>
-<script src="system.js?v=20261125h"></script>
+<script src="orb.js?v=20261126c"></script>
+<script src="system.js?v=20261125k"></script>
 <script src="scalp.js?v=1"></script>
 <script src="reason.js?v=1"></script>
+<script src="market.js?v=1"></script>
 </body></html>

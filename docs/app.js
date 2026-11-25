@@ -68,7 +68,7 @@
     open(0);
   }
   let chartDirty = false;
-  function redrawChart() { ['chartTitle', 'chartLive', 'candleTime', 'candles', 'o_close', 'o_high', 'o_low', 'o_vol', 'o_rsi', 'o_chg'].forEach(redraw); }
+  function redrawChart() { chartAt = Date.now(); ['chartTitle', 'chartLive', 'candleTime', 'candles', 'o_close', 'o_high', 'o_low', 'o_vol', 'o_rsi', 'o_chg'].forEach(redraw); }
   document.addEventListener('click', (e) => {
     const b = e.target.closest && e.target.closest('.seg button'); if (!b) return;
     document.querySelectorAll('.seg button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
@@ -171,13 +171,6 @@
     draw('o_chg', (el) => { const {chg} = live(); el.className = cls(chg); el.textContent = fmt.pct(chg); });
     draw('candles', candles);
     draw('tickChart', tickChart);
-    draw('marketRows', (tb) => {
-      tb.replaceChildren();
-      for (const r of D.market) { const tr = tb.insertRow(); tr.insertCell().textContent = r.symbol;
-        const a = tr.insertCell(); a.className = 'num'; a.textContent = fmt.px(r.last);
-        const b = tr.insertCell(); b.className = 'num ' + cls(r.change_24h_pct); b.textContent = fmt.pct(r.change_24h_pct);
-        const c = tr.insertCell(); c.className = 'num'; c.textContent = fmt.big(r.quote_volume_24h); }
-    });
     draw('events', (el) => {
       el.replaceChildren();
       if (!D.events.length) { el.append(mk('div', 'empty', 'ยังไม่มีการซื้อขาย — บอทตรวจทุกชั่วโมง และจะแสดงที่นี่เมื่อมีสัญญาณซื้อ/ขาย หรือ Sentinel ปฏิเสธ/หยุดการเทรด')); return; }
@@ -383,7 +376,9 @@
   }
   // live: WebSocket first (3 hosts), REST polling every 2 s as fallback — the page keeps moving even if a network blocks WebSockets
   let dirty = false, lastMsg = 0, wsStarted = false, wsLive = false, hoverUntil = 0, mode = 'off';
-  const hovering = () => Date.now() < hoverUntil;   // pause chart redraw only while the pointer is actually moving on it
+  let chartVisible = true, chartAt = 0;
+  if ('IntersectionObserver' in window) { const ce = document.querySelector('[data-draw="candles"]'); if (ce) new IntersectionObserver((es) => { chartVisible = es[0].isIntersecting; }).observe(ce); }
+  const hovering = () => Date.now() < hoverUntil || !chartVisible || Date.now() - chartAt < 3000;   // pause chart redraw only while the pointer is actually moving on it
   document.addEventListener('pointermove', (e) => { if (e.pointerType === 'mouse' && e.target.closest && e.target.closest('[data-draw="candles"]')) hoverUntil = Date.now() + 1500; });
   const REST = ['https://data-api.binance.vision', 'https://api.binance.com'];
   async function restGet(path) {
@@ -473,7 +468,7 @@
       let ws; try { ws = new WebSocket(hosts[attempt % hosts.length] + streams); } catch (e) { attempt++; setTimeout(open, 3000); return; }
       ws.onmessage = (ev) => {
         lastMsg = Date.now(); wsLive = true; mode = 'ws'; const d = JSON.parse(ev.data).data; if (!d) return;
-        if (d.e === '24hrMiniTicker') applyTicker(d.s.replace('USDT', ''), +d.c, +d.o, +d.q);
+        if (d.e === '24hrMiniTicker') { applyTicker(d.s.replace('USDT', ''), +d.c, +d.o, +d.q); const row = D.market.find((r) => r.symbol === d.s.replace('USDT', '')); if (row) { row.high24 = +d.h; row.low24 = +d.l; } }
         else if (d.e === 'kline') { const k = d.k; applyBtc4h({time: new Date(k.t).toISOString().slice(0, 16) + 'Z', open: +k.o, high: +k.h, low: +k.l, close: +k.c, quote_volume: +k.q, closed: k.x}); }
         dirty = true;
       };
@@ -510,7 +505,7 @@
     if (!D) return;
     liveChip();
     if (dirty) {
-      dirty = false; ['btc', 'gate', 'marketRows', 'chartLive', 'tickChart'].forEach(redraw);
+      dirty = false; ['btc', 'gate', 'chartLive', 'tickChart'].forEach(redraw);
       const el = document.querySelector('[data-draw="btc"]'), p = D.status[0].btc_close;
       if (el && lastBtc != null && p !== lastBtc) { el.classList.remove('flash-up', 'flash-down'); void el.offsetWidth; el.classList.add(p > lastBtc ? 'flash-up' : 'flash-down'); }
       lastBtc = p;

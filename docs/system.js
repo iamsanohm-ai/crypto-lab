@@ -44,36 +44,38 @@
     if (el) {
       el.replaceChildren();
       const live = window.CL.liveAge ? window.CL.liveAge() : null;
-      tile(el, live != null && live < 6000 ? 'ok' : live != null && live < 30000 ? 'warn' : 'bad', 'ราคาสดจาก Binance',
-        live == null ? 'กำลังเชื่อมต่อ' : live < 2000 ? 'สด' : ago(live), 'อัปเดตทุกวินาทีในเบราว์เซอร์นี้');
+      tile(el, live != null && live < 6000 ? 'ok' : live != null && live < 30000 ? 'warn' : 'bad', 'ราคาสด Binance',
+        live == null ? 'เชื่อมต่อ…' : live < 2000 ? 'สด' : ago(live), 'อัปเดตทุกวินาที');
       const lt = since(sys.last_bot_tick), lim = sys.tick_every_min * 60000;
-      tile(el, lt != null && lt < lim + 10 * 60000 ? 'ok' : lt != null && lt < 3 * lim ? 'warn' : 'bad', 'บอทเทรด + Sentinel',
-        'รอบถัดไป ' + cd(nextTick(sys.tick_every_min, sys.tick_offset_min)), `รันล่าสุด ${ago(lt)} · ทุก ${sys.tick_every_min} นาที`);
+      tile(el, lt != null && lt < lim + 10 * 60000 ? 'ok' : lt != null && lt < 3 * lim ? 'warn' : 'bad', 'บอทเทรด · รอบถัดไป',
+        cd(nextTick(sys.tick_every_min, sys.tick_offset_min)), 'รันล่าสุด ' + ago(lt));
       const st = since(S.generated_at);
-      tile(el, st != null && st < lim + 15 * 60000 ? 'ok' : 'warn', 'สแกนทั้งกระดาน + ORB', `${S.total || 0} เหรียญ`, `สแกนล่าสุด ${ago(st)}`);
-      tile(el, 'ok', 'แท่ง 4 ชม. ถัดไปปิดใน', cd(next4h()), 'กลยุทธ์ตัดสินใจเข้าซื้อเมื่อแท่งปิด');
+      tile(el, st != null && st < lim + 15 * 60000 ? 'ok' : 'warn', 'สแกนทั้งกระดาน', `${S.total || 0} เหรียญ`, ago(st));
+      tile(el, 'ok', 'แท่ง 4 ชม. ปิดใน', cd(next4h()), 'บอทตัดสินใจตอนแท่งปิด');
       const jt = since(sys.judge_at);
-      tile(el, jt != null && jt < 30 * 3600000 ? 'ok' : 'warn', 'Judge ทดสอบกลยุทธ์', 'อีก ' + cd(nextUtc(sys.judge_utc)), `ทดสอบล่าสุด ${ago(jt)} · ทุกคืน 22:43`);
+      tile(el, jt != null && jt < 30 * 3600000 ? 'ok' : 'warn', 'ทดสอบกลยุทธ์', cd(nextUtc(sys.judge_utc)), 'ทุกคืน 22:43');
       const bt = since(sys.brief_at);
-      tile(el, bt == null || bt < 30 * 3600000 ? 'ok' : 'warn', 'สรุปเช้าทาง Telegram', 'อีก ' + cd(nextUtc(sys.brief_utc)), bt == null ? 'ยังไม่มีบันทึกรอบล่าสุด' : `ส่งล่าสุด ${ago(bt)} · ทุกเช้า 07:05`);
+      tile(el, bt == null || bt < 30 * 3600000 ? 'ok' : 'warn', 'สรุปเช้า Telegram', cd(nextUtc(sys.brief_utc)), 'ทุกเช้า 07:05');
     }
     // GitHub Actions live
     const ga = $('#sys-runs');
     if (ga) {
       ga.replaceChildren();
-      if (!runs) { ga.append(mk('div', 'sys-s', runsErr ? 'ดึงสถานะจาก GitHub ไม่ได้: ' + runsErr : 'กำลังดึงสถานะจาก GitHub…')); }
+      if (!runs) { ga.append(mk('span', 'gh-sum', runsErr ? 'ดึงสถานะจาก GitHub ไม่ได้' : 'กำลังดึงสถานะ…')); }
       else {
-        const NAME = {'bot-loop': 'บอทเทรด (วนรอบ)', nightly: 'งานกลางคืน/สรุปเช้า', 'paper-bot': 'บอทเทรด (สำรอง)'};
-        for (const w of runs.slice(0, 6)) {
+        const NAME = {'bot-loop': 'บอทวนรอบ', nightly: 'งานกลางคืน', 'paper-bot': 'บอทสำรอง'};
+        const shown = runs.filter((w) => w.conclusion !== 'cancelled').slice(0, 4);   // ยกเลิก = รีสตาร์ทตามปกติ ไม่ต้องแสดง
+        const fails = runs.filter((w) => w.conclusion === 'failure' && since(w.updated_at) < 86400000).length;
+        for (const w of shown) {
           const running = w.status !== 'completed', okc = w.conclusion === 'success';
-          const row = mk('a', 'gh-run ' + (running ? 'run' : okc ? 'ok' : w.conclusion === 'cancelled' ? 'cxl' : 'bad'));
+          const row = mk('a', 'gh-run ' + (running ? 'run' : okc ? 'ok' : 'bad'));
           row.href = w.html_url; row.target = '_blank'; row.rel = 'noopener';
-          row.append(mk('span', 'gh-ic', running ? '' : okc ? '✓' : w.conclusion === 'cancelled' ? '–' : '✕'),
-            mk('span', 'gh-n', NAME[w.name] || w.name),
-            mk('span', 'gh-s', running ? `กำลังทำงาน · เริ่ม ${ago(since(w.run_started_at || w.created_at))}` : `${okc ? 'สำเร็จ' : w.conclusion === 'cancelled' ? 'ยกเลิก' : 'ล้มเหลว'} · ${ago(since(w.updated_at))}`));
+          row.title = running ? 'กำลังทำงาน' : okc ? 'สำเร็จ' : 'ล้มเหลว';
+          row.append(mk('span', 'gh-ic', running ? '' : okc ? '✓' : '✕'), mk('span', 'gh-n', NAME[w.name] || w.name),
+            mk('span', 'gh-s', running ? 'ทำงาน ' + ago(since(w.run_started_at || w.created_at)).replace('ที่แล้ว', '') : ago(since(w.updated_at))));
           ga.append(row);
         }
-        ga.append(mk('div', 'sys-s', `ดึงจาก GitHub ${ago(Date.now() - runsAt)}`));
+        ga.append(mk('span', 'gh-sum ' + (fails ? 'bad' : 'ok'), fails ? `ล้มเหลว ${fails} ครั้งใน 24 ชม.` : 'ไม่มีงานล้มเหลวใน 24 ชม.'));
       }
     }
     // activity feed
