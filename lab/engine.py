@@ -105,6 +105,9 @@ class Signals:
     max_hold: int | None = None       # จำนวนแท่งสูงสุด
     trail_atr: np.ndarray | None = None  # ถ้ามี: trailing stop = highest close - trail
     score: np.ndarray | None = None   # ใช้จัดลำดับเมื่อมีสัญญาณพร้อมกันหลายเหรียญ
+    breakeven_r: float | None = None  # ถ้ามี: เมื่อราคาปิด ≥ entry + R×ระยะ stop → เลื่อน stop มาที่ทุน (+ค่าธรรมเนียม)
+    stale_bars: int | None = None     # ถ้ามี: ถือครบ N แท่งแล้วยังไม่เคยปิดเหนือ entry + stale_r×R → ออก (เทรดที่ "ไม่ไปไหน")
+    stale_r: float = 0.5
 
 
 @dataclass
@@ -155,7 +158,7 @@ def simulate(m: Market, sig: Signals, start: int, end: int, costs: Costs = Costs
                 cash -= cost
                 pos[j] = {"t": t, "entry": px, "qty": qty, "cost": cost, "stop": px - dist,
                           "target": px + sig.target_r * dist if sig.target_r else None,
-                          "risk": qty * dist + 2 * c * notional, "hi": px}
+                          "risk": qty * dist + 2 * c * notional, "hi": px, "dist": dist}
         # 2) จัดการสถานะที่ถืออยู่
         for j in list(pos):
             p = pos[j]
@@ -173,8 +176,12 @@ def simulate(m: Market, sig: Signals, start: int, end: int, costs: Costs = Costs
                 close_pos(j, t, min(o, p["stop"]), "stop"); continue
             if p["target"] and h >= p["target"]:
                 close_pos(j, t, max(o, p["target"]), "target"); continue
+            if sig.stale_bars and t - p["t"] >= sig.stale_bars and p["hi"] < p["entry"] + sig.stale_r * p["dist"]:
+                close_pos(j, t, m.close[t, j], "stale"); continue
+            p["hi"] = max(p["hi"], m.close[t, j])
+            if sig.breakeven_r and p["hi"] >= p["entry"] + sig.breakeven_r * p["dist"]:
+                p["stop"] = max(p["stop"], p["entry"] * (1 + 2 * c))
             if sig.trail_atr is not None:
-                p["hi"] = max(p["hi"], m.close[t, j])
                 tr = sig.trail_atr[t, j]
                 if tr > 0:
                     p["stop"] = max(p["stop"], p["hi"] - tr)

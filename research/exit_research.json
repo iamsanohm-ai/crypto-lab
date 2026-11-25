@@ -1,0 +1,730 @@
+{
+ "generated_at": "2026-11-25T15:20:23+00:00",
+ "strategy": "keltner_trend",
+ "params": {
+  "k": 2.0,
+  "stop": 3.0
+ },
+ "period": [
+  "2023-11-01 00:00:00+00:00",
+  "2026-11-24 08:00:00+00:00"
+ ],
+ "variants": [
+  {
+   "variant": "base",
+   "label": "กฎปัจจุบัน",
+   "return_pct": 37.61,
+   "sharpe": 0.84,
+   "max_dd_pct": -16.02,
+   "trades": 574,
+   "win_pct": 35.0,
+   "avg_win_r": 1.33,
+   "avg_loss_r": -0.53,
+   "expectancy_r": 0.117,
+   "worst_r": -1.0,
+   "reasons": {
+    "signal": 377,
+    "stop": 197
+   }
+  },
+  {
+   "variant": "be_1r",
+   "label": "กำไรถึง 1R → เลื่อน stop มาที่ทุน",
+   "return_pct": 38.25,
+   "sharpe": 0.85,
+   "max_dd_pct": -15.8,
+   "trades": 574,
+   "win_pct": 34.7,
+   "avg_win_r": 1.34,
+   "avg_loss_r": -0.53,
+   "expectancy_r": 0.118,
+   "worst_r": -1.0,
+   "reasons": {
+    "signal": 374,
+    "stop": 200
+   }
+  },
+  {
+   "variant": "be_1.5r",
+   "label": "กำไรถึง 1.5R → เลื่อน stop มาที่ทุน",
+   "return_pct": 37.61,
+   "sharpe": 0.84,
+   "max_dd_pct": -16.02,
+   "trades": 574,
+   "win_pct": 35.0,
+   "avg_win_r": 1.33,
+   "avg_loss_r": -0.53,
+   "expectancy_r": 0.117,
+   "worst_r": -1.0,
+   "reasons": {
+    "signal": 377,
+    "stop": 197
+   }
+  },
+  {
+   "variant": "stale_12",
+   "label": "2 วันแล้วยังไม่ไปไหน → ออก",
+   "return_pct": 28.45,
+   "sharpe": 0.68,
+   "max_dd_pct": -18.35,
+   "trades": 633,
+   "win_pct": 35.9,
+   "avg_win_r": 1.16,
+   "avg_loss_r": -0.52,
+   "expectancy_r": 0.085,
+   "worst_r": -1.0,
+   "reasons": {
+    "signal": 311,
+    "stop": 196,
+    "stale": 126
+   }
+  },
+  {
+   "variant": "be_1r+stale",
+   "label": "เลื่อนมาทุนที่ 1R + ตัดเทรดที่ไม่ไปไหน",
+   "return_pct": 28.18,
+   "sharpe": 0.67,
+   "max_dd_pct": -17.98,
+   "trades": 634,
+   "win_pct": 35.3,
+   "avg_win_r": 1.17,
+   "avg_loss_r": -0.51,
+   "expectancy_r": 0.084,
+   "worst_r": -1.0,
+   "reasons": {
+    "signal": 307,
+    "stop": 200,
+    "stale": 127
+   }
+  },
+  {
+   "variant": "stop_2atr",
+   "label": "stop แคบลง (2×ATR)",
+   "return_pct": 57.54,
+   "sharpe": 0.86,
+   "max_dd_pct": -22.03,
+   "trades": 603,
+   "win_pct": 32.8,
+   "avg_win_r": 2.06,
+   "avg_loss_r": -0.75,
+   "expectancy_r": 0.176,
+   "worst_r": -1.0,
+   "reasons": {
+    "stop": 319,
+    "signal": 284
+   }
+  }
+ ],
+ "best": "be_1r",
+ "mae": {
+  "winners": 201,
+  "winner_mae_median_pct": -1.54,
+  "winner_mae_p90_pct": -5.52,
+  "median_bars_win": 24,
+  "median_bars_loss": 9
+ },
+ "per_coin": {
+  "AAVEUSDT": {
+   "trades": 1,
+   "win_pct": 100.0,
+   "expectancy_r": 0.46
+  },
+  "ADAUSDT": {
+   "trades": 14,
+   "win_pct": 35.7,
+   "expectancy_r": 0.415
+  },
+  "ALTUSDT": {
+   "trades": 2,
+   "win_pct": 50.0,
+   "expectancy_r": -0.084
+  },
+  "ARBUSDT": {
+   "trades": 13,
+   "win_pct": 30.8,
+   "expectancy_r": -0.388
+  },
+  "ASTERUSDT": {
+   "trades": 1,
+   "win_pct": 0.0,
+   "expectancy_r": -0.842
+  },
+  "AVAXUSDT": {
+   "trades": 22,
+   "win_pct": 31.8,
+   "expectancy_r": -0.186
+  },
+  "BCHUSDT": {
+   "trades": 2,
+   "win_pct": 100.0,
+   "expectancy_r": 0.226
+  },
+  "BERAUSDT": {
+   "trades": 1,
+   "win_pct": 100.0,
+   "expectancy_r": 0.124
+  },
+  "BIOUSDT": {
+   "trades": 1,
+   "win_pct": 0.0,
+   "expectancy_r": -0.627
+  },
+  "BNBUSDT": {
+   "trades": 38,
+   "win_pct": 26.3,
+   "expectancy_r": 0.021
+  },
+  "BOMEUSDT": {
+   "trades": 4,
+   "win_pct": 0.0,
+   "expectancy_r": -0.374
+  },
+  "BONKUSDT": {
+   "trades": 2,
+   "win_pct": 50.0,
+   "expectancy_r": 0.111
+  },
+  "BTCUSDT": {
+   "trades": 58,
+   "win_pct": 31.0,
+   "expectancy_r": 0.243
+  },
+  "CAKEUSDT": {
+   "trades": 1,
+   "win_pct": 100.0,
+   "expectancy_r": 3.688
+  },
+  "DOGEUSDT": {
+   "trades": 29,
+   "win_pct": 41.4,
+   "expectancy_r": 0.171
+  },
+  "DYDXUSDT": {
+   "trades": 1,
+   "win_pct": 0.0,
+   "expectancy_r": -0.848
+  },
+  "EIGENUSDT": {
+   "trades": 1,
+   "win_pct": 100.0,
+   "expectancy_r": 0.843
+  },
+  "ENAUSDT": {
+   "trades": 17,
+   "win_pct": 29.4,
+   "expectancy_r": -0.257
+  },
+  "EOSUSDT": {
+   "trades": 2,
+   "win_pct": 50.0,
+   "expectancy_r": 0.512
+  },
+  "ETHFIUSDT": {
+   "trades": 1,
+   "win_pct": 100.0,
+   "expectancy_r": 1.325
+  },
+  "ETHUSDT": {
+   "trades": 48,
+   "win_pct": 39.6,
+   "expectancy_r": 0.218
+  },
+  "FETUSDT": {
+   "trades": 2,
+   "win_pct": 100.0,
+   "expectancy_r": 0.567
+  },
+  "FILUSDT": {
+   "trades": 2,
+   "win_pct": 0.0,
+   "expectancy_r": -0.395
+  },
+  "FLOKIUSDT": {
+   "trades": 4,
+   "win_pct": 50.0,
+   "expectancy_r": -0.258
+  },
+  "FTMUSDT": {
+   "trades": 2,
+   "win_pct": 50.0,
+   "expectancy_r": -0.289
+  },
+  "FTTUSDT": {
+   "trades": 1,
+   "win_pct": 0.0,
+   "expectancy_r": -0.999
+  },
+  "GALAUSDT": {
+   "trades": 1,
+   "win_pct": 0.0,
+   "expectancy_r": -0.238
+  },
+  "HBARUSDT": {
+   "trades": 1,
+   "win_pct": 100.0,
+   "expectancy_r": 1.109
+  },
+  "INJUSDT": {
+   "trades": 5,
+   "win_pct": 0.0,
+   "expectancy_r": -0.496
+  },
+  "JASMYUSDT": {
+   "trades": 3,
+   "win_pct": 33.3,
+   "expectancy_r": -0.108
+  },
+  "KITEUSDT": {
+   "trades": 1,
+   "win_pct": 100.0,
+   "expectancy_r": 0.925
+  },
+  "LINKUSDT": {
+   "trades": 19,
+   "win_pct": 42.1,
+   "expectancy_r": 0.262
+  },
+  "LTCUSDT": {
+   "trades": 5,
+   "win_pct": 20.0,
+   "expectancy_r": -0.1
+  },
+  "MANTAUSDT": {
+   "trades": 2,
+   "win_pct": 0.0,
+   "expectancy_r": -0.362
+  },
+  "MATICUSDT": {
+   "trades": 7,
+   "win_pct": 42.9,
+   "expectancy_r": 0.166
+  },
+  "NEARUSDT": {
+   "trades": 13,
+   "win_pct": 30.8,
+   "expectancy_r": 0.208
+  },
+  "NEIROUSDT": {
+   "trades": 1,
+   "win_pct": 100.0,
+   "expectancy_r": 0.413
+  },
+  "OPNUSDT": {
+   "trades": 1,
+   "win_pct": 0.0,
+   "expectancy_r": -0.166
+  },
+  "OPUSDT": {
+   "trades": 3,
+   "win_pct": 33.3,
+   "expectancy_r": 0.524
+  },
+  "ORDIUSDT": {
+   "trades": 8,
+   "win_pct": 25.0,
+   "expectancy_r": -0.335
+  },
+  "PENGUUSDT": {
+   "trades": 1,
+   "win_pct": 0.0,
+   "expectancy_r": -0.368
+  },
+  "PEOPLEUSDT": {
+   "trades": 3,
+   "win_pct": 66.7,
+   "expectancy_r": 0.161
+  },
+  "PEPEUSDT": {
+   "trades": 20,
+   "win_pct": 55.0,
+   "expectancy_r": 0.523
+  },
+  "PNUTUSDT": {
+   "trades": 2,
+   "win_pct": 50.0,
+   "expectancy_r": -0.32
+  },
+  "PUMPUSDT": {
+   "trades": 3,
+   "win_pct": 33.3,
+   "expectancy_r": 0.283
+  },
+  "PYTHUSDT": {
+   "trades": 1,
+   "win_pct": 0.0,
+   "expectancy_r": -0.316
+  },
+  "RNDRUSDT": {
+   "trades": 1,
+   "win_pct": 0.0,
+   "expectancy_r": -0.421
+  },
+  "ROBOUSDT": {
+   "trades": 1,
+   "win_pct": 0.0,
+   "expectancy_r": -0.537
+  },
+  "RUNEUSDT": {
+   "trades": 8,
+   "win_pct": 62.5,
+   "expectancy_r": 0.062
+  },
+  "SEIUSDT": {
+   "trades": 9,
+   "win_pct": 22.2,
+   "expectancy_r": -0.004
+  },
+  "SHIBUSDT": {
+   "trades": 7,
+   "win_pct": 14.3,
+   "expectancy_r": -0.387
+  },
+  "SOLUSDT": {
+   "trades": 45,
+   "win_pct": 46.7,
+   "expectancy_r": 0.237
+  },
+  "SUIUSDT": {
+   "trades": 22,
+   "win_pct": 40.9,
+   "expectancy_r": 0.438
+  },
+  "SUSDT": {
+   "trades": 2,
+   "win_pct": 0.0,
+   "expectancy_r": -0.409
+  },
+  "TAOUSDT": {
+   "trades": 6,
+   "win_pct": 16.7,
+   "expectancy_r": -0.407
+  },
+  "TIAUSDT": {
+   "trades": 3,
+   "win_pct": 66.7,
+   "expectancy_r": -0.003
+  },
+  "TONUSDT": {
+   "trades": 1,
+   "win_pct": 0.0,
+   "expectancy_r": -0.705
+  },
+  "TRBUSDT": {
+   "trades": 2,
+   "win_pct": 0.0,
+   "expectancy_r": -0.932
+  },
+  "TRUMPUSDT": {
+   "trades": 2,
+   "win_pct": 0.0,
+   "expectancy_r": -0.7
+  },
+  "TRXUSDT": {
+   "trades": 33,
+   "win_pct": 27.3,
+   "expectancy_r": -0.161
+  },
+  "TUTUSDT": {
+   "trades": 1,
+   "win_pct": 0.0,
+   "expectancy_r": -0.617
+  },
+  "UNIUSDT": {
+   "trades": 2,
+   "win_pct": 50.0,
+   "expectancy_r": -0.136
+  },
+  "WIFUSDT": {
+   "trades": 12,
+   "win_pct": 33.3,
+   "expectancy_r": -0.076
+  },
+  "WLDUSDT": {
+   "trades": 7,
+   "win_pct": 14.3,
+   "expectancy_r": -0.444
+  },
+  "XAIUSDT": {
+   "trades": 2,
+   "win_pct": 50.0,
+   "expectancy_r": -0.086
+  },
+  "XPLUSDT": {
+   "trades": 1,
+   "win_pct": 0.0,
+   "expectancy_r": -0.183
+  },
+  "XRPUSDT": {
+   "trades": 25,
+   "win_pct": 28.0,
+   "expectancy_r": 0.712
+  },
+  "ZECUSDT": {
+   "trades": 10,
+   "win_pct": 40.0,
+   "expectancy_r": 1.049
+  },
+  "ZENUSDT": {
+   "trades": 1,
+   "win_pct": 0.0,
+   "expectancy_r": -0.675
+  },
+  "ZROUSDT": {
+   "trades": 1,
+   "win_pct": 0.0,
+   "expectancy_r": -0.485
+  }
+ },
+ "recent_trades": [
+  {
+   "symbol": "SUIUSDT",
+   "entry_time": "2026-09-20 20:00:00+00:00",
+   "exit_time": "2026-09-23 16:00:00+00:00",
+   "entry": 0.8805,
+   "exit": 0.9553,
+   "r": 0.8325,
+   "bars": 17,
+   "reason": "signal"
+  },
+  {
+   "symbol": "TUTUSDT",
+   "entry_time": "2026-09-24 12:00:00+00:00",
+   "exit_time": "2026-09-26 04:00:00+00:00",
+   "entry": 0.0278,
+   "exit": 0.0252,
+   "r": -0.6169,
+   "bars": 10,
+   "reason": "signal"
+  },
+  {
+   "symbol": "XPLUSDT",
+   "entry_time": "2026-09-24 20:00:00+00:00",
+   "exit_time": "2026-09-27 16:00:00+00:00",
+   "entry": 0.1074,
+   "exit": 0.1048,
+   "r": -0.1828,
+   "bars": 17,
+   "reason": "signal"
+  },
+  {
+   "symbol": "LINKUSDT",
+   "entry_time": "2026-09-25 12:00:00+00:00",
+   "exit_time": "2026-09-28 08:00:00+00:00",
+   "entry": 14.089,
+   "exit": 13.673,
+   "r": -0.4175,
+   "bars": 17,
+   "reason": "signal"
+  },
+  {
+   "symbol": "SUIUSDT",
+   "entry_time": "2026-09-25 12:00:00+00:00",
+   "exit_time": "2026-09-28 12:00:00+00:00",
+   "entry": 1.1395,
+   "exit": 1.1337,
+   "r": -0.0719,
+   "bars": 18,
+   "reason": "stop"
+  },
+  {
+   "symbol": "NEARUSDT",
+   "entry_time": "2026-09-17 04:00:00+00:00",
+   "exit_time": "2026-09-28 16:00:00+00:00",
+   "entry": 2.697,
+   "exit": 4.907,
+   "r": 7.1554,
+   "bars": 69,
+   "reason": "signal"
+  },
+  {
+   "symbol": "ENAUSDT",
+   "entry_time": "2026-09-27 20:00:00+00:00",
+   "exit_time": "2026-09-28 16:00:00+00:00",
+   "entry": 0.2864,
+   "exit": 0.2589,
+   "r": -0.7939,
+   "bars": 5,
+   "reason": "signal"
+  },
+  {
+   "symbol": "LINKUSDT",
+   "entry_time": "2026-09-28 20:00:00+00:00",
+   "exit_time": "2026-09-30 04:00:00+00:00",
+   "entry": 15.1,
+   "exit": 14.373,
+   "r": -0.6043,
+   "bars": 8,
+   "reason": "signal"
+  },
+  {
+   "symbol": "TRXUSDT",
+   "entry_time": "2026-09-30 12:00:00+00:00",
+   "exit_time": "2026-10-01 08:00:00+00:00",
+   "entry": 0.3404,
+   "exit": 0.3356,
+   "r": -0.9717,
+   "bars": 5,
+   "reason": "stop"
+  },
+  {
+   "symbol": "PUMPUSDT",
+   "entry_time": "2026-09-26 08:00:00+00:00",
+   "exit_time": "2026-10-02 20:00:00+00:00",
+   "entry": 0.0046,
+   "exit": 0.0054,
+   "r": 1.4313,
+   "bars": 39,
+   "reason": "signal"
+  },
+  {
+   "symbol": "BTCUSDT",
+   "entry_time": "2026-10-02 12:00:00+00:00",
+   "exit_time": "2026-10-02 20:00:00+00:00",
+   "entry": 86424.85,
+   "exit": 84315.27,
+   "r": -0.797,
+   "bars": 2,
+   "reason": "signal"
+  },
+  {
+   "symbol": "WLDUSDT",
+   "entry_time": "2026-10-02 16:00:00+00:00",
+   "exit_time": "2026-10-05 16:00:00+00:00",
+   "entry": 0.5753,
+   "exit": 0.5666,
+   "r": -0.1322,
+   "bars": 18,
+   "reason": "signal"
+  },
+  {
+   "symbol": "BTCUSDT",
+   "entry_time": "2026-10-05 00:00:00+00:00",
+   "exit_time": "2026-10-05 16:00:00+00:00",
+   "entry": 86530.0,
+   "exit": 85269.79,
+   "r": -0.632,
+   "bars": 4,
+   "reason": "signal"
+  },
+  {
+   "symbol": "BNBUSDT",
+   "entry_time": "2026-10-03 20:00:00+00:00",
+   "exit_time": "2026-10-06 04:00:00+00:00",
+   "entry": 789.71,
+   "exit": 780.87,
+   "r": -0.3959,
+   "bars": 14,
+   "reason": "signal"
+  },
+  {
+   "symbol": "ADAUSDT",
+   "entry_time": "2026-10-05 04:00:00+00:00",
+   "exit_time": "2026-10-07 00:00:00+00:00",
+   "entry": 0.2688,
+   "exit": 0.2571,
+   "r": -0.5614,
+   "bars": 11,
+   "reason": "stop"
+  },
+  {
+   "symbol": "ARBUSDT",
+   "entry_time": "2026-10-11 12:00:00+00:00",
+   "exit_time": "2026-10-12 16:00:00+00:00",
+   "entry": 0.201,
+   "exit": 0.1885,
+   "r": -0.7045,
+   "bars": 7,
+   "reason": "signal"
+  },
+  {
+   "symbol": "ENAUSDT",
+   "entry_time": "2026-10-11 20:00:00+00:00",
+   "exit_time": "2026-10-12 16:00:00+00:00",
+   "entry": 0.242,
+   "exit": 0.2217,
+   "r": -0.9015,
+   "bars": 5,
+   "reason": "signal"
+  },
+  {
+   "symbol": "NEARUSDT",
+   "entry_time": "2026-10-11 16:00:00+00:00",
+   "exit_time": "2026-10-12 20:00:00+00:00",
+   "entry": 5.791,
+   "exit": 5.1969,
+   "r": -0.8591,
+   "bars": 7,
+   "reason": "stop"
+  },
+  {
+   "symbol": "ENAUSDT",
+   "entry_time": "2026-10-21 12:00:00+00:00",
+   "exit_time": "2026-10-22 04:00:00+00:00",
+   "entry": 0.2095,
+   "exit": 0.1974,
+   "r": -0.5473,
+   "bars": 4,
+   "reason": "stop"
+  },
+  {
+   "symbol": "WLDUSDT",
+   "entry_time": "2026-10-20 16:00:00+00:00",
+   "exit_time": "2026-10-22 08:00:00+00:00",
+   "entry": 0.5631,
+   "exit": 0.5401,
+   "r": -0.3574,
+   "bars": 10,
+   "reason": "signal"
+  },
+  {
+   "symbol": "BNBUSDT",
+   "entry_time": "2026-10-21 08:00:00+00:00",
+   "exit_time": "2026-10-22 08:00:00+00:00",
+   "entry": 747.47,
+   "exit": 737.32,
+   "r": -0.5325,
+   "bars": 6,
+   "reason": "signal"
+  },
+  {
+   "symbol": "ZECUSDT",
+   "entry_time": "2026-10-21 12:00:00+00:00",
+   "exit_time": "2026-10-22 12:00:00+00:00",
+   "entry": 1286.4,
+   "exit": 1218.3169,
+   "r": -0.5104,
+   "bars": 6,
+   "reason": "stop"
+  },
+  {
+   "symbol": "PEPEUSDT",
+   "entry_time": "2026-10-20 16:00:00+00:00",
+   "exit_time": "2026-10-22 20:00:00+00:00",
+   "entry": 0.0,
+   "exit": 0.0,
+   "r": -0.3652,
+   "bars": 13,
+   "reason": "signal"
+  },
+  {
+   "symbol": "PEPEUSDT",
+   "entry_time": "2026-10-29 16:00:00+00:00",
+   "exit_time": "2026-10-29 20:00:00+00:00",
+   "entry": 0.0,
+   "exit": 0.0,
+   "r": -0.9985,
+   "bars": 1,
+   "reason": "stop"
+  },
+  {
+   "symbol": "BTCUSDT",
+   "entry_time": "2026-11-05 00:00:00+00:00",
+   "exit_time": "2026-11-05 12:00:00+00:00",
+   "entry": 80504.01,
+   "exit": 77856.3193,
+   "r": -0.9262,
+   "bars": 3,
+   "reason": "stop"
+  }
+ ]
+}
