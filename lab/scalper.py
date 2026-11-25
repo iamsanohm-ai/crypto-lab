@@ -1,0 +1,225 @@
+"""เทรดเร็ว (scalp) แบบ paper บนราคาจริงของ Binance — วิ่งต่อเนื่องตลอดเวลาที่ bot-loop ทำงาน.
+
+ระบบ "เรียนรู้" แบบซื่อตรง:
+  1. ทุกสัญญาณถูกเทรดแบบ "เงา" (shadow) เสมอ — ไม่ใช้เงิน แต่จดผลจริงจากราคาจริง หลังหักค่าธรรมเนียม
+  2. ใช้เงิน (paper) ก็ต่อเมื่อผลเงา 30 ครั้งล่าสุด "เฉลี่ยเป็นบวกหลังค่าธรรมเนียม" เท่านั้น — ถ้าตลาดเปลี่ยนจนขาดทุน ระบบหยุดใช้เงินเอง
+  3. Sentinel: ขาดทุน -3% ในวัน หรือแพ้ติด 3 ครั้ง หรือราคาค้าง → หยุดถึงวันถัดไป (paper)
+ราคาเข้า/ออกเป็นการจำลอง (ราคาล่าสุด ± slippage 0.05% + ค่าธรรมเนียม 0.1% ต่อข้าง) — ไม่ใช่การจับคู่จริงในตลาด
+ไม่มีการส่งออเดอร์จริง: เงินจริงต้องให้เจ้าของพิมพ์ "go live" และอนุมัติทุกออเดอร์
+
+python -m lab.scalper --dir /tmp/scalp --minutes 340
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import time
+from datetime import datetime, timezone
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+
+from lab.data import API, ROOT, _get, now_iso
+from lab.scalp_research import COINS, FEE, SLIP, ema, rsi, signals
+
+CAPITAL, RISK, MAX_NOTIONAL, MAX_POS = 500.0, 0.005, 125.0, 3
+GATE_N, GATE_MIN = 30, 0.0005
+POLL = 15
+
+
+def pick() -> dict:
+    f = ROOT / "research" / "scalp_research.json"
+    r = json.loads(f.read_text())["pick"] if f.exists() else None
+    return r or {"strategy": "momo_burst", "params": {"n": 36, "k": 3.0}, "exit": {"tp": 0.025, "sl": 0.012, "hold": 12}}
+
+
+def prices() -> dict[str, float]:
+    syms = json.dumps([c + "USDT" for c in COINS], separators=(",", ":"))
+    raw = _get(f"{API}/ticker/price?symbols={syms}")
+    return {d["symbol"][:-4]: float(d["price"]) for d in json.loads(raw)}
+
+
+def bars5(sym: str) -> pd.DataFrame:
+    raw = json.loads(_get(f"{API}/klines?symbol={sym}USDT&interval=5m&limit=260"))
+    df = pd.DataFrame(raw, columns=list(range(12)))
+    df = pd.DataFrame({"time": df[0].astype("int64"), "open": df[1].astype(float), "high": df[2].astype(float),
+                       "low": df[3].astype(float), "close": df[4].astype(float), "volume": df[5].astype(float)})
+    return df[df.time + 300_000 <= time.time() * 1000].reset_index(drop=True)   # เฉพาะแท่งที่ปิดแล้ว
+
+
+def note(df: pd.DataFrame, P: dict) -> dict:
+    """สถานะของเหรียญตามเงื่อนไขกลยุทธ์ (ให้หน้าเว็บอ่านง่าย)."""
+    c = df.close.to_numpy(); e200 = ema(c, 200)[-1]
+    out = {"trend_up": bool(c[-1] > e200), "vs_ema200_pct": round((c[-1] / e200 - 1) * 100, 2)}
+    s, p = P["strategy"], P["params"]
+    if s == "momo_burst":
+        hh = df.high.iloc[-p["n"] - 1:-1].max(); va = df.volume.iloc[-21:-1].mean()
+        out.update(to_break_pct=round((hh / c[-1] - 1) * 100, 2), vol_x=round(float(df.volume.iloc[-1] / va), 2) if va else None)
+    elif s == "rsi2_dip":
+        out.update(rsi2=round(float(rsi(c, 2)[-1]), 1))
+    return out
+
+
+class Scalper:
+    def __init__(self, d: Path):
+        self.f = d / "scalper.json"
+        seed = self.f if self.f.exists() else ROOT / "state" / "scalper.json"
+        self.s = json.loads(seed.read_text()) if seed.exists() else {
+            "capital": CAPITAL, "cash": CAPITAL, "positions": [], "shadow": [], "shadow_closed": [], "trades": [],
+            "curve": [], "events": [], "started_at": now_iso(),
+            "sentinel": {"day": None, "day_start_equity": CAPITAL, "loss_streak": 0, "halted": None}}
+        self.P = pick(); self.s["model"] = self.P
+        self.px: dict[str, float] = {}; self.px_at = 0.0; self.last_bar = self.s.get("last_bar") or 0
+
+    # ---------- helpers ----------
+    def ev(self, text: str, kind: str = "info"):
+        self.s["events"] = ([{"t": now_iso(), "text": text, "kind": kind}] + self.s["events"])[:80]
+        print(now_iso(), text, flush=True)
+        if kind in ("buy", "sell", "halt"):
+            try:
+                from lab.notifier import Notifier
+                Notifier(telegram=True).send("[Crypto Lab · เทรดเร็ว paper] " + text)
+            except Exception:
+                pass
+
+    def equity(self) -> float:
+        return self.s["cash"] + sum(p["qty"] * self.px.get(p["sym"], p["entry"]) for p in self.s["positions"])
+
+    def gate(self) -> dict:
+        last = [x["net_pct"] for x in self.s["shadow_closed"][:GATE_N]]
+        avg = float(np.mean(last)) / 100 if last else None
+        g = {"n": len(last), "need": GATE_N, "avg_pct": None if avg is None else round(avg * 100, 3),
+             "win_pct": round(float(np.mean([x > 0 for x in last]) * 100), 1) if last else None,
+             "open": len(last) >= GATE_N and avg > GATE_MIN}
+        self.s["gate"] = g
+        return g
+
+    def sentinel_ok(self) -> bool:
+        S = self.s["sentinel"]; day = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        if S["day"] != day:
+            S.update(day=day, day_start_equity=round(self.equity(), 4))
+            if S["halted"] and S["halted"].get("resume_on", "") <= day:
+                S["halted"] = None; S["loss_streak"] = 0; self.ev("Sentinel: วันใหม่ กลับมาเทรดได้", "info")
+        if S["halted"]:
+            return False
+        dd = self.equity() / S["day_start_equity"] - 1
+        why = f"ขาดทุนวันนี้ {dd:.2%} ถึงเพดาน -3%" if dd <= -0.03 else f"แพ้ติดกัน {S['loss_streak']} ครั้ง" if S["loss_streak"] >= 3 else None
+        if why:
+            nxt = (pd.Timestamp(day) + pd.Timedelta(days=1)).strftime("%Y-%m-%d")
+            S["halted"] = {"at": now_iso(), "reason": why, "resume_on": nxt}
+            self.ev(f"Sentinel หยุดเทรดเงิน: {why} — กลับมาวันพรุ่งนี้ 07:00 น.", "halt")
+            return False
+        return True
+
+    # ---------- exits ----------
+    def _close(self, p: dict, px: float, reason: str, shadow: bool):
+        exit_px = px * (1 - SLIP)
+        net = (exit_px * (1 - FEE)) / (p["entry"] * (1 + FEE)) - 1
+        rec = {"sym": p["sym"], "entry": p["entry"], "exit": round(exit_px, 8), "net_pct": round(net * 100, 3), "reason": reason,
+               "opened_at": p["opened_at"], "closed_at": now_iso()}
+        if shadow:
+            self.s["shadow_closed"] = ([rec] + self.s["shadow_closed"])[:300]
+            return
+        proceeds = p["qty"] * exit_px * (1 - FEE)
+        pnl = proceeds - p["cost"]
+        self.s["cash"] += proceeds
+        rec.update(qty=p["qty"], pnl_usdt=round(pnl, 4))
+        self.s["trades"] = ([rec] + self.s["trades"])[:300]
+        S = self.s["sentinel"]; S["loss_streak"] = 0 if pnl > 0 else S["loss_streak"] + 1
+        TH = {"tp": "ถึงเป้ากำไร", "sl": "โดน stop", "time": "ครบเวลาถือ"}
+        self.ev(f"ขาย {p['sym']} ที่ {exit_px:.6g} ({TH.get(reason, reason)}) · {'+' if pnl >= 0 else ''}{pnl:.2f} USDT ({net * 100:+.2f}%)", "sell")
+
+    def check_exits(self, highs_lows: dict | None = None):
+        now = time.time()
+        for shadow, key in ((True, "shadow"), (False, "positions")):
+            keep = []
+            for p in self.s[key]:
+                px = self.px.get(p["sym"]); hit = None
+                hl = (highs_lows or {}).get(p["sym"])
+                if hl and hl[2] > p["t0"]:                      # แท่ง 5 นาทีที่เพิ่งปิด: เช็ค low ก่อน (ระวัง)
+                    if hl[1] <= p["sl"]: hit = (p["sl"], "sl")
+                    elif hl[0] >= p["tp"]: hit = (p["tp"], "tp")
+                if not hit and px:
+                    if px <= p["sl"]: hit = (px, "sl")
+                    elif px >= p["tp"]: hit = (px, "tp")
+                    elif now >= p["deadline"]: hit = (px, "time")
+                if hit: self._close(p, hit[0], hit[1], shadow)
+                else: keep.append(p)
+            self.s[key] = keep
+
+    # ---------- entries ----------
+    def on_bar(self):
+        ex = self.P["exit"]; watch = {}; hl = {}; fired = []
+        for sym in COINS:
+            try:
+                df = bars5(sym)
+            except Exception as e:
+                self.ev(f"ดึงแท่ง {sym} ไม่ได้: {e}", "warn"); continue
+            sig = signals(df, self.P["strategy"], self.P["params"])
+            last = df.iloc[-1]; hl[sym] = (float(last.high), float(last.low), int(last.time) / 1000)
+            watch[sym] = {"signal": bool(sig[-1]), **note(df, self.P)}
+            if sig[-1]: fired.append(sym)
+        self.check_exits(hl)
+        self.s["watch"] = watch
+        g = self.gate(); ok = self.sentinel_ok()
+        for sym in fired:
+            px = self.px.get(sym)
+            if not px: continue
+            entry = px * (1 + SLIP); t0 = time.time()
+            base = {"sym": sym, "entry": round(entry, 8), "tp": entry * (1 + ex["tp"]), "sl": entry * (1 - ex["sl"]),
+                    "opened_at": now_iso(), "t0": t0, "deadline": t0 + ex["hold"] * 300}
+            if not any(p["sym"] == sym for p in self.s["shadow"]):
+                self.s["shadow"].append(dict(base))
+            held = any(p["sym"] == sym for p in self.s["positions"])
+            if not g["open"]:
+                self.ev(f"สัญญาณ {sym} → เทรดเงา (ยังไม่ใช้เงิน: ผลเงาล่าสุด {g['n']}/{GATE_N} ครั้ง เฉลี่ย {g['avg_pct']}%)", "info"); continue
+            if not ok or held or len(self.s["positions"]) >= MAX_POS: continue
+            eq = self.equity(); notional = min(eq * RISK / ex["sl"], MAX_NOTIONAL, self.s["cash"] * 0.98)
+            if notional < 5: continue
+            qty = notional / (entry * (1 + FEE)); cost = qty * entry * (1 + FEE)
+            self.s["cash"] -= cost
+            self.s["positions"].append({**base, "qty": qty, "cost": cost})
+            self.ev(f"ซื้อ {sym} {notional:.2f} USDT ที่ {entry:.6g} · เป้า +{ex['tp']:.1%} / stop -{ex['sl']:.1%}", "buy")
+
+    def save(self):
+        eq = self.equity()
+        self.s["equity"] = round(eq, 4); self.s["prices"] = self.px; self.s["updated_at"] = now_iso(); self.s["last_bar"] = self.last_bar
+        tr = self.s["trades"]
+        self.s["stats"] = {"trades": len(tr), "wins": sum(t["pnl_usdt"] > 0 for t in tr),
+                           "pnl_usdt": round(sum(t["pnl_usdt"] for t in tr), 4), "return_pct": round((eq / self.s["capital"] - 1) * 100, 3),
+                           "shadow_trades": len(self.s["shadow_closed"])}
+        tmp = self.f.with_suffix(".tmp"); tmp.write_text(json.dumps(self.s, ensure_ascii=False, default=float)); tmp.replace(self.f)
+
+    def step(self):
+        try:
+            self.px = prices(); self.px_at = time.time()
+        except Exception as e:
+            self.ev(f"ราคาค้าง/ดึงไม่ได้: {e}", "warn")
+        if time.time() - self.px_at > 120:
+            return
+        bar = int(time.time() // 300)
+        if bar != self.last_bar:
+            self.last_bar = bar; self.on_bar()
+            c = self.s["curve"]; c.append([int(time.time()), round(self.equity(), 4)]); self.s["curve"] = c[-3000:]
+        else:
+            self.check_exits()
+        self.save()
+
+
+def main():
+    ap = argparse.ArgumentParser(); ap.add_argument("--dir", default=str(ROOT / "state")); ap.add_argument("--minutes", type=float, default=1)
+    a = ap.parse_args(); d = Path(a.dir); d.mkdir(parents=True, exist_ok=True)
+    bot = Scalper(d); end = time.time() + a.minutes * 60
+    bot.ev(f"เริ่มเทรดเร็ว (paper) · กลยุทธ์ {bot.P['strategy']} {bot.P['params']} · เป้า +{bot.P['exit']['tp']:.1%} stop -{bot.P['exit']['sl']:.1%} ถือไม่เกิน {bot.P['exit']['hold'] * 5} นาที")
+    while time.time() < end:
+        t = time.time()
+        try:
+            bot.step()
+        except Exception as e:
+            print("step error", e, flush=True)
+        time.sleep(max(1, POLL - (time.time() - t)))
+
+
+if __name__ == "__main__":
+    main()

@@ -30,20 +30,36 @@ jobs:
           git config user.name "crypto-lab-bot"
           git config user.email "crypto-lab-bot@users.noreply.github.com"
           END=$(( $(date +%s) + 340*60 ))
+          # เทรดเร็ว (paper) วิ่งเบื้องหลังตลอดรอบ: เช็คราคาทุก 15 วินาที เก็บไฟล์ไว้นอก repo แล้ว sync ทุก 5 นาที
+          SC="$RUNNER_TEMP/scalp"; mkdir -p "$SC"; cp state/scalper.json "$SC/" 2>/dev/null || true
+          nohup python -m lab.scalper --dir "$SC" --minutes 342 > "$SC/log.txt" 2>&1 &
+          sync_scalp() { [ -f "$SC/scalper.json" ] && cp "$SC/scalper.json" state/scalper.json && cp "$SC/scalper.json" docs/scalper.json; }
           while [ "$(date +%s)" -lt "$END" ]; do
             git fetch -q origin main && git reset -q --hard origin/main
+            sync_scalp
             python -m lab.live || echo "tick failed"
             python -m lab.scanner || echo "scanner failed"
             python -m lab.dashboard || echo "dashboard failed"
-            git add state ledger dashboard/data.json docs/data.json docs/heartbeat.json
+            git add state ledger dashboard/data.json docs/data.json docs/heartbeat.json docs/scalper.json
             if ! git diff --cached --quiet; then
               git commit -qm "paper tick $(date -u +%Y-%m-%dT%H:%MZ)"
               git pull -q --rebase origin main && git push -q origin main || { git rebase --abort 2>/dev/null; echo "push skipped (conflict) — next tick retries"; }
             fi
             NOW=$(date +%s); NEXT=$(( ((NOW - 420)/900 + 1)*900 + 420 ))   # ทุก 15 นาที ที่นาที 7/22/37/52
             [ "$NEXT" -ge "$END" ] && break
-            sleep $(( NEXT - NOW ))
+            while [ "$(date +%s)" -lt "$NEXT" ]; do   # ระหว่างรอติ๊กถัดไป: ส่งผลเทรดเร็วขึ้นหน้าเว็บทุก 5 นาที
+              W=$(( NEXT - $(date +%s) )); [ "$W" -gt 300 ] && W=300; [ "$W" -gt 0 ] && sleep "$W"
+              [ "$(date +%s)" -ge "$NEXT" ] && break
+              git fetch -q origin main && git reset -q --hard origin/main && sync_scalp
+              git add state/scalper.json docs/scalper.json
+              if ! git diff --cached --quiet; then git commit -qm "scalp sync $(date -u +%H:%MZ)"; git push -q origin main || echo "scalp push skipped"; fi
+            done
           done
+          # ส่งผลเทรดเร็วรอบสุดท้ายก่อนเริ่มรอบใหม่ (รอบใหม่จะอ่านต่อจากไฟล์นี้)
+          pkill -f lab.scalper || true; sleep 2
+          git fetch -q origin main && git reset -q --hard origin/main && sync_scalp
+          git add state/scalper.json docs/scalper.json
+          git diff --cached --quiet || { git commit -qm "scalp final sync"; git push -q origin main || true; }
       - name: Restart loop
         if: always()
         env: {GH_TOKEN: "${{ github.token }}"}
