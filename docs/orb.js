@@ -85,6 +85,12 @@
     const A = S.analysis || {};
     const items = [['สแกน', rows.length], ['มีสภาพคล่อง', liquid.length], ['คะแนน ≥ 70', hi], ['ถูก cap', capped],
       ['ตลาด', A.regime_th || '—'], ['แท่ง', window.CL ? window.CL.fmt.time(S.bar) : S.bar]];
+    const sc = liquid.map((r) => r.score).sort((a, b) => a - b), n = sc.length;
+    const med = n ? (n % 2 ? sc[(n - 1) / 2] : (sc[n / 2 - 1] + sc[n / 2]) / 2) : 0, avg = n ? sc.reduce((a, b) => a + b, 0) / n : 0;
+    const upN = liquid.filter((r) => (r.vs_ema200_pct ?? -1) > 0).length, now = Date.now();
+    const cpm = CHANGES.filter((c) => now - c.t < 60000).length;
+    items.splice(4, 0, ['คะแนนเฉลี่ย', avg.toFixed(1)], ['มัธยฐาน', med], ['% ขาขึ้น', (n ? Math.round(upN / n * 100) : 0) + '%'],
+      ['คะแนนเปลี่ยน/นาที', cpm], ['กระแสประสาท/วิ', NET.ips || 0]);
     for (const [k, v] of items) { const d = mk('div', 'oh-i'); d.append(mk('span', null, k), mk('b', null, String(v))); el.append(d); }
   }
 
@@ -115,6 +121,7 @@
   const NET = {nodes: new Map(), edges: [], nbr: new Map(), pulses: [], key: '', canvas: null, ctx: null, W: 0, H: 0, dpr: 1, hover: null, running: false};
   const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const hash = (s, k) => { let h = 2166136261 ^ k; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return ((h >>> 0) % 10000) / 10000; };
+  const DK = ['trend', 'momentum', 'liquidity', 'volatility', 'entry'], DCOL = ['51,195,180', '242,169,59', '120,170,255', '200,130,255', '255,120,160'];
   const NCOL = {buy_signal: [34, 201, 131], uptrend: [51, 195, 180], downtrend: [240, 82, 91], illiquid: [70, 84, 100], new: [242, 169, 59]};
 
   function ensureCanvas() {
@@ -243,7 +250,17 @@
       else { const [, , dest] = bez(p.e, p.from, 1); dest.flash = Math.max(dest.flash, p.hot ? 0.8 : 0.35);
         if (p.hops > 0) for (const e of (NET.nbr.get(dest.sym) || [])) if (e !== p.e && Math.random() < 0.45) next.push({e, from: dest, t: 0, sp: p.sp, hops: p.hops - 1, hot: p.hot}); }
     }
+    NET.spawn = (NET.spawn || 0) + NET.pulses.filter((q) => q.t <= q.sp + 1e-9).length;
+    if (!NET.ipsAt || ts - NET.ipsAt > 1000) { NET.ips = NET.spawn; NET.spawn = 0; NET.ipsAt = ts; }
     NET.pulses = next.slice(-600);
+    // dendrites: 5 rays = 5 score components (length = component / weight)
+    const CW = window.CL && window.CL.data().scanner && window.CL.data().scanner.orb ? window.CL.data().scanner.orb.components : null;
+    if (CW) { c.lineWidth = 1.1; c.lineCap = 'round';
+      for (const n of NET.nodes.values()) { if (n.status === 'illiquid' || n.sym === 'BTC' || !n.row || !n.row.components) continue;
+        DK.forEach((k, i) => { const w = CW[k] ? CW[k].weight : 20, v = (n.row.components[k] || 0) / w, ang = -Math.PI / 2 + i * 1.2566;
+          const L = 3 + v * 11; c.strokeStyle = `rgba(${DCOL[i]},${0.25 + v * 0.6})`;
+          c.beginPath(); c.moveTo(n.x + Math.cos(ang) * 2.5, n.y + Math.sin(ang) * 2.5); c.lineTo(n.x + Math.cos(ang) * L, n.y + Math.sin(ang) * L); c.stroke(); }); }
+      c.lineCap = 'butt'; }
     // neurons
     const top = rowsTop();
     for (const n of NET.nodes.values()) {
@@ -273,6 +290,10 @@
       c.strokeStyle = 'rgba(200,215,230,0.25)'; c.lineWidth = 0.6; c.beginPath(); c.moveTo(n.x, n.y); c.lineTo(lx, ly + 7); c.stroke();
       c.fillStyle = 'rgba(6,9,13,0.82)'; c.fillRect(lx, ly, w, 14); c.fillStyle = color; c.fillText(txt, lx + 4, ly + 10.5); };
     const sn = sel && NET.nodes.get(sel.symbol);
+    c.font = '500 8.5px ui-monospace,monospace'; c.textAlign = 'center';
+    for (const n of NET.nodes.values()) { if (n.status === 'illiquid' || n.sym === 'BTC' || top.includes(n.sym) || n === sn) continue;
+      c.fillStyle = n.flash > 0.3 ? '#ffe2a0' : 'rgba(190,205,220,0.6)'; c.fillText(String(n.score), n.x, n.y + 15); }
+    c.font = '600 10px ui-monospace,monospace'; c.textAlign = 'left';
     if (sn) lab(sn, '#f2a93b');
     for (const sym of top) { const n = NET.nodes.get(sym); if (n && n.sym !== 'BTC' && n !== sn) lab(n, '#cfd8e3'); }
     if (sn) { c.strokeStyle = '#f2a93b'; c.lineWidth = 1.5; c.beginPath(); c.arc(sn.x, sn.y, 9 + (reduceMotion ? 0 : Math.sin(ts / 250) * 2), 0, 6.283); c.stroke(); }
@@ -289,7 +310,7 @@
     }
   }
   let topCache = [], topAt = 0;
-  function rowsTop() { if (Date.now() - topAt > 2000) { topAt = Date.now(); topCache = [...NET.nodes.values()].filter((n) => n.status !== 'illiquid').sort((a, b) => b.score - a.score || b.raw - a.raw).slice(0, 7).map((n) => n.sym); } return topCache; }
+  function rowsTop() { if (Date.now() - topAt > 2000) { topAt = Date.now(); topCache = [...NET.nodes.values()].filter((n) => n.status !== 'illiquid').sort((a, b) => b.score - a.score || b.raw - a.raw).slice(0, 12).map((n) => n.sym); } return topCache; }
   window.addEventListener('resize', () => { if (NET.canvas) { ensureCanvas(); } });
 
   function registry(S, rows) {
@@ -405,11 +426,11 @@
     const now = Date.now();
     for (const r of rows) { const pv = prevScore[r.symbol];
       if (pv != null && pv !== r.raw_score) { flashUntil[r.symbol] = now + 1800; changes++;
-        if (r.status !== 'illiquid') { CHANGES.unshift({sym: r.symbol, from: pv, to: r.raw_score, final: r.score, t: now, chg: r.change_24h_pct}); CHANGES.length = Math.min(CHANGES.length, 40); } }
+        if (r.status !== 'illiquid') { CHANGES.unshift({sym: r.symbol, from: pv, to: r.raw_score, final: r.score, t: now, chg: r.change_24h_pct}); CHANGES.length = Math.min(CHANGES.length, 400); } }
       prevScore[r.symbol] = r.raw_score; }
     if (sel) sel = rows.find((r) => r.symbol === sel.symbol) || null;
     if (!sel) sel = rows.find((r) => r.status !== 'illiquid') || rows[0];
-    header(S, rows); checks(S, rows); graph(S, rows); registry(S, rows); detail(S); validation(D.orb_validation); insight(S, rows);
+    header(S, rows); checks(S, rows); graph(S, rows); registry(S, rows); detail(S); validation(D.orb_validation); insight(S, rows); heat(rows);
     if (!document.getElementById('orb-tape').childElementCount || force === 'tape') tape(S, rows);
   }
   document.addEventListener('change', (e) => { if (e.target && e.target.id === 'orb-illiquid') { showIlliquid = e.target.checked; draw(true); } });
@@ -433,6 +454,23 @@
       chip.onclick = () => { const r = rows.find((x) => x.symbol === ch.sym); if (r) select(r); }; list.append(chip);
     }
     feed.append(list); el.append(sum, feed);
+  }
+
+  function heat(rows) {
+    const el = document.getElementById('nm-heat'); if (!el) return;
+    const liq = (r) => r.status === 'illiquid' ? 1 : 0, all = [...rows].sort((a, b) => liq(a) - liq(b) || b.score - a.score || b.raw_score - a.raw_score);
+    const cells = el.querySelectorAll('.hm-c');
+    if (cells.length !== all.length) { el.replaceChildren(); all.forEach(() => { const b = mk('button', 'hm-c'); b.type = 'button'; el.append(b); }); }
+    const now = Date.now(), list = el.querySelectorAll('.hm-c');
+    all.forEach((r, i) => { const b = list[i], ill = r.status === 'illiquid', s = r.score;
+      const hue = s >= 70 ? 150 : s >= 50 ? 170 - (70 - s) * 2 : s >= 30 ? 40 : 355;
+      b.style.background = ill ? '#1a222b' : `hsl(${hue} ${45 + s / 3}% ${14 + s * 0.38}%)`;
+      b.className = 'hm-c' + ((flashUntil[r.symbol] || 0) > now ? ' fl' : '') + (sel && sel.symbol === r.symbol ? ' on' : '');
+      b.textContent = r.symbol.slice(0, 4); if (ill) b.style.color = '#4a5866';
+      b.title = `${r.symbol} · คะแนน ${s}${r.caps.length ? ' (ดิบ ' + r.raw_score + ')' : ''} · 24ชม. ${r.change_24h_pct == null ? '—' : r.change_24h_pct.toFixed(2) + '%'}`;
+      b.onclick = () => select(r); });
+    const cap = document.getElementById('nm-heat-cap');
+    if (cap) cap.textContent = `ทั้งกระดาน ${all.length} เหรียญ · เหรียญซื้อขายคล่องก่อน เรียงคะแนนสูง→ต่ำ (ซ้ายบน→ขวาล่าง) แล้วตามด้วยสภาพคล่องต่ำ · ยิ่งเขียวสว่าง = คะแนนสูง · กะพริบ = คะแนนเพิ่งเปลี่ยน · ช่องเทาเข้ม = สภาพคล่องต่ำ`;
   }
 
   window.CLOrb = {render: () => draw(false)};
