@@ -1,8 +1,8 @@
 ☀️ Crypto Lab — Morning brief
 
 ตลาด:
-BTC 59,868.01 (-5.84% 24h) · ETH 1,678.43 (-6.42% 24h) · SOL 68.91 (-10.11% 24h)  [Binance, 2026-11-24 15:26 UTC]
-Regime: ขาลง (BTC 59,879 < EMA200 70,596) → champion/challenger_2 จะไม่เปิดสถานะใหม่
+BTC 58,789.87 (-2.69% 24h) · ETH 1,642.66 (-3.28% 24h) · SOL 67.88 (-5.05% 24h)  [Binance, 2026-11-25 08:02 UTC]
+Regime: ขาลง (BTC 58,800 < EMA200 70,045) → champion/challenger_2 จะไม่เปิดสถานะใหม่
 
 กลยุทธ์ (backtest OOS 3 ปี | paper ตั้งแต่เริ่ม):
 • champion: keltner_trend | BT +38.5%, DD -15.5%, Sharpe 0.85 | paper 500.00 USDT (+0.00), ถือ 0, ปิดแล้ว 0
@@ -14,7 +14,7 @@ Regime: ขาลง (BTC 59,879 < EMA200 70,596) → champion/challenger_2 จ�
 P&L ที่รับรู้ 24 ชม.: +0.00 USDT
 
 Sentinel:
-  ⚠️ บอทรันแค่ 7 รอบใน 24 ชม. (ควร ~24)
+  ปกติ ไม่มีอะไรผิดปกติ
 
 การตัดสินใจที่ต้องการจากคุณวันนี้:
   บอทหยุดรันตั้งแต่ 2026-11-22 16:15 UTC (TICK ล่าสุด เก่ากว่า 3 ชม.) — Sentinel รัน lab.live เองเมื่อ 20:26 UTC
