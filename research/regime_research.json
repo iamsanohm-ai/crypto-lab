@@ -1,0 +1,1377 @@
+{
+ "generated_at": "2026-11-25T15:28:59+00:00",
+ "period": [
+  "2023-11-01 00:00:00+00:00",
+  "2026-11-24 08:00:00+00:00"
+ ],
+ "filters": [
+  {
+   "filter": "none",
+   "label": "ไม่มีตัวกรอง (ซื้อทุกสัญญาณ)",
+   "return_pct": 24.37,
+   "sharpe": 0.58,
+   "max_dd_pct": -20.12,
+   "trades": 682,
+   "win_pct": 33.0,
+   "expectancy_r": 0.07
+  },
+  {
+   "filter": "ema50",
+   "label": "BTC เหนือ EMA50 (เร็ว)",
+   "return_pct": 34.88,
+   "sharpe": 0.79,
+   "max_dd_pct": -14.65,
+   "trades": 591,
+   "win_pct": 33.8,
+   "expectancy_r": 0.107
+  },
+  {
+   "filter": "ema100",
+   "label": "BTC เหนือ EMA100",
+   "return_pct": 37.97,
+   "sharpe": 0.85,
+   "max_dd_pct": -14.97,
+   "trades": 586,
+   "win_pct": 34.6,
+   "expectancy_r": 0.115
+  },
+  {
+   "filter": "ema200",
+   "label": "BTC เหนือ EMA200 (ปัจจุบัน)",
+   "return_pct": 37.61,
+   "sharpe": 0.84,
+   "max_dd_pct": -16.02,
+   "trades": 574,
+   "win_pct": 35.0,
+   "expectancy_r": 0.117
+  },
+  {
+   "filter": "ema200_or_slope",
+   "label": "BTC เหนือ EMA200 หรือ EMA50 ชันขึ้นและราคาเหนือ EMA50",
+   "return_pct": 35.33,
+   "sharpe": 0.8,
+   "max_dd_pct": -17.03,
+   "trades": 606,
+   "win_pct": 34.2,
+   "expectancy_r": 0.106
+  },
+  {
+   "filter": "hh20d",
+   "label": "BTC ทำ high ใหม่ในรอบ 20 วัน (120 แท่ง) ภายใน 10 วันที่ผ่านมา",
+   "return_pct": 25.27,
+   "sharpe": 0.67,
+   "max_dd_pct": -16.49,
+   "trades": 437,
+   "win_pct": 31.6,
+   "expectancy_r": 0.108
+  }
+ ],
+ "btc_now": 60424,
+ "ema200_now": 70603,
+ "gap_pct": 16.8,
+ "ema200_change_7d_pct": -6.39,
+ "crosses": [
+  {
+   "time": "2022-11-03 04:00:00+00:00",
+   "price": 20303,
+   "from_low_pct": 8.3,
+   "next_30d_pct": -16.4,
+   "next_90d_pct": 13.7,
+   "stayed_above_days": 5.0,
+   "complete": true
+  },
+  {
+   "time": "2022-12-13 08:00:00+00:00",
+   "price": 17445,
+   "from_low_pct": 10.9,
+   "next_30d_pct": 4.3,
+   "next_90d_pct": 26.7,
+   "stayed_above_days": 3.0,
+   "complete": true
+  },
+  {
+   "time": "2023-01-06 16:00:00+00:00",
+   "price": 16940,
+   "from_low_pct": 7.7,
+   "next_30d_pct": 35.1,
+   "next_90d_pct": 65.4,
+   "stayed_above_days": 34.8,
+   "complete": true
+  },
+  {
+   "time": "2023-02-10 16:00:00+00:00",
+   "price": 21771,
+   "from_low_pct": 32.4,
+   "next_30d_pct": -4.6,
+   "next_90d_pct": 23.3,
+   "stayed_above_days": 0.2,
+   "complete": true
+  },
+  {
+   "time": "2023-02-11 12:00:00+00:00",
+   "price": 21736,
+   "from_low_pct": 32.2,
+   "next_30d_pct": 10.3,
+   "next_90d_pct": 21.1,
+   "stayed_above_days": 0.2,
+   "complete": true
+  },
+  {
+   "time": "2023-02-11 20:00:00+00:00",
+   "price": 21863,
+   "from_low_pct": 33.0,
+   "next_30d_pct": 10.3,
+   "next_90d_pct": 22.6,
+   "stayed_above_days": 1.5,
+   "complete": true
+  },
+  {
+   "time": "2023-02-13 20:00:00+00:00",
+   "price": 21774,
+   "from_low_pct": 32.5,
+   "next_30d_pct": 11.5,
+   "next_90d_pct": 23.6,
+   "stayed_above_days": 0.2,
+   "complete": true
+  },
+  {
+   "time": "2023-02-14 04:00:00+00:00",
+   "price": 21768,
+   "from_low_pct": 32.4,
+   "next_30d_pct": 13.1,
+   "next_90d_pct": 25.9,
+   "stayed_above_days": 16.8,
+   "complete": true
+  },
+  {
+   "time": "2023-03-13 04:00:00+00:00",
+   "price": 22459,
+   "from_low_pct": 24.2,
+   "next_30d_pct": 33.5,
+   "next_90d_pct": 14.6,
+   "stayed_above_days": 0.2,
+   "complete": true
+  },
+  {
+   "time": "2023-03-13 12:00:00+00:00",
+   "price": 23982,
+   "from_low_pct": 32.6,
+   "next_30d_pct": 24.9,
+   "next_90d_pct": 7.4,
+   "stayed_above_days": 38.2,
+   "complete": true
+  },
+  {
+   "time": "2023-04-20 20:00:00+00:00",
+   "price": 28244,
+   "from_low_pct": 42.9,
+   "next_30d_pct": -4.0,
+   "next_90d_pct": 5.9,
+   "stayed_above_days": 0.3,
+   "complete": true
+  },
+  {
+   "time": "2023-04-25 20:00:00+00:00",
+   "price": 28301,
+   "from_low_pct": 43.2,
+   "next_30d_pct": -6.5,
+   "next_90d_pct": 3.1,
+   "stayed_above_days": 0.8,
+   "complete": true
+  },
+  {
+   "time": "2023-04-26 20:00:00+00:00",
+   "price": 28415,
+   "from_low_pct": 43.8,
+   "next_30d_pct": -6.0,
+   "next_90d_pct": 2.9,
+   "stayed_above_days": 4.7,
+   "complete": true
+  },
+  {
+   "time": "2023-05-02 12:00:00+00:00",
+   "price": 28541,
+   "from_low_pct": 44.4,
+   "next_30d_pct": -5.8,
+   "next_90d_pct": 2.5,
+   "stayed_above_days": 1.0,
+   "complete": true
+  },
+  {
+   "time": "2023-05-03 20:00:00+00:00",
+   "price": 29026,
+   "from_low_pct": 46.9,
+   "next_30d_pct": -6.1,
+   "next_90d_pct": 2.3,
+   "stayed_above_days": 4.0,
+   "complete": true
+  },
+  {
+   "time": "2023-05-28 16:00:00+00:00",
+   "price": 27526,
+   "from_low_pct": 5.3,
+   "next_30d_pct": 11.3,
+   "next_90d_pct": -5.4,
+   "stayed_above_days": 2.5,
+   "complete": true
+  },
+  {
+   "time": "2023-06-06 20:00:00+00:00",
+   "price": 27230,
+   "from_low_pct": 6.2,
+   "next_30d_pct": 9.8,
+   "next_90d_pct": -5.2,
+   "stayed_above_days": 0.2,
+   "complete": true
+  },
+  {
+   "time": "2023-06-18 16:00:00+00:00",
+   "price": 26650,
+   "from_low_pct": 6.8,
+   "next_30d_pct": 11.5,
+   "next_90d_pct": -0.4,
+   "stayed_above_days": 0.2,
+   "complete": true
+  },
+  {
+   "time": "2023-06-19 16:00:00+00:00",
+   "price": 26682,
+   "from_low_pct": 6.9,
+   "next_30d_pct": 12.6,
+   "next_90d_pct": -0.7,
+   "stayed_above_days": 29.0,
+   "complete": true
+  },
+  {
+   "time": "2023-07-18 20:00:00+00:00",
+   "price": 29859,
+   "from_low_pct": 19.6,
+   "next_30d_pct": -10.8,
+   "next_90d_pct": -4.5,
+   "stayed_above_days": 5.2,
+   "complete": true
+  },
+  {
+   "time": "2023-07-24 04:00:00+00:00",
+   "price": 29828,
+   "from_low_pct": 19.5,
+   "next_30d_pct": -12.6,
+   "next_90d_pct": -0.0,
+   "stayed_above_days": 0.2,
+   "complete": true
+  },
+  {
+   "time": "2023-08-01 20:00:00+00:00",
+   "price": 29706,
+   "from_low_pct": 19.0,
+   "next_30d_pct": -12.7,
+   "next_90d_pct": 16.1,
+   "stayed_above_days": 0.7,
+   "complete": true
+  },
+  {
+   "time": "2023-08-08 08:00:00+00:00",
+   "price": 29439,
+   "from_low_pct": 17.9,
+   "next_30d_pct": -12.7,
+   "next_90d_pct": 19.7,
+   "stayed_above_days": 1.3,
+   "complete": true
+  },
+  {
+   "time": "2023-08-09 20:00:00+00:00",
+   "price": 29582,
+   "from_low_pct": 18.5,
+   "next_30d_pct": -12.4,
+   "next_90d_pct": 19.7,
+   "stayed_above_days": 0.8,
+   "complete": true
+  },
+  {
+   "time": "2023-08-14 12:00:00+00:00",
+   "price": 29600,
+   "from_low_pct": 18.6,
+   "next_30d_pct": -11.3,
+   "next_90d_pct": 25.5,
+   "stayed_above_days": 0.2,
+   "complete": true
+  },
+  {
+   "time": "2023-08-29 16:00:00+00:00",
+   "price": 27831,
+   "from_low_pct": 8.0,
+   "next_30d_pct": -2.6,
+   "next_90d_pct": 32.5,
+   "stayed_above_days": 0.2,
+   "complete": true
+  },
+  {
+   "time": "2023-09-14 12:00:00+00:00",
+   "price": 26694,
+   "from_low_pct": 6.7,
+   "next_30d_pct": 0.9,
+   "next_90d_pct": 57.1,
+   "stayed_above_days": 0.3,
+   "complete": true
+  },
+  {
+   "time": "2023-09-18 00:00:00+00:00",
+   "price": 26659,
+   "from_low_pct": 6.5,
+   "next_30d_pct": 7.0,
+   "next_90d_pct": 57.3,
+   "stayed_above_days": 3.5,
+   "complete": true
+  },
+  {
+   "time": "2023-09-27 08:00:00+00:00",
+   "price": 26767,
+   "from_low_pct": 7.0,
+   "next_30d_pct": 27.2,
+   "next_90d_pct": 59.5,
+   "stayed_above_days": 0.2,
+   "complete": true
+  },
+  {
+   "time": "2023-09-28 12:00:00+00:00",
+   "price": 27020,
+   "from_low_pct": 8.0,
+   "next_30d_pct": 26.5,
+   "next_90d_pct": 59.1,
+   "stayed_above_days": 12.5,
+   "complete": true
+  },
+  {
+   "time": "2023-10-11 08:00:00+00:00",
+   "price": 27196,
+   "from_low_pct": 8.7,
+   "next_30d_pct": 36.3,
+   "next_90d_pct": 71.4,
+   "stayed_above_days": 0.2,
+   "complete": true
+  },
+  {
+   "time": "2023-10-15 20:00:00+00:00",
+   "price": 27154,
+   "from_low_pct": 8.5,
+   "next_30d_pct": 30.9,
+   "next_90d_pct": 57.8,
+   "stayed_above_days": 89.0,
+   "complete": true
+  },
+  {
+   "time": "2024-01-16 12:00:00+00:00",
+   "price": 43253,
+   "from_low_pct": 21.0,
+   "next_30d_pct": 20.1,
+   "next_90d_pct": 49.3,
+   "stayed_above_days": 0.2,
+   "complete": true
+  },
+  {
+   "time": "2024-01-28 00:00:00+00:00",
+   "price": 42232,
+   "from_low_pct": 12.3,
+   "next_30d_pct": 31.8,
+   "next_90d_pct": 49.4,
+   "stayed_above_days": 0.7,
+   "complete": true
+  },
+  {
+   "time": "2024-01-29 00:00:00+00:00",
+   "price": 42331,
+   "from_low_pct": 12.5,
+   "next_30d_pct": 34.5,
+   "next_90d_pct": 51.2,
+   "stayed_above_days": 0.2,
+   "complete": true
+  },
+  {
+   "time": "2024-01-29 08:00:00+00:00",
+   "price": 42247,
+   "from_low_pct": 12.3,
+   "next_30d_pct": 39.5,
+   "next_90d_pct": 50.3,
+   "stayed_above_days": 2.7,
+   "complete": true
+  },
+  {
+   "time": "2024-02-01 12:00:00+00:00",
+   "price": 42516,
+   "from_low_pct": 9.4,
+   "next_30d_pct": 45.3,
+   "next_90d_pct": 33.8,
+   "stayed_above_days": 47.3,
+   "complete": true
+  },
+  {
+   "time": "2024-03-20 04:00:00+00:00",
+   "price": 62958,
+   "from_low_pct": 62.1,
+   "next_30d_pct": 2.5,
+   "next_90d_pct": 4.3,
+   "stayed_above_days": 13.3,
+   "complete": true
+  },
+  {
+   "time": "2024-04-02 16:00:00+00:00",
+   "price": 65915,
+   "from_low_pct": 54.8,
+   "next_30d_pct": -10.0,
+   "next_90d_pct": -4.1,
+   "stayed_above_days": 0.2,
+   "complete": true
+  },
+  {
+   "time": "2024-04-03 00:00:00+00:00",
+   "price": 66226,
+   "from_low_pct": 55.5,
+   "next_30d_pct": -9.8,
+   "next_90d_pct": -4.7,
+   "stayed_above_days": 9.7,
+   "complete": true
+  },
+  {
+   "time": "2024-04-13 00:00:00+00:00",
+   "price": 67161,
+   "from_low_pct": 37.8,
+   "next_30d_pct": -8.9,
+   "next_90d_pct": -15.3,
+   "stayed_above_days": 0.7,
+   "complete": true
+  },
+  {
+   "time": "2024-04-22 04:00:00+00:00",
+   "price": 65980,
+   "from_low_pct": 30.0,
+   "next_30d_pct": 5.7,
+   "next_90d_pct": 1.1,
+   "stayed_above_days": 2.3,
+   "complete": true
+  },
+  {
+   "time": "2024-05-05 12:00:00+00:00",
+   "price": 64429,
+   "from_low_pct": 13.3,
+   "next_30d_pct": 9.3,
+   "next_90d_pct": -5.5,
+   "stayed_above_days": 0.2,
+   "complete": true
+  },
+  {
+   "time": "2024-05-06 04:00:00+00:00",
+   "price": 64541,
+   "from_low_pct": 13.5,
+   "next_30d_pct": 10.3,
+   "next_90d_pct": -6.5,
+   "stayed_above_days": 0.3,
+   "complete": true
+  },
+  {
+   "time": "2024-05-15 12:00:00+00:00",
+   "price": 64725,
+   "from_low_pct": 13.8,
+   "next_30d_pct": 2.6,
+   "next_90d_pct": -8.1,
+   "stayed_above_days": 26.7,
+   "complete": true
+  },
+  {
+   "time": "2024-06-12 12:00:00+00:00",
+   "price": 69734,
+   "from_low_pct": 22.6,
+   "next_30d_pct": -16.5,
+   "next_90d_pct": -18.8,
+   "stayed_above_days": 0.2,
+   "complete": true
+  },
+  {
+   "time": "2024-06-12 20:00:00+00:00",
+   "price": 68264,
+   "from_low_pct": 20.0,
+   "next_30d_pct": -15.2,
+   "next_90d_pct": -15.6,
+   "stayed_above_days": 0.2,
+   "complete": true
+  },
+  {
+   "time": "2024-07-15 00:00:00+00:00",
+   "price": 62648,
+   "from_low_pct": 15.1,
+   "next_30d_pct": -2.7,
+   "next_90d_pct": 0.1,
+   "stayed_above_days": 17.0,
+   "complete": true
+  },
+  {
+   "time": "2024-08-01 08:00:00+00:00",
+   "price": 64674,
+   "from_low_pct": 18.9,
+   "next_30d_pct": -8.6,
+   "next_90d_pct": 11.3,
+   "stayed_above_days": 0.2,
+   "complete": true
+  },
+  {
+   "time": "2024-08-01 20:00:00+00:00",
+   "price": 65354,
+   "from_low_pct": 20.1,
+   "next_30d_pct": -9.8,
+   "next_90d_pct": 10.7,
+   "stayed_above_days": 0.3,
+   "complete": true
+  },
+  {
+   "time": "2024-08-02 08:00:00+00:00",
+   "price": 64660,
+   "from_low_pct": 18.8,
+   "next_30d_pct": -9.9,
+   "next_90d_pct": 11.7,
+   "stayed_above_days": 0.2,
+   "complete": true
+  },
+  {
+   "time": "2024-08-21 16:00:00+00:00",
+   "price": 61570,
+   "from_low_pct": 19.9,
+   "next_30d_pct": 2.0,
+   "next_90d_pct": 51.4,
+   "stayed_above_days": 0.3,
+   "complete": true
+  },
+  {
+   "time": "2024-08-22 04:00:00+00:00",
+   "price": 60984,
+   "from_low_pct": 18.8,
+   "next_30d_pct": 3.5,
+   "next_90d_pct": 52.3,
+   "stayed_above_days": 0.3,
+   "complete": true
+  },
+  {
+   "time": "2024-08-23 04:00:00+00:00",
+   "price": 61069,
+   "from_low_pct": 19.0,
+   "next_30d_pct": 3.1,
+   "next_90d_pct": 58.7,
+   "stayed_above_days": 0.2,
+   "complete": true
+  },
+  {
+   "time": "2024-08-23 12:00:00+00:00",
+   "price": 61533,
+   "from_low_pct": 19.9,
+   "next_30d_pct": 1.8,
+   "next_90d_pct": 57.1,
+   "stayed_above_days": 4.3,
+   "complete": true
+  },
+  {
+   "time": "2024-09-13 12:00:00+00:00",
+   "price": 59667,
+   "from_low_pct": 16.2,
+   "next_30d_pct": 4.3,
+   "next_90d_pct": 70.6,
+   "stayed_above_days": 2.5,
+   "complete": true
+  },
+  {
+   "time": "2024-09-16 04:00:00+00:00",
+   "price": 58911,
+   "from_low_pct": 14.7,
+   "next_30d_pct": 13.7,
+   "next_90d_pct": 72.7,
+   "stayed_above_days": 0.2,
+   "complete": true
+  },
+  {
+   "time": "2024-09-17 08:00:00+00:00",
+   "price": 59081,
+   "from_low_pct": 15.1,
+   "next_30d_pct": 13.2,
+   "next_90d_pct": 75.6,
+   "stayed_above_days": 14.5,
+   "complete": true
+  },
+  {
+   "time": "2024-10-02 00:00:00+00:00",
+   "price": 61750,
+   "from_low_pct": 20.3,
+   "next_30d_pct": 12.3,
+   "next_90d_pct": 49.8,
+   "stayed_above_days": 0.2,
+   "complete": true
+  },
+  {
+   "time": "2024-10-02 12:00:00+00:00",
+   "price": 61874,
+   "from_low_pct": 20.5,
+   "next_30d_pct": 12.1,
+   "next_90d_pct": 54.2,
+   "stayed_above_days": 0.2,
+   "complete": true
+  },
+  {
+   "time": "2024-10-04 12:00:00+00:00",
+   "price": 61873,
+   "from_low_pct": 15.7,
+   "next_30d_pct": 10.0,
+   "next_90d_pct": 55.9,
+   "stayed_above_days": 5.2,
+   "complete": true
+  },
+  {
+   "time": "2024-10-11 12:00:00+00:00",
+   "price": 62259,
+   "from_low_pct": 16.3,
+   "next_30d_pct": 28.0,
+   "next_90d_pct": 51.4,
+   "stayed_above_days": 69.8,
+   "complete": true
+  },
+  {
+   "time": "2024-12-20 12:00:00+00:00",
+   "price": 96992,
+   "from_low_pct": 46.5,
+   "next_30d_pct": 8.2,
+   "next_90d_pct": -12.7,
+   "stayed_above_days": 1.7,
+   "complete": true
+  },
+  {
+   "time": "2024-12-22 08:00:00+00:00",
+   "price": 97101,
+   "from_low_pct": 46.6,
+   "next_30d_pct": 6.9,
+   "next_90d_pct": -13.2,
+   "stayed_above_days": 0.2,
+   "complete": true
+  },
+  {
+   "time": "2024-12-24 12:00:00+00:00",
+   "price": 98300,
+   "from_low_pct": 47.4,
+   "next_30d_pct": 7.1,
+   "next_90d_pct": -10.1,
+   "stayed_above_days": 1.8,
+   "complete": true
+  },
+  {
+   "time": "2024-12-27 00:00:00+00:00",
+   "price": 96418,
+   "from_low_pct": 42.4,
+   "next_30d_pct": 9.0,
+   "next_90d_pct": -9.1,
+   "stayed_above_days": 0.2,
+   "complete": true
+  },
+  {
+   "time": "2024-12-27 08:00:00+00:00",
+   "price": 96952,
+   "from_low_pct": 42.9,
+   "next_30d_pct": 8.1,
+   "next_90d_pct": -10.3,
+   "stayed_above_days": 0.2,
+   "complete": true
+  },
+  {
+   "time": "2025-01-02 04:00:00+00:00",
+   "price": 95822,
+   "from_low_pct": 41.2,
+   "next_30d_pct": 6.6,
+   "next_90d_pct": -11.9,
+   "stayed_above_days": 5.5,
+   "complete": true
+  },
+  {
+   "time": "2025-01-07 20:00:00+00:00",
+   "price": 96955,
+   "from_low_pct": 27.2,
+   "next_30d_pct": -0.4,
+   "next_90d_pct": -18.4,
+   "stayed_above_days": 0.2,
+   "complete": true
+  },
+  {
+   "time": "2025-01-14 08:00:00+00:00",
+   "price": 96548,
+   "from_low_pct": 9.2,
+   "next_30d_pct": -0.6,
+   "next_90d_pct": -12.0,
+   "stayed_above_days": 12.8,
+   "complete": true
+  },
+  {
+   "time": "2025-01-27 12:00:00+00:00",
+   "price": 101112,
+   "from_low_pct": 11.3,
+   "next_30d_pct": -13.4,
+   "next_90d_pct": -7.1,
+   "stayed_above_days": 0.2,
+   "complete": true
+  },
+  {
+   "time": "2025-01-27 20:00:00+00:00",
+   "price": 102083,
+   "from_low_pct": 12.4,
+   "next_30d_pct": -17.5,
+   "next_90d_pct": -8.2,
+   "stayed_above_days": 5.0,
+   "complete": true
+  },
+  {
+   "time": "2025-02-03 16:00:00+00:00",
+   "price": 101880,
+   "from_low_pct": 12.1,
+   "next_30d_pct": -11.9,
+   "next_90d_pct": -6.2,
+   "stayed_above_days": 0.5,
+   "complete": true
+  },
+  {
+   "time": "2025-02-20 16:00:00+00:00",
+   "price": 98423,
+   "from_low_pct": 8.3,
+   "next_30d_pct": -14.5,
+   "next_90d_pct": 10.3,
+   "stayed_above_days": 0.3,
+   "complete": true
+  },
+  {
+   "time": "2025-02-21 04:00:00+00:00",
+   "price": 98180,
+   "from_low_pct": 8.1,
+   "next_30d_pct": -14.2,
+   "next_90d_pct": 13.1,
+   "stayed_above_days": 0.3,
+   "complete": true
+  },
+  {
+   "time": "2025-03-02 20:00:00+00:00",
+   "price": 94270,
+   "from_low_pct": 19.0,
+   "next_30d_pct": -9.7,
+   "next_90d_pct": 10.9,
+   "stayed_above_days": 0.2,
+   "complete": true
+  },
+  {
+   "time": "2025-03-24 08:00:00+00:00",
+   "price": 87690,
+   "from_low_pct": 11.6,
+   "next_30d_pct": 6.6,
+   "next_90d_pct": 17.2,
+   "stayed_above_days": 0.7,
+   "complete": true
+  },
+  {
+   "time": "2025-03-25 08:00:00+00:00",
+   "price": 87370,
+   "from_low_pct": 11.2,
+   "next_30d_pct": 6.0,
+   "next_90d_pct": 15.9,
+   "stayed_above_days": 0.7,
+   "complete": true
+  },
+  {
+   "time": "2025-03-26 04:00:00+00:00",
+   "price": 88140,
+   "from_low_pct": 12.1,
+   "next_30d_pct": 6.4,
+   "next_90d_pct": 19.1,
+   "stayed_above_days": 0.3,
+   "complete": true
+  },
+  {
+   "time": "2025-03-27 00:00:00+00:00",
+   "price": 87670,
+   "from_low_pct": 11.5,
+   "next_30d_pct": 8.1,
+   "next_90d_pct": 21.2,
+   "stayed_above_days": 0.3,
+   "complete": true
+  },
+  {
+   "time": "2025-03-27 20:00:00+00:00",
+   "price": 87232,
+   "from_low_pct": 11.0,
+   "next_30d_pct": 8.5,
+   "next_90d_pct": 23.1,
+   "stayed_above_days": 0.2,
+   "complete": true
+  },
+  {
+   "time": "2025-04-02 12:00:00+00:00",
+   "price": 86758,
+   "from_low_pct": 10.4,
+   "next_30d_pct": 12.2,
+   "next_90d_pct": 22.1,
+   "stayed_above_days": 0.3,
+   "complete": true
+  },
+  {
+   "time": "2025-04-12 12:00:00+00:00",
+   "price": 85008,
+   "from_low_pct": 13.2,
+   "next_30d_pct": 20.6,
+   "next_90d_pct": 37.5,
+   "stayed_above_days": 1.0,
+   "complete": true
+  },
+  {
+   "time": "2025-04-13 16:00:00+00:00",
+   "price": 83981,
+   "from_low_pct": 11.9,
+   "next_30d_pct": 24.8,
+   "next_90d_pct": 40.0,
+   "stayed_above_days": 0.2,
+   "complete": true
+  },
+  {
+   "time": "2025-04-14 00:00:00+00:00",
+   "price": 84566,
+   "from_low_pct": 12.6,
+   "next_30d_pct": 22.5,
+   "next_90d_pct": 39.2,
+   "stayed_above_days": 1.7,
+   "complete": true
+  },
+  {
+   "time": "2025-04-16 08:00:00+00:00",
+   "price": 84048,
+   "from_low_pct": 12.0,
+   "next_30d_pct": 23.3,
+   "next_90d_pct": 39.3,
+   "stayed_above_days": 0.5,
+   "complete": true
+  },
+  {
+   "time": "2025-04-17 04:00:00+00:00",
+   "price": 84670,
+   "from_low_pct": 12.8,
+   "next_30d_pct": 22.2,
+   "next_90d_pct": 39.6,
+   "stayed_above_days": 3.2,
+   "complete": true
+  },
+  {
+   "time": "2025-04-20 12:00:00+00:00",
+   "price": 84345,
+   "from_low_pct": 12.3,
+   "next_30d_pct": 24.9,
+   "next_90d_pct": 40.0,
+   "stayed_above_days": 46.2,
+   "complete": true
+  },
+  {
+   "time": "2025-06-06 08:00:00+00:00",
+   "price": 103928,
+   "from_low_pct": 38.4,
+   "next_30d_pct": 4.0,
+   "next_90d_pct": 6.6,
+   "stayed_above_days": 6.7,
+   "complete": true
+  },
+  {
+   "time": "2025-06-13 04:00:00+00:00",
+   "price": 104895,
+   "from_low_pct": 25.8,
+   "next_30d_pct": 12.5,
+   "next_90d_pct": 8.8,
+   "stayed_above_days": 4.3,
+   "complete": true
+  },
+  {
+   "time": "2025-06-18 00:00:00+00:00",
+   "price": 105185,
+   "from_low_pct": 25.0,
+   "next_30d_pct": 14.3,
+   "next_90d_pct": 9.6,
+   "stayed_above_days": 0.5,
+   "complete": true
+  },
+  {
+   "time": "2025-06-18 20:00:00+00:00",
+   "price": 104887,
+   "from_low_pct": 24.7,
+   "next_30d_pct": 12.4,
+   "next_90d_pct": 11.3,
+   "stayed_above_days": 0.3,
+   "complete": true
+  },
+  {
+   "time": "2025-06-20 04:00:00+00:00",
+   "price": 105812,
+   "from_low_pct": 21.7,
+   "next_30d_pct": 11.5,
+   "next_90d_pct": 10.7,
+   "stayed_above_days": 0.3,
+   "complete": true
+  },
+  {
+   "time": "2025-06-23 20:00:00+00:00",
+   "price": 105334,
+   "from_low_pct": 12.9,
+   "next_30d_pct": 12.7,
+   "next_90d_pct": 9.4,
+   "stayed_above_days": 38.8,
+   "complete": true
+  },
+  {
+   "time": "2025-08-04 12:00:00+00:00",
+   "price": 114826,
+   "from_low_pct": 16.1,
+   "next_30d_pct": -2.3,
+   "next_90d_pct": -4.1,
+   "stayed_above_days": 0.2,
+   "complete": true
+  },
+  {
+   "time": "2025-08-04 20:00:00+00:00",
+   "price": 115055,
+   "from_low_pct": 16.4,
+   "next_30d_pct": -2.9,
+   "next_90d_pct": -3.9,
+   "stayed_above_days": 0.2,
+   "complete": true
+  },
+  {
+   "time": "2025-08-05 08:00:00+00:00",
+   "price": 114827,
+   "from_low_pct": 16.1,
+   "next_30d_pct": -3.5,
+   "next_90d_pct": -6.1,
+   "stayed_above_days": 0.2,
+   "complete": true
+  },
+  {
+   "time": "2025-08-06 12:00:00+00:00",
+   "price": 115414,
+   "from_low_pct": 16.7,
+   "next_30d_pct": -4.1,
+   "next_90d_pct": -10.6,
+   "stayed_above_days": 0.5,
+   "complete": true
+  },
+  {
+   "time": "2025-08-07 04:00:00+00:00",
+   "price": 114788,
+   "from_low_pct": 16.1,
+   "next_30d_pct": -3.5,
+   "next_90d_pct": -11.1,
+   "stayed_above_days": 10.8,
+   "complete": true
+  },
+  {
+   "time": "2025-08-22 12:00:00+00:00",
+   "price": 116371,
+   "from_low_pct": 14.7,
+   "next_30d_pct": -0.7,
+   "next_90d_pct": -22.8,
+   "stayed_above_days": 0.5,
+   "complete": true
+  },
+  {
+   "time": "2025-09-09 04:00:00+00:00",
+   "price": 112991,
+   "from_low_pct": 5.0,
+   "next_30d_pct": 7.9,
+   "next_90d_pct": -19.0,
+   "stayed_above_days": 0.2,
+   "complete": true
+  },
+  {
+   "time": "2025-09-10 12:00:00+00:00",
+   "price": 113854,
+   "from_low_pct": 5.8,
+   "next_30d_pct": 4.5,
+   "next_90d_pct": -18.6,
+   "stayed_above_days": 11.7,
+   "complete": true
+  },
+  {
+   "time": "2025-09-29 12:00:00+00:00",
+   "price": 113816,
+   "from_low_pct": 5.7,
+   "next_30d_pct": -2.0,
+   "next_90d_pct": -22.8,
+   "stayed_above_days": 0.8,
+   "complete": true
+  },
+  {
+   "time": "2025-09-30 16:00:00+00:00",
+   "price": 114360,
+   "from_low_pct": 6.2,
+   "next_30d_pct": -6.8,
+   "next_90d_pct": -23.6,
+   "stayed_above_days": 10.0,
+   "complete": true
+  },
+  {
+   "time": "2025-10-26 08:00:00+00:00",
+   "price": 113286,
+   "from_low_pct": 7.2,
+   "next_30d_pct": -22.9,
+   "next_90d_pct": -20.9,
+   "stayed_above_days": 2.5,
+   "complete": true
+  },
+  {
+   "time": "2025-10-29 04:00:00+00:00",
+   "price": 113578,
+   "from_low_pct": 7.5,
+   "next_30d_pct": -20.0,
+   "next_90d_pct": -22.2,
+   "stayed_above_days": 0.3,
+   "complete": true
+  },
+  {
+   "time": "2025-12-29 00:00:00+00:00",
+   "price": 90124,
+   "from_low_pct": 9.5,
+   "next_30d_pct": -1.1,
+   "next_90d_pct": -25.8,
+   "stayed_above_days": 0.2,
+   "complete": true
+  },
+  {
+   "time": "2026-01-02 16:00:00+00:00",
+   "price": 89897,
+   "from_low_pct": 9.2,
+   "next_30d_pct": -14.2,
+   "next_90d_pct": -25.5,
+   "stayed_above_days": 0.5,
+   "complete": true
+  },
+  {
+   "time": "2026-01-03 08:00:00+00:00",
+   "price": 89753,
+   "from_low_pct": 9.0,
+   "next_30d_pct": -13.4,
+   "next_90d_pct": -25.3,
+   "stayed_above_days": 5.0,
+   "complete": true
+  },
+  {
+   "time": "2026-01-08 12:00:00+00:00",
+   "price": 90782,
+   "from_low_pct": 10.3,
+   "next_30d_pct": -23.8,
+   "next_90d_pct": -21.4,
+   "stayed_above_days": 1.2,
+   "complete": true
+  },
+  {
+   "time": "2026-01-09 20:00:00+00:00",
+   "price": 90641,
+   "from_low_pct": 10.1,
+   "next_30d_pct": -22.4,
+   "next_90d_pct": -20.8,
+   "stayed_above_days": 10.3,
+   "complete": true
+  },
+  {
+   "time": "2026-03-04 12:00:00+00:00",
+   "price": 73397,
+   "from_low_pct": 16.7,
+   "next_30d_pct": -9.0,
+   "next_90d_pct": -8.3,
+   "stayed_above_days": 1.2,
+   "complete": true
+  },
+  {
+   "time": "2026-03-10 08:00:00+00:00",
+   "price": 70581,
+   "from_low_pct": 12.2,
+   "next_30d_pct": 0.8,
+   "next_90d_pct": -10.1,
+   "stayed_above_days": 0.3,
+   "complete": true
+  },
+  {
+   "time": "2026-03-11 16:00:00+00:00",
+   "price": 70642,
+   "from_low_pct": 12.3,
+   "next_30d_pct": 3.7,
+   "next_90d_pct": -12.1,
+   "stayed_above_days": 0.2,
+   "complete": true
+  },
+  {
+   "time": "2026-03-12 20:00:00+00:00",
+   "price": 70541,
+   "from_low_pct": 12.1,
+   "next_30d_pct": 3.5,
+   "next_90d_pct": -12.8,
+   "stayed_above_days": 5.8,
+   "complete": true
+  },
+  {
+   "time": "2026-03-18 20:00:00+00:00",
+   "price": 71247,
+   "from_low_pct": 13.3,
+   "next_30d_pct": 8.2,
+   "next_90d_pct": -7.8,
+   "stayed_above_days": 0.3,
+   "complete": true
+  },
+  {
+   "time": "2026-03-23 20:00:00+00:00",
+   "price": 70906,
+   "from_low_pct": 12.7,
+   "next_30d_pct": 10.3,
+   "next_90d_pct": -10.7,
+   "stayed_above_days": 0.2,
+   "complete": true
+  },
+  {
+   "time": "2026-03-24 04:00:00+00:00",
+   "price": 71292,
+   "from_low_pct": 13.3,
+   "next_30d_pct": 9.5,
+   "next_90d_pct": -9.9,
+   "stayed_above_days": 0.3,
+   "complete": true
+  },
+  {
+   "time": "2026-03-25 04:00:00+00:00",
+   "price": 70927,
+   "from_low_pct": 12.7,
+   "next_30d_pct": 9.5,
+   "next_90d_pct": -11.3,
+   "stayed_above_days": 1.0,
+   "complete": true
+  },
+  {
+   "time": "2026-04-06 00:00:00+00:00",
+   "price": 69124,
+   "from_low_pct": 9.9,
+   "next_30d_pct": 18.0,
+   "next_90d_pct": -9.2,
+   "stayed_above_days": 0.8,
+   "complete": true
+  },
+  {
+   "time": "2026-04-07 20:00:00+00:00",
+   "price": 71924,
+   "from_low_pct": 13.8,
+   "next_30d_pct": 11.2,
+   "next_90d_pct": -11.0,
+   "stayed_above_days": 40.0,
+   "complete": true
+  },
+  {
+   "time": "2026-05-21 00:00:00+00:00",
+   "price": 78079,
+   "from_low_pct": 18.3,
+   "next_30d_pct": -18.7,
+   "next_90d_pct": -17.6,
+   "stayed_above_days": 0.3,
+   "complete": true
+  },
+  {
+   "time": "2026-05-22 00:00:00+00:00",
+   "price": 77780,
+   "from_low_pct": 17.8,
+   "next_30d_pct": -17.2,
+   "next_90d_pct": -11.0,
+   "stayed_above_days": 0.2,
+   "complete": true
+  },
+  {
+   "time": "2026-05-25 12:00:00+00:00",
+   "price": 77629,
+   "from_low_pct": 17.6,
+   "next_30d_pct": -22.4,
+   "next_90d_pct": -0.6,
+   "stayed_above_days": 0.2,
+   "complete": true
+  },
+  {
+   "time": "2026-07-06 20:00:00+00:00",
+   "price": 64042,
+   "from_low_pct": 9.7,
+   "next_30d_pct": 1.0,
+   "next_90d_pct": 35.1,
+   "stayed_above_days": 0.2,
+   "complete": true
+  },
+  {
+   "time": "2026-07-10 00:00:00+00:00",
+   "price": 63947,
+   "from_low_pct": 9.5,
+   "next_30d_pct": 1.3,
+   "next_90d_pct": 29.4,
+   "stayed_above_days": 2.8,
+   "complete": true
+  },
+  {
+   "time": "2026-07-14 12:00:00+00:00",
+   "price": 64744,
+   "from_low_pct": 10.9,
+   "next_30d_pct": -2.0,
+   "next_90d_pct": 27.8,
+   "stayed_above_days": 2.3,
+   "complete": true
+  },
+  {
+   "time": "2026-07-17 16:00:00+00:00",
+   "price": 64161,
+   "from_low_pct": 9.9,
+   "next_30d_pct": -1.6,
+   "next_90d_pct": 28.4,
+   "stayed_above_days": 6.8,
+   "complete": true
+  },
+  {
+   "time": "2026-07-25 16:00:00+00:00",
+   "price": 64388,
+   "from_low_pct": 10.3,
+   "next_30d_pct": 22.3,
+   "next_90d_pct": 26.2,
+   "stayed_above_days": 2.2,
+   "complete": true
+  },
+  {
+   "time": "2026-07-29 04:00:00+00:00",
+   "price": 64561,
+   "from_low_pct": 10.6,
+   "next_30d_pct": 23.4,
+   "next_90d_pct": 23.6,
+   "stayed_above_days": 0.3,
+   "complete": true
+  },
+  {
+   "time": "2026-07-30 08:00:00+00:00",
+   "price": 64788,
+   "from_low_pct": 11.0,
+   "next_30d_pct": 19.8,
+   "next_90d_pct": 25.6,
+   "stayed_above_days": 0.8,
+   "complete": true
+  },
+  {
+   "time": "2026-08-04 12:00:00+00:00",
+   "price": 64125,
+   "from_low_pct": 9.8,
+   "next_30d_pct": 26.9,
+   "next_90d_pct": 20.9,
+   "stayed_above_days": 0.8,
+   "complete": true
+  },
+  {
+   "time": "2026-08-05 12:00:00+00:00",
+   "price": 64388,
+   "from_low_pct": 10.3,
+   "next_30d_pct": 23.4,
+   "next_90d_pct": 20.7,
+   "stayed_above_days": 5.2,
+   "complete": true
+  },
+  {
+   "time": "2026-08-11 08:00:00+00:00",
+   "price": 64390,
+   "from_low_pct": 10.3,
+   "next_30d_pct": 20.9,
+   "next_90d_pct": 15.5,
+   "stayed_above_days": 0.2,
+   "complete": true
+  },
+  {
+   "time": "2026-08-17 12:00:00+00:00",
+   "price": 64200,
+   "from_low_pct": 10.0,
+   "next_30d_pct": 18.1,
+   "next_90d_pct": 0.9,
+   "stayed_above_days": 52.0,
+   "complete": true
+  },
+  {
+   "time": "2026-10-08 16:00:00+00:00",
+   "price": 81776,
+   "from_low_pct": 30.1,
+   "next_30d_pct": -7.3,
+   "next_90d_pct": -26.1,
+   "stayed_above_days": 4.2,
+   "complete": false
+  },
+  {
+   "time": "2026-10-13 00:00:00+00:00",
+   "price": 83331,
+   "from_low_pct": 32.5,
+   "next_30d_pct": -11.4,
+   "next_90d_pct": -27.5,
+   "stayed_above_days": 1.5,
+   "complete": false
+  },
+  {
+   "time": "2026-10-15 12:00:00+00:00",
+   "price": 82418,
+   "from_low_pct": 31.0,
+   "next_30d_pct": -20.2,
+   "next_90d_pct": -26.7,
+   "stayed_above_days": 1.0,
+   "complete": false
+  },
+  {
+   "time": "2026-10-18 08:00:00+00:00",
+   "price": 82070,
+   "from_low_pct": 27.2,
+   "next_30d_pct": -20.8,
+   "next_90d_pct": -26.4,
+   "stayed_above_days": 0.2,
+   "complete": false
+  },
+  {
+   "time": "2026-10-18 20:00:00+00:00",
+   "price": 82116,
+   "from_low_pct": 18.7,
+   "next_30d_pct": -20.9,
+   "next_90d_pct": -26.4,
+   "stayed_above_days": 0.7,
+   "complete": false
+  },
+  {
+   "time": "2026-10-20 00:00:00+00:00",
+   "price": 82138,
+   "from_low_pct": 10.2,
+   "next_30d_pct": -23.0,
+   "next_90d_pct": -26.4,
+   "stayed_above_days": 0.2,
+   "complete": false
+  },
+  {
+   "time": "2026-10-20 12:00:00+00:00",
+   "price": 82618,
+   "from_low_pct": 9.2,
+   "next_30d_pct": -23.6,
+   "next_90d_pct": -26.9,
+   "stayed_above_days": 1.8,
+   "complete": false
+  },
+  {
+   "time": "2026-10-29 12:00:00+00:00",
+   "price": 81778,
+   "from_low_pct": 8.1,
+   "next_30d_pct": -26.1,
+   "next_90d_pct": -26.1,
+   "stayed_above_days": 0.2,
+   "complete": false
+  },
+  {
+   "time": "2026-11-04 20:00:00+00:00",
+   "price": 80504,
+   "from_low_pct": 6.4,
+   "next_30d_pct": -24.9,
+   "next_90d_pct": -24.9,
+   "stayed_above_days": 0.3,
+   "complete": false
+  }
+ ],
+ "cross_stats": {
+  "n": 144,
+  "n_real": 40,
+  "median_from_low_pct": 13.4,
+  "whipsaw_pct": 72.2
+ }
+}

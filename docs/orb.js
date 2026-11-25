@@ -487,7 +487,7 @@
     if (cap) cap.textContent = `ทั้งกระดาน ${all.length} เหรียญ · เหรียญซื้อขายคล่องก่อน เรียงคะแนนสูง→ต่ำ (ซ้ายบน→ขวาล่าง) แล้วตามด้วยสภาพคล่องต่ำ · ยิ่งเขียวสว่าง = คะแนนสูง · กะพริบ = คะแนนเพิ่งเปลี่ยน · ช่องเทาเข้ม = สภาพคล่องต่ำ`;
   }
 
-  window.CLOrb = {render: () => draw(false)};
+  window.CLOrb = {render: () => draw(false), price: (sym) => (LIVE[sym + 'USDT'] || {}).c, liveAt: () => liveMsgAt};
   setInterval(() => { liveStatus(); if (liveDirty && !document.hidden && !document.getElementById('view-scan').hidden) { liveDirty = false; draw(true); } }, 2000);
   setTimeout(connectLive, 1500);
   setInterval(() => draw(false), 3000);

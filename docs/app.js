@@ -77,7 +77,7 @@
   document.addEventListener('change', (e) => { if (e.target && e.target.id === 'chart-sym') { chart.sym = e.target.value; loadChart(); } });
 
   // ---------------- tabs (hash routing) ----------------
-  const TABS = ['overview', 'plans', 'scan', 'scalp', 'trade', 'portfolio', 'strategy'];
+  const TABS = ['overview', 'plans', 'scan', 'reason', 'scalp', 'trade', 'portfolio', 'strategy'];
   function showTab(name) {
     if (!TABS.includes(name)) name = 'overview';
     document.querySelectorAll('[data-view]').forEach((s) => { s.hidden = s.dataset.view !== name; });
@@ -124,7 +124,10 @@
     });
     draw('heroSub', (el) => {
       if (enterNow.length) el.textContent = 'ดูจุดเข้า, stop และขนาดไม้ได้ที่แท็บ "แผนเทรด" — ตั้ง stop ทุกครั้งหลังซื้อ';
-      else if (!up) el.textContent = `กลยุทธ์หลักจะเริ่มซื้อเมื่อ BTC กลับขึ้นเหนือเส้น EMA200 (4h) ซึ่งตอนนี้อยู่ที่ ${fmt.usd(e200, 0)} · ระหว่างนี้มี ${near.length} เหรียญที่อยู่ในรายการเฝ้าดู`;
+      else if (!up) { const A = (D.scanner || {}).analysis || {};
+        el.textContent = `ตอนนี้ไม่ได้ขาดทุน — บอทถือเงินสด 100% · จะเริ่มซื้อเมื่อ BTC อยู่เหนือเส้น EMA200 (4h, ตอนนี้ ${fmt.usd(e200, 0)})`
+          + (A.btc_ema200_7d_pct != null ? ` · เส้นนี้กำลังลดลงมาหาราคา (${fmt.pct(A.btc_ema200_7d_pct, 1)} ใน 7 วัน) ถ้า BTC แค่ทรงตัว 2 สัปดาห์ ระยะห่างจะเหลือราว ${A.btc_gap_flat_2w_pct}%` : '')
+          + ' · ทดสอบแล้ว: ซื้อโดยไม่รอได้ผลแย่กว่า (ดูแท็บ "เหตุผล")'; }
       else el.textContent = `BTC อยู่เหนือ EMA200 แล้ว · มี ${near.length} เหรียญใกล้จุดเข้า ระบบจะแจ้ง Telegram เมื่อเกิดสัญญาณ`;
     });
     draw('gate', (el) => {
@@ -135,7 +138,7 @@
       const tr = mk('div', 'track'), f = mk('div', 'fill'); f.style.width = (frac * 100).toFixed(1) + '%'; tr.append(f);
       const l = mk('div', 'lbl');
       l.append(mk('span', null, `BTC ${fmt.usd(btcNow, 0)}`),
-        mk('span', null, up ? `อยู่เหนือ EMA200 ${fmt.pct(gap, 1)} → บอทเปิดเทรดได้` : `ต้องขึ้นอีก ${fmt.pct(-gap / (1 + gap / 100), 1)} ถึง ${fmt.usd(e200, 0)} บอทจึงเริ่มซื้อ`));
+        mk('span', null, up ? `อยู่เหนือ EMA200 ${fmt.pct(gap, 1)} → บอทเปิดเทรดได้` : `ห่างเส้น ${fmt.usd(e200, 0)} อยู่ ${fmt.pct(-gap / (1 + gap / 100), 1)} (เส้นขยับลงมาหาราคาทุกแท่ง)`));
       el.append(tr, l);
     });
     draw('tiles', (el) => {

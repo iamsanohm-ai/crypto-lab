@@ -117,7 +117,13 @@ def scan() -> dict:
         planmod.alert_new(plans, str(m.times[T]))
     except Exception as e:  # noqa: BLE001
         print("plan alert failed", e)
-    out = {"generated_at": now_iso(), "bar": str(m.times[T]), "btc_regime_up": btc_up, "total": len(rows),
+    try:
+        from lab import reasoning
+        held = {k[:-4]: v for k, v in (json.loads(st_p.read_text()).get("positions") or {}).items()} if st_p.exists() else {}
+        thinking = {"items": reasoning.think(m, rows, cfg, plans, universe, held), "evidence": reasoning.evidence_summary()}
+    except Exception as e:  # noqa: BLE001
+        print("reasoning failed", e); thinking = None
+    out = {"generated_at": now_iso(), "bar": str(m.times[T]), "btc_regime_up": btc_up, "total": len(rows), "thinking": thinking,
            "counts": counts, "min_liquid_usdt": MIN_LIQUID_USDT, "analysis": analysis, "plans": plans, "rows": rows,
            "orb": {"components": {k: {"weight": v[0], "full": v[1], "zero": v[2], "label": v[3]} for k, v in orb.COMPONENTS.items()},
                    "cap_reasons": orb.CAP_REASONS},
@@ -179,7 +185,11 @@ def analyze(m, c, ema200, rsi, rows, btc_up, cfg) -> dict:
     else:
         action = "บอท: ตลาดเปิดให้เข้าได้ แต่ยังไม่มีเหรียญไหนเกิดสัญญาณ — รอแท่ง 4h ถัดไป"
     lines.append(action)
+    e2 = ema200["BTCUSDT"]; alpha = 2 / 201
+    e200_7d = float(e2.iloc[T] / e2.iloc[T - 42] - 1) * 100   # เส้น EMA200 เปลี่ยนไปเท่าไหร่ใน 7 วัน
+    gap_flat_2w = None if btc_gap >= 0 else round(-btc_gap * (1 - alpha) ** 84, 1)   # ถ้าราคานิ่ง 2 สัปดาห์ ระยะห่างจะเหลือเท่าไหร่
     return {"regime": regime, "regime_th": regime_th, "btc_close": btc_close, "btc_ema200": round(btc_e200, 2),
+            "btc_ema200_7d_pct": round(e200_7d, 2), "btc_gap_flat_2w_pct": gap_flat_2w,
             "btc_vs_ema200_pct": round(btc_gap, 2), "btc_mom_30d_pct": None if btc_mom30 is None else round(btc_mom30, 2),
             "btc_rsi14": round(btc_rsi, 1), "btc_vol_annual_pct": round(vol_now, 1), "btc_vol_base_pct": round(vol_base, 1),
             "breadth_pct": round(breadth, 1), "liquid_coins": len(liquid), "liquid_up": len(up),

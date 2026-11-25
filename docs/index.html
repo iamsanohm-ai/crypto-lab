@@ -420,6 +420,45 @@ details.notes summary{cursor:pointer;color:var(--fg)}
 .sc-tr{display:grid;grid-template-columns:auto auto auto 1fr auto;gap:8px;align-items:center;font-size:12px;padding:5px 0;border-bottom:1px solid var(--line)}
 .sc-tr .t{font-family:var(--mono);color:var(--dim)}.sc-tr .k{font-size:10px;padding:1px 6px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
 .sc-tr .n{font-family:var(--mono);font-weight:600}.sc-tr.pos .n{color:var(--up)}.sc-tr.neg .n{color:var(--down)}
+.rs-grid{display:grid;gap:12px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:900px){.rs-grid{grid-template-columns:210px minmax(0,1fr)}}
+.rs-list{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
+@media (min-width:900px){.rs-list{display:grid;align-content:start;max-height:900px;overflow:auto}}
+.rs-item{flex:none;display:grid;grid-template-columns:1fr auto;gap:2px 8px;text-align:left;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;color:var(--fg);cursor:pointer;min-width:140px}
+.rs-item.on{border-color:var(--amber)}.rs-item small{grid-column:1/-1;color:var(--dim);font-size:11px}
+.rs-v{font-size:11px;font-weight:600;padding:1px 8px;border-radius:999px;border:1px solid var(--line);white-space:nowrap}
+.rs-v.ok{color:var(--up);border-color:color-mix(in srgb,var(--up) 50%,transparent)}.rs-v.wait{color:var(--amber);border-color:color-mix(in srgb,var(--amber) 50%,transparent)}.rs-v.no{color:var(--down);border-color:color-mix(in srgb,var(--down) 50%,transparent)}
+.rs-detail{min-width:0;display:grid;gap:10px;align-content:start}
+.rs-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px}.rs-head p{flex-basis:100%;margin:0;font-size:15px;font-weight:600}
+.rs-big{font-size:22px;font-weight:700}.rs-px{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.rs-steps{list-style:none;margin:0;padding:0;display:grid;gap:6px;counter-reset:s}
+.rs-steps li{display:grid;grid-template-columns:24px 1fr;gap:2px 10px;background:var(--panel2);border:1px solid var(--line);border-left-width:3px;border-radius:8px;padding:8px 10px}
+.rs-steps li.ok{border-left-color:var(--up)}.rs-steps li.bad{border-left-color:var(--down)}.rs-steps li.info{border-left-color:#3d4b5a}
+.rs-steps .ic{grid-row:span 3;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;background:#1b2530}
+.rs-steps li.ok .ic{color:var(--up)}.rs-steps li.bad .ic{color:var(--down)}.rs-steps li.info .ic{color:var(--muted)}
+.rs-steps b{font-size:13px}.rs-steps code{font-family:var(--mono);font-size:12px;color:#cfd8e3;overflow-wrap:anywhere}.rs-steps p{margin:0;font-size:12px;color:var(--muted);line-height:1.55}
+.rs-money{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+.rs-money div{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;display:grid;gap:2px}
+.rs-money span{font-size:11px;color:var(--muted)}.rs-money b{font-family:var(--mono);font-size:16px}.rs-money small{font-size:11px;color:var(--dim)}
+.rs-lad{padding:30px 6px 26px}
+.rs-bar{position:relative;height:10px;border-radius:5px;background:#1b2530}
+.rs-bar .z{position:absolute;top:0;height:100%}.rs-bar .z.loss{background:color-mix(in srgb,var(--down) 45%,transparent)}.rs-bar .z.gain{background:color-mix(in srgb,var(--up) 35%,transparent)}
+.rs-bar .mk{position:absolute;top:-4px;width:2px;height:18px;background:var(--muted)}
+.rs-bar .mk em{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);font-style:normal;font-size:10.5px;white-space:nowrap;color:var(--muted)}
+.rs-bar .mk small{position:absolute;top:20px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:10px;color:var(--dim);white-space:nowrap}
+.rs-bar .mk.st{background:var(--down)}.rs-bar .mk.en{background:#fff}.rs-bar .mk.be{background:var(--amber)}.rs-bar .mk.tg{background:var(--up)}
+.rs-bar .now{position:absolute;top:-6px;width:12px;height:22px;margin-left:-6px;border-radius:6px;background:#f2a93b;box-shadow:0 0 10px #f2a93b;transition:left .5s}
+.rs-exits{display:grid;gap:6px}
+.rs-ex{display:grid;grid-template-columns:24px 1fr;gap:2px 10px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}
+.rs-ex .n{grid-row:span 3;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:#1b2530;font-size:12px}
+.rs-ex b{font-size:13px}.rs-ex p{margin:0;font-size:12.5px;color:#c4cfda}.rs-ex small{color:var(--amber);font-size:11px}
+.rs-ex.stop .n{color:var(--down)}.rs-ex.breakeven .n{color:var(--amber)}.rs-ex.trail .n,.rs-ex.ema .n{color:var(--up)}
+.rs-act{display:grid;gap:6px;justify-items:start}.rs-act small{color:var(--dim);font-size:11.5px}
+.rs-note{margin:0;font-family:var(--mono);font-size:13px}
+.rs-qa{display:grid;gap:6px;background:#0d141b;border:1px solid #17212b;border-radius:10px;padding:12px 14px;font-size:13.5px;line-height:1.65}
+.rs-qa b{color:#fff}.rs-qa p{margin:0;color:#c4cfda}
+.rs-sub{font-size:12px;color:var(--muted);line-height:1.6;margin:10px 0 6px}
+tr.cur td{background:color-mix(in srgb,var(--accent) 10%,transparent)}tr.best td{background:color-mix(in srgb,var(--amber) 10%,transparent)}
 .err{color:var(--down);font-family:var(--mono);padding:12px}
 @media (max-width:560px){#sys-chip{display:none}.bar .wrap{flex-wrap:nowrap;gap:8px}.brand .bt{display:none}#live{padding:3px 7px}.authbtn{padding:5px 10px;font-size:12px}.btc small{display:none}.brand{font-size:15px}.chip.paper{display:none}.card{padding:13px}.bigv{font-size:24px}.gauge{grid-template-columns:1fr}.meta{display:none}.decision{padding:16px}}
 @media (prefers-reduced-motion:no-preference){.gate .fill{transition:width .6s ease}}
@@ -455,6 +494,7 @@ details.notes summary{cursor:pointer;color:var(--fg)}
     <button class="tab" role="tab" data-tab="overview">ภาพรวม</button>
     <button class="tab" role="tab" data-tab="plans">แผนเทรด<span class="n" data-draw="nPlans">0</span></button>
     <button class="tab" role="tab" data-tab="scan">สแกนกระดาน<span class="n" data-draw="nScan">0</span></button>
+    <button class="tab" role="tab" data-tab="reason">เหตุผล (ทำไมซื้อ/ขาย)</button>
     <button class="tab" role="tab" data-tab="scalp">เทรดเร็ว <span class="n live">LIVE</span></button>
     <button class="tab" role="tab" data-tab="trade">ซื้อขาย</button>
     <button class="tab" role="tab" data-tab="portfolio">พอร์ต &amp; บอท</button>
@@ -559,6 +599,13 @@ details.notes summary{cursor:pointer;color:var(--fg)}
 
 
   <!-- ซื้อขาย -->
+  <!-- เหตุผล -->
+  <section class="view" id="view-reason" data-view="reason" hidden>
+    <div class="card"><h2>ตรวจตรรกะของระบบ · ทำไมยังไม่ซื้อตอนนี้</h2><div id="rs-logic"></div></div>
+    <div class="card"><h2><span class="livedot"></span>ระบบคิดอย่างไร · เลือกเหรียญเพื่อดูเหตุผลทีละขั้น<span class="note">อัปเดตทุก 15 นาที + ราคาสดทุกวินาที</span></h2>
+      <div class="rs-grid"><div id="rs-list" class="rs-list"></div><div id="rs-detail" class="rs-detail"></div></div></div>
+  </section>
+
   <!-- เทรดเร็ว -->
   <section class="view" id="view-scalp" data-view="scalp" hidden>
     <div class="card sc-head"><h2><span class="livedot"></span>เทรดเร็ว · เข้าเร็ว-ออกเร็ว ด้วยราคาจริง (เงินจำลอง 500 USDT)<span class="note">paper · ไม่มีการส่งออเดอร์จริง</span></h2><div id="sc-hero"></div></div>
@@ -779,10 +826,11 @@ details.notes summary{cursor:pointer;color:var(--fg)}
 </dialog>
 
 <script src="d3.min.js"></script>
-<script src="app.js?v=20261125i"></script>
+<script src="app.js?v=20261125j"></script>
 <script src="trade.js?v=20261125h"></script>
 <script src="library.js?v=20261125h"></script>
-<script src="orb.js?v=20261125u"></script>
+<script src="orb.js?v=20261125v"></script>
 <script src="system.js?v=20261125h"></script>
 <script src="scalp.js?v=1"></script>
+<script src="reason.js?v=1"></script>
 </body></html>
