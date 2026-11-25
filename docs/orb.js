@@ -16,7 +16,7 @@
   // ---------- LIVE SCORING: ราคาทุกเหรียญจาก Binance (ทุกวินาที) → คำนวณคะแนนใหม่ทุก 2 วินาที ----------
   const LIVE = {};            // SYMBOLUSDT -> {c, o, q, t}
   let liveMode = 'off', liveMsgAt = 0, liveDirty = false, changes = 0;
-  const prevScore = {}, flashUntil = {};
+  const prevScore = {}, flashUntil = {}, CHANGES = [];
   function onTickers(arr) {
     const now = Date.now();
     for (const t of arr) { if (!t.s || !t.s.endsWith('USDT')) continue; LIVE[t.s] = {c: +t.c, o: +t.o, q: +t.q, t: now}; }
@@ -203,6 +203,16 @@
     const C = W / 2, CY = H / 2;
     const bg = c.createRadialGradient(C, CY, 0, C, CY, W * 0.55); bg.addColorStop(0, 'rgba(242,169,59,0.07)'); bg.addColorStop(0.5, 'rgba(51,195,180,0.025)'); bg.addColorStop(1, 'rgba(0,0,0,0)');
     c.fillStyle = bg; c.fillRect(0, 0, W, H);
+    // rank guide rings (closer to BTC = higher rank)
+    const nAll = Math.max(1, NET.nodes.size - 1);
+    c.setLineDash([3, 5]); c.lineWidth = 1; c.font = '600 10px ui-monospace,monospace'; c.textAlign = 'left';
+    for (const [k, label] of [[10, 'Top 10'], [50, 'Top 50'], [150, 'Top 150']]) {
+      if (k >= nAll) continue;
+      const rr = W * (0.05 + 0.29 * Math.sqrt(k / nAll));
+      c.strokeStyle = 'rgba(150,170,190,0.22)'; c.beginPath(); c.ellipse(C, CY, rr * 1.22, rr * 0.98, 0, 0, 6.283); c.stroke();
+      c.fillStyle = 'rgba(160,180,200,0.65)'; c.fillText(label, C + rr * 1.22 + 4, CY - 3);
+    }
+    c.setLineDash([]);
     // ease neurons toward their score position
     for (const n of NET.nodes.values()) { const k = reduceMotion ? 1 : 0.06; n.x += (n.tx - n.x) * k; n.y += (n.ty - n.y) * k; n.flash *= 0.94; }
     // synapses
@@ -266,7 +276,17 @@
     if (sn) lab(sn, '#f2a93b');
     for (const sym of top) { const n = NET.nodes.get(sym); if (n && n.sym !== 'BTC' && n !== sn) lab(n, '#cfd8e3'); }
     if (sn) { c.strokeStyle = '#f2a93b'; c.lineWidth = 1.5; c.beginPath(); c.arc(sn.x, sn.y, 9 + (reduceMotion ? 0 : Math.sin(ts / 250) * 2), 0, 6.283); c.stroke(); }
-    if (NET.hover && NET.hover !== sn) lab(NET.hover, '#ffffff');
+    if (NET.hover) {
+      const r = NET.hover.row || {}, ST = {buy_signal: 'มีสัญญาณซื้อ', uptrend: 'ขาขึ้น', downtrend: 'ขาลง', illiquid: 'สภาพคล่องต่ำ', new: 'ข้อมูลไม่พอ'};
+      const CAP = {btc_down: 'BTC ขาลง', below_ema200: 'อยู่ใต้ EMA200', illiquid: 'สภาพคล่องต่ำ', no_data: 'ข้อมูลไม่พอ'};
+      const lines = [`${r.symbol}  คะแนน ${r.score}${r.caps && r.caps.length ? ` (ดิบ ${r.raw_score})` : ''}`, `สถานะ: ${ST[r.status] || r.status}`,
+        `24 ชม. ${r.change_24h_pct == null ? '—' : (r.change_24h_pct > 0 ? '+' : '') + r.change_24h_pct.toFixed(2) + '%'} · เทียบ EMA200 ${r.vs_ema200_pct == null ? '—' : (r.vs_ema200_pct > 0 ? '+' : '') + r.vs_ema200_pct + '%'}`,
+        r.caps && r.caps.length ? 'ถูกจำกัดคะแนนเพราะ: ' + r.caps.map((x) => CAP[x] || x).join(', ') : 'ไม่ถูกจำกัดคะแนน', 'แตะเพื่อดูรายละเอียด'];
+      c.font = '12px ui-monospace,monospace'; const bw = Math.max(...lines.map((t) => c.measureText(t).width)) + 18, bh = lines.length * 17 + 12;
+      let bx = NET.hover.x + 14, by = NET.hover.y + 14; if (bx + bw > W - 4) bx = NET.hover.x - 14 - bw; if (by + bh > H - 4) by = NET.hover.y - 14 - bh;
+      c.fillStyle = 'rgba(8,12,17,0.94)'; c.strokeStyle = 'rgba(242,169,59,0.6)'; c.lineWidth = 1; c.fillRect(bx, by, bw, bh); c.strokeRect(bx, by, bw, bh);
+      lines.forEach((t, i) => { c.fillStyle = i === 0 ? '#f2a93b' : i === lines.length - 1 ? '#6b7a8a' : '#cfd8e3'; c.fillText(t, bx + 9, by + 20 + i * 17); });
+    }
   }
   let topCache = [], topAt = 0;
   function rowsTop() { if (Date.now() - topAt > 2000) { topAt = Date.now(); topCache = [...NET.nodes.values()].filter((n) => n.status !== 'illiquid').sort((a, b) => b.score - a.score || b.raw - a.raw).slice(0, 7).map((n) => n.sym); } return topCache; }
@@ -383,13 +403,38 @@
     if (!force && key === lastKey) return; lastKey = key;
     const rows = ranked(S);
     const now = Date.now();
-    for (const r of rows) { const pv = prevScore[r.symbol]; if (pv != null && pv !== r.raw_score) { flashUntil[r.symbol] = now + 1800; changes++; } prevScore[r.symbol] = r.raw_score; }
+    for (const r of rows) { const pv = prevScore[r.symbol];
+      if (pv != null && pv !== r.raw_score) { flashUntil[r.symbol] = now + 1800; changes++;
+        if (r.status !== 'illiquid') { CHANGES.unshift({sym: r.symbol, from: pv, to: r.raw_score, final: r.score, t: now, chg: r.change_24h_pct}); CHANGES.length = Math.min(CHANGES.length, 40); } }
+      prevScore[r.symbol] = r.raw_score; }
     if (sel) sel = rows.find((r) => r.symbol === sel.symbol) || null;
     if (!sel) sel = rows.find((r) => r.status !== 'illiquid') || rows[0];
-    header(S, rows); checks(S, rows); graph(S, rows); registry(S, rows); detail(S); validation(D.orb_validation);
+    header(S, rows); checks(S, rows); graph(S, rows); registry(S, rows); detail(S); validation(D.orb_validation); insight(S, rows);
     if (!document.getElementById('orb-tape').childElementCount || force === 'tape') tape(S, rows);
   }
   document.addEventListener('change', (e) => { if (e.target && e.target.id === 'orb-illiquid') { showIlliquid = e.target.checked; draw(true); } });
+  function insight(S, rows) {
+    const el = document.getElementById('nm-insight'); if (!el) return;
+    const liq = rows.filter((r) => r.status !== 'illiquid'), up = liq.filter((r) => (r.vs_ema200_pct ?? -1) > 0).length;
+    const top = liq.slice(0, 5), capped = top.length && top.every((r) => r.caps.includes('btc_down'));
+    el.replaceChildren();
+    const sum = mk('div', 'nm-sum');
+    const p1 = mk('p'); p1.append(mk('b', null, 'อ่านภาพนี้: '), 'จุดแต่ละจุดคือเหรียญ 1 ตัว ยิ่งอยู่ใกล้ BTC ตรงกลางและสว่าง = คะแนนยิ่งสูง (น่าสนใจกว่า) · สีเขียว = ขาขึ้น, สีแดง = ขาลง · จุดเรืองแสงที่วิ่งไปตามเส้น = คะแนนของเหรียญนั้นเพิ่งเปลี่ยนจากราคาสด');
+    const p2 = mk('p'); p2.append(mk('b', null, 'ตอนนี้: '), `ใน ${liq.length} เหรียญที่ซื้อขายคล่อง มี ${up} ตัว (${liq.length ? Math.round(up / liq.length * 100) : 0}%) เป็นขาขึ้น · 5 อันดับแรก: ${top.map((r) => `${r.symbol} ${r.score}`).join(', ') || '—'}`);
+    const p3 = mk('p', capped ? 'nm-warn' : 'nm-ok');
+    p3.append(mk('b', null, 'แปลว่า: '), capped ? 'ทุกเหรียญถูกจำกัดคะแนนไว้ไม่เกิน 59 เพราะ BTC ยังเป็นขาลง — ระบบแนะนำให้ "เฝ้าดู" ยังไม่ใช่จังหวะซื้อ' : top.some((r) => r.score >= 70) ? 'มีเหรียญคะแนน 70+ — ดูแผนเทรดก่อนตัดสินใจ (ในอดีตคะแนนสูงมากอาจหมายถึงวิ่งไปไกลแล้ว)' : 'ยังไม่มีเหรียญคะแนนสูงพอ — เฝ้าดูต่อ');
+    sum.append(p1, p2, p3);
+    const feed = mk('div', 'nm-feed'); feed.append(mk('div', 'op-t', 'คะแนนดิบเปลี่ยนล่าสุด (ก่อนจำกัด 59 · จากราคาสด) · แตะเพื่อดูเหรียญ'));
+    const list = mk('div', 'nm-chips');
+    if (!CHANGES.length) list.append(mk('span', 'nm-chip', 'รอราคาสด…'));
+    for (const ch of CHANGES.slice(0, 12)) {
+      const upc = ch.to > ch.from, chip = mk('button', 'nm-chip ' + (upc ? 'up' : 'down')); chip.type = 'button';
+      chip.textContent = `${ch.sym} ${ch.from}→${ch.to} ${upc ? '▲' : '▼'} · ${Math.max(0, Math.round((Date.now() - ch.t) / 1000))} วิ`;
+      chip.onclick = () => { const r = rows.find((x) => x.symbol === ch.sym); if (r) select(r); }; list.append(chip);
+    }
+    feed.append(list); el.append(sum, feed);
+  }
+
   window.CLOrb = {render: () => draw(false)};
   setInterval(() => { liveStatus(); if (liveDirty && !document.hidden) { liveDirty = false; draw(true); } }, 2000);
   setTimeout(connectLive, 1500);
