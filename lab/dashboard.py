@@ -109,6 +109,38 @@ def build():
         if len(events) >= 40:
             break
     last_tick = max((r["ts"] for r in led if r["event"] == "TICK"), default=None)
+    # activity feed: one line per bot run (grouped by minute) + notable events
+    activity, seen = [], {}
+    for r in reversed(led):
+        key = r["ts"][:16]
+        if r["event"] == "TICK":
+            g = seen.setdefault(key, {"time": key + "Z", "kind": "tick", "n": 0, "equity": 0.0, "positions": 0, "new_bar": False})
+            g["n"] += 1; g["equity"] += r.get("equity", 0); g["positions"] += len(r.get("positions", [])); g["new_bar"] |= bool(r.get("new_bar"))
+        elif r["event"] in ("BUY", "SELL", "SENTINEL_HALT", "SENTINEL_REJECT", "SENTINEL_RESUME", "ERROR", "UNIVERSE") or (r["event"] == "SIGNALS" and r.get("candidates")):
+            activity.append({"time": key + "Z", "kind": r["event"].lower(), "text": f"{r.get('strategy', '')} {r['event']} {r.get('symbol', '') or ', '.join(r.get('candidates', []) or [])} {r.get('reason', '')}".strip()})
+        if len(seen) >= 40:
+            break
+    for g in seen.values():
+        activity.append({"time": g["time"], "kind": "tick", "text": f"บอทตรวจตลาด {g['n']} กลยุทธ์" + (" · แท่ง 4h ใหม่" if g["new_bar"] else "")
+                         + f" · equity รวม {g['equity']:,.2f} USDT · ถือ {g['positions']} สถานะ"})
+    activity = sorted(activity, key=lambda a: a["time"], reverse=True)[:40]
+
+    def _stamp(path, key="generated_at"):
+        try:
+            return json.loads(path.read_text()).get(key)
+        except Exception:  # noqa: BLE001
+            return None
+    brief_runs = {}
+    try:
+        brief_runs = json.loads((ROOT / "research" / "brief" / "last_run.json").read_text())
+    except Exception:  # noqa: BLE001
+        pass
+    system = {"tick_every_min": 15, "tick_offset_min": 7, "last_bot_tick": last_tick,
+              "judge_at": _stamp(ROOT / "research" / "judge_results.json"),
+              "library_at": _stamp(ROOT / "docs" / "library.json"),
+              "orb_validation_at": _stamp(ROOT / "research" / "orb_validation.json"),
+              "brief_at": brief_runs.get("morning"), "weekly_at": brief_runs.get("weekly"),
+              "judge_utc": "15:43", "brief_utc": "00:05", "repo": "iamsanohm-ai/crypto-lab"}
 
     bh = judge["benchmarks"]
     leaderboard = [{"name": n, "role": roles.get(n, ""), "return_pct": round(r["metrics"]["return"] * 100, 1),
@@ -141,7 +173,7 @@ def build():
         "candles": candles(), "market": market(members or ["BTCUSDT", "ETHUSDT", "SOLUSDT"]),
         "accounts": accounts, "equity": equity, "positions": positions, "risk": risk, "events": events,
         "leaderboard": leaderboard, "bt_curves": curves,
-        "scanner": scanner, "orb_validation": orb_validation,
+        "scanner": scanner, "orb_validation": orb_validation, "system": system, "activity": activity,
     }
     last_closed = [c for c in out["candles"] if c["closed"]][-1]
     out["status"][0].update(btc_close=last_closed["close"], btc_ema200=last_closed["ema200"],
@@ -151,6 +183,7 @@ def build():
     OUT.write_text(json.dumps(out, separators=(",", ":"), default=str))
     OUT_SITE.parent.mkdir(exist_ok=True)
     OUT_SITE.write_text(OUT.read_text())
+    (OUT_SITE.parent / "heartbeat.json").write_text(json.dumps({"generated_at": out["generated_at"], "last_bot_tick": last_tick}))
     return out
 
 

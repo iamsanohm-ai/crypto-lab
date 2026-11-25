@@ -12,7 +12,70 @@
   const fmtPct = (v, d = 1) => v == null ? '—' : (v > 0 ? '+' : '') + Number(v).toFixed(d) + '%';
   const px = (v) => (window.CL ? window.CL.fmt.px(v) : String(v));
 
-  function rowsOf(S) { return S.rows.filter((r) => r.score != null); }
+
+  // ---------- LIVE SCORING: ราคาทุกเหรียญจาก Binance (ทุกวินาที) → คำนวณคะแนนใหม่ทุก 2 วินาที ----------
+  const LIVE = {};            // SYMBOLUSDT -> {c, o, q, t}
+  let liveMode = 'off', liveMsgAt = 0, liveDirty = false, changes = 0;
+  const prevScore = {}, flashUntil = {};
+  function onTickers(arr) {
+    const now = Date.now();
+    for (const t of arr) { if (!t.s || !t.s.endsWith('USDT')) continue; LIVE[t.s] = {c: +t.c, o: +t.o, q: +t.q, t: now}; }
+    liveMsgAt = now; liveDirty = true;
+  }
+  function connectLive() {
+    const hosts = ['wss://data-stream.binance.vision/ws/!miniTicker@arr', 'wss://stream.binance.com:443/ws/!miniTicker@arr', 'wss://stream.binance.com:9443/ws/!miniTicker@arr'];
+    let attempt = 0;
+    const open = () => {
+      let ws; try { ws = new WebSocket(hosts[attempt % hosts.length]); } catch (e) { attempt++; setTimeout(open, 3000); return; }
+      ws.onmessage = (ev) => { const d = JSON.parse(ev.data); if (Array.isArray(d)) { liveMode = 'ws'; onTickers(d); } };
+      ws.onclose = () => { attempt++; setTimeout(open, Math.min(20000, 2000 * attempt)); };
+      ws.onerror = () => ws.close();
+    };
+    open();
+    setInterval(async () => {   // REST fallback when the WebSocket is blocked
+      if (document.hidden || (liveMode === 'ws' && Date.now() - liveMsgAt < 6000)) return;
+      for (const h of ['https://data-api.binance.vision', 'https://api.binance.com']) {
+        try { const r = await fetch(h + '/api/v3/ticker/24hr?type=MINI', {cache: 'no-store'}); if (!r.ok) continue;
+          const j = await r.json(); onTickers(j.map((x) => ({s: x.symbol, c: x.lastPrice, o: x.openPrice, q: x.quoteVolume}))); liveMode = 'poll'; return; } catch (e) { /* next */ }
+      }
+    }, 5000);
+  }
+  const clamp01 = (v) => Math.max(0, Math.min(1, v));
+  function comp(C, k, x) { const c = C[k]; if (x == null || isNaN(x)) return 0; return Math.round(10 * c.weight * clamp01((c.zero - x) / (c.zero - c.full))) / 10; }
+  function liveRows(S) {
+    const C = S.orb.components, btc = LIVE.BTCUSDT, btcRow = S.rows.find((r) => r.symbol === 'BTC');
+    let btcUp = S.analysis ? S.analysis.regime !== 'bear' && (S.analysis.btc_vs_ema200_pct || 0) > 0 : false;
+    if (btc && S.analysis && S.analysis.btc_ema200) btcUp = btc.c > S.analysis.btc_ema200;
+    return S.rows.filter((r) => r.score != null).map((r) => {
+      const L = LIVE[r.symbol + 'USDT']; if (!L || !r.price) return r;
+      const p = L.c, k = p / r.price;
+      const vs = r.vs_ema200_pct == null ? null : ((1 + r.vs_ema200_pct / 100) * k - 1) * 100;
+      const mom = r.mom_30d_pct == null ? null : ((1 + r.mom_30d_pct / 100) * k - 1) * 100;
+      const entry = r.entry_dist_pct == null ? null : ((1 + r.entry_dist_pct / 100) / k - 1) * 100;
+      const atrp = r.atr_pct == null ? null : r.atr_pct / k;
+      const qv = L.q || r.quote_volume_24h;
+      const comps = {trend: comp(C, 'trend', vs), momentum: comp(C, 'momentum', mom), liquidity: comp(C, 'liquidity', qv > 0 ? Math.log10(qv) : null),
+                     volatility: comp(C, 'volatility', atrp), entry: comp(C, 'entry', entry)};
+      const raw = Math.round(Object.values(comps).reduce((a, b) => a + b, 0));
+      const caps = [];
+      if (qv < (S.min_liquid_usdt || 2e6)) caps.push('illiquid');
+      if (vs == null) caps.push('no_data'); else if (vs < 0) caps.push('below_ema200');
+      if (!btcUp) caps.push('btc_down');
+      const score = caps.length ? Math.min(raw, 59) : raw;
+      return Object.assign({}, r, {price: p, change_24h_pct: L.o ? (p / L.o - 1) * 100 : r.change_24h_pct, quote_volume_24h: qv,
+        vs_ema200_pct: vs == null ? null : +vs.toFixed(1), mom_30d_pct: mom == null ? null : +mom.toFixed(1),
+        entry_dist_pct: entry == null ? null : +entry.toFixed(2), components: comps, raw_score: raw, score, caps, live: true});
+    });
+  }
+  function liveStatus() {
+    const el = document.getElementById('orb-live'); if (!el) return;
+    const age = liveMsgAt ? Math.round((Date.now() - liveMsgAt) / 1000) : null;
+    const on = age != null && age <= 8;
+    el.className = 'orb-live ' + (on ? 'on' : '');
+    el.textContent = on ? `● LIVE SCORING ${liveMode === 'ws' ? '' : '(สำรอง) '}· ${Object.keys(LIVE).length} เหรียญ · คะแนนเปลี่ยน ${changes} ครั้ง` : '○ กำลังเชื่อมต่อราคาทุกเหรียญ…';
+  }
+
+  function rowsOf(S) { return liveRows(S); }
   function ranked(S) { return rowsOf(S).slice().sort((a, b) => b.score - a.score || b.raw_score - a.raw_score); }
 
   function header(S, rows) {
@@ -63,6 +126,7 @@
       const liq = Math.max(6, Math.log10(Math.max(1, r.quote_volume_24h)));
       const dot = sv('circle', {cx: x, cy: y, r: Math.max(1.6, (liq - 5.5) * 1.6), fill: STATUS_COL[r.status] || '#888', 'fill-opacity': r.status === 'illiquid' ? 0.5 : 0.95, class: 'orb-dot', tabindex: 0});
       if (isSel) dot.setAttribute('stroke', '#fff'), dot.setAttribute('stroke-width', 2);
+      if ((flashUntil[r.symbol] || 0) > Date.now()) dot.setAttribute('class', 'orb-dot blip');
       const t = sv('title', {}); t.textContent = `${r.symbol} · คะแนน ${r.score} (raw ${r.raw_score}) · corr BTC ${r.corr_btc ?? '—'}`; dot.append(t);
       dot.addEventListener('click', () => select(r));
       dot.addEventListener('keydown', (e) => { if (e.key === 'Enter') select(r); });
@@ -80,7 +144,7 @@
   }
 
   function registry(S, rows) {
-    const el = $('#orb-reg'); el.replaceChildren();
+    const el = $('#orb-reg'); const oldList = el.querySelector('.or-list'); const keepScroll = oldList ? oldList.scrollTop : 0; el.replaceChildren();
     const r0 = sel || rows[0];
     if (r0) {
       const card = mk('div', 'or-card ' + scoreCls(r0.score));
@@ -96,12 +160,12 @@
     }
     const list = mk('div', 'or-list');
     rows.filter((r) => showIlliquid || r.status !== 'illiquid').slice(0, 60).forEach((r) => {
-      const it = mk('button', 'or-row' + (sel && sel.symbol === r.symbol ? ' on' : '')); it.type = 'button';
+      const it = mk('button', 'or-row' + (sel && sel.symbol === r.symbol ? ' on' : '') + ((flashUntil[r.symbol] || 0) > Date.now() ? ' flash' : '')); it.type = 'button';
       const b = mk('span', 'or-mini'); const f = mk('i', scoreCls(r.score)); f.style.width = r.score + '%'; b.append(f);
       it.append(mk('span', 'or-sym', r.symbol), b, mk('span', 'or-n ' + scoreCls(r.score), String(r.score)));
       it.onclick = () => select(r); list.append(it);
     });
-    el.append(list);
+    el.append(list); list.scrollTop = keepScroll;
   }
 
   function detail(S) {
@@ -189,6 +253,8 @@
     const key = S.generated_at + '|' + (sel && sel.symbol) + '|' + showIlliquid + '|' + (D.orb_validation ? D.orb_validation.generated_at : '');
     if (!force && key === lastKey) return; lastKey = key;
     const rows = ranked(S);
+    const now = Date.now();
+    for (const r of rows) { const pv = prevScore[r.symbol]; if (pv != null && pv !== r.raw_score) { flashUntil[r.symbol] = now + 1800; changes++; } prevScore[r.symbol] = r.raw_score; }
     if (sel) sel = rows.find((r) => r.symbol === sel.symbol) || null;
     if (!sel) sel = rows.find((r) => r.status !== 'illiquid') || rows[0];
     header(S, rows); checks(S, rows); graph(S, rows); registry(S, rows); detail(S); validation(D.orb_validation);
@@ -196,5 +262,7 @@
   }
   document.addEventListener('change', (e) => { if (e.target && e.target.id === 'orb-illiquid') { showIlliquid = e.target.checked; draw(true); } });
   window.CLOrb = {render: () => draw(false)};
+  setInterval(() => { liveStatus(); if (liveDirty && !document.hidden) { liveDirty = false; draw(true); } }, 2000);
+  setTimeout(connectLive, 1500);
   setInterval(() => draw(false), 3000);
 })();

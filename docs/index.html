@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<html lang="th"><head><meta charset="utf-8"><meta http-equiv="Cache-Control" content="no-cache"><meta http-equiv="Pragma" content="no-cache"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Crypto Lab Terminal</title>
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#080b10">
@@ -349,8 +349,33 @@ details.notes summary{cursor:pointer;color:var(--fg)}
   @keyframes cardin{from{opacity:.2;transform:translateY(4px)}to{opacity:1;transform:none}}
 }
 @media (prefers-reduced-motion:reduce){.orb-sweep{display:none}}
+/* system status */
+.syscard h2 .note{color:var(--accent);text-decoration:none}
+.sys-grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}
+.sys-t{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--panel2);display:grid;gap:2px}
+.sys-h{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted)}
+.sys-dot{width:8px;height:8px;border-radius:50%;background:var(--up);flex:none}
+.sys-t.warn .sys-dot{background:var(--amber)} .sys-t.bad .sys-dot{background:var(--down)}
+.sys-v{font-family:var(--mono);font-size:17px;font-weight:600;font-variant-numeric:tabular-nums}
+.sys-s{font-size:11.5px;color:var(--dim)}
+.sys-runs-wrap{margin-top:12px}
+.sys-runs{display:grid;gap:4px}
+.gh-run{display:grid;grid-template-columns:22px minmax(0,180px) 1fr;gap:8px;align-items:center;padding:6px 8px;border-radius:8px;background:var(--panel2);color:var(--fg);text-decoration:none;font-size:12.5px}
+.gh-run:hover{outline:1px solid var(--line)}
+.gh-ic{width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700}
+.gh-run.ok .gh-ic{background:color-mix(in srgb,var(--up) 25%,transparent);color:var(--up)}
+.gh-run.bad .gh-ic{background:color-mix(in srgb,var(--down) 25%,transparent);color:var(--down)}
+.gh-run.cxl .gh-ic{background:var(--grid);color:var(--muted)}
+.gh-run.run .gh-ic{border:2px solid var(--amber);border-top-color:transparent}
+.gh-s{color:var(--muted);font-family:var(--mono);font-size:11.5px}
+@media (prefers-reduced-motion:no-preference){.gh-run.run .gh-ic{animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}}
+.orb-live{font-size:11px;color:var(--dim);letter-spacing:.04em}
+.orb-live.on{color:var(--up)}
+.or-row.flash{background:color-mix(in srgb,var(--amber) 22%,transparent)}
+.orb-dot.blip{stroke:#f2a93b;stroke-width:3}
+@media (prefers-reduced-motion:no-preference){.or-row.flash{animation:rowflash 1.8s ease-out}@keyframes rowflash{from{background:color-mix(in srgb,var(--amber) 45%,transparent)}to{background:transparent}}}
 .err{color:var(--down);font-family:var(--mono);padding:12px}
-@media (max-width:560px){.bar .wrap{flex-wrap:nowrap;gap:8px}.brand .bt{display:none}#live{padding:3px 7px}.authbtn{padding:5px 10px;font-size:12px}.btc small{display:none}.brand{font-size:15px}.chip.paper{display:none}.card{padding:13px}.bigv{font-size:24px}.gauge{grid-template-columns:1fr}.meta{display:none}.decision{padding:16px}}
+@media (max-width:560px){#sys-chip{display:none}.bar .wrap{flex-wrap:nowrap;gap:8px}.brand .bt{display:none}#live{padding:3px 7px}.authbtn{padding:5px 10px;font-size:12px}.btc small{display:none}.brand{font-size:15px}.chip.paper{display:none}.card{padding:13px}.bigv{font-size:24px}.gauge{grid-template-columns:1fr}.meta{display:none}.decision{padding:16px}}
 @media (prefers-reduced-motion:no-preference){.gate .fill{transition:width .6s ease}}
 </style></head><body>
 
@@ -359,6 +384,7 @@ details.notes summary{cursor:pointer;color:var(--fg)}
   <span class="chip paper" data-draw="mode">—</span>
   <span class="spacer"></span>
   <span class="btc"><small>BTC</small><span data-draw="btc">—</span></span>
+  <span class="chip" id="sys-chip">⚙</span>
   <span class="meta">อัปเดต <span data-draw="tick">—</span></span>
   <button type="button" class="authbtn" id="auth-btn">เข้าสู่ระบบ</button>
 </div></header>
@@ -372,6 +398,11 @@ details.notes summary{cursor:pointer;color:var(--fg)}
       <div class="gate" data-draw="gate"></div>
     </div>
     <div class="tiles" data-draw="tiles"></div>
+    <section class="card syscard" id="system">
+      <h2><span class="livedot"></span>สถานะระบบ · ทำงานอัตโนมัติ 24 ชม. <a class="note" href="https://github.com/iamsanohm-ai/crypto-lab/actions" target="_blank" rel="noopener">ดูทั้งหมดบน GitHub ↗</a></h2>
+      <div class="sys-grid" id="sys-tiles"></div>
+      <div class="sys-runs-wrap"><div class="op-t">งานบน GitHub Actions (สด)</div><div id="sys-runs" class="sys-runs"></div></div>
+    </section>
   </div>
 
   <nav class="tabs" aria-label="ส่วนของ dashboard"><div class="row" role="tablist">
@@ -391,8 +422,8 @@ details.notes summary{cursor:pointer;color:var(--fg)}
         <ul class="an" data-draw="anLines"></ul>
       </div>
       <div class="card">
-        <h2>สัญญาณ &amp; การตัดสินใจล่าสุด</h2>
-        <div class="feed" data-draw="events"></div>
+        <h2>กิจกรรมของระบบ <span class="note">ทุกครั้งที่บอทตรวจตลาด</span></h2>
+        <div class="feed" id="sys-activity"></div>
       </div>
     </div>
     <div class="card livecard">
@@ -451,6 +482,7 @@ details.notes summary{cursor:pointer;color:var(--fg)}
       <div class="orb-bar">
         <div class="orb-brand"><span class="ob-dot"></span>ORB // BINANCE SCANNER</div>
         <div class="orb-head" id="orb-head"></div>
+        <div class="orb-live" id="orb-live">○ กำลังเชื่อมต่อราคาทุกเหรียญ…</div>
         <div class="orb-clock" id="orb-clock">--:--:-- UTC</div>
         <label class="check orb-tog"><input type="checkbox" id="orb-illiquid"> แสดงเหรียญสภาพคล่องต่ำในทะเบียน</label>
       </div>
@@ -682,8 +714,9 @@ details.notes summary{cursor:pointer;color:var(--fg)}
 </dialog>
 
 <script src="d3.min.js"></script>
-<script src="app.js?v=20261125f"></script>
-<script src="trade.js?v=20261125c"></script>
-<script src="library.js?v=20261125b"></script>
-<script src="orb.js?v=20261125d"></script>
+<script src="app.js?v=20261125h"></script>
+<script src="trade.js?v=20261125h"></script>
+<script src="library.js?v=20261125h"></script>
+<script src="orb.js?v=20261125h"></script>
+<script src="system.js?v=20261125h"></script>
 </body></html>

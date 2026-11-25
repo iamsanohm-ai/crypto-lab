@@ -1,4 +1,4 @@
-# บอทแบบวนรอบ: รันต่อเนื่อง ~5 ชม. 50 นาที ติ๊กทุกชั่วโมง แล้วสั่งรันตัวเองต่อ (เชื่อถือได้กว่า cron)
+# บอทแบบวนรอบ: รันต่อเนื่อง ~5 ชม. 50 นาที ติ๊กทุก 15 นาที (นาทีที่ 7/22/37/52) แล้วสั่งรันตัวเองต่อ
 # ทำงานเฉพาะเมื่อ repo เป็น public (นาที Actions ฟรีไม่จำกัด) — ถ้า private จะข้ามเพื่อไม่ให้เปลืองโควตา
 name: bot-loop
 on:
@@ -35,12 +35,12 @@ jobs:
             python -m lab.live || echo "tick failed"
             python -m lab.scanner || echo "scanner failed"
             python -m lab.dashboard || echo "dashboard failed"
-            git add state ledger dashboard/data.json docs/data.json
+            git add state ledger dashboard/data.json docs/data.json docs/heartbeat.json
             if ! git diff --cached --quiet; then
               git commit -qm "paper tick $(date -u +%Y-%m-%dT%H:%MZ)"
               git pull -q --rebase origin main && git push -q origin main || { git rebase --abort 2>/dev/null; echo "push skipped (conflict) — next tick retries"; }
             fi
-            NOW=$(date +%s); NEXT=$(( (NOW/3600 + 1)*3600 + 7*60 ))   # นาทีที่ 7 ของชั่วโมงถัดไป
+            NOW=$(date +%s); NEXT=$(( ((NOW - 420)/900 + 1)*900 + 420 ))   # ทุก 15 นาที ที่นาที 7/22/37/52
             [ "$NEXT" -ge "$END" ] && break
             sleep $(( NEXT - NOW ))
           done

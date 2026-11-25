@@ -17,6 +17,12 @@ def main():
     d.mkdir(parents=True, exist_ok=True)
     (d / f"{datetime.now(timezone.utc):%Y-%m-%d}_{kind}.md").write_text(text)
     (d / f"latest_{kind}.md").write_text(text)
+    import json as _j
+    from lab.data import now_iso
+    lr = d / "last_run.json"
+    runs = _j.loads(lr.read_text()) if lr.exists() else {}
+    runs[kind] = now_iso()
+    lr.write_text(_j.dumps(runs))
     Notifier(telegram=True).send(text[:4000])
 
 

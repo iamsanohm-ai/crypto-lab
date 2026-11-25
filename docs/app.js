@@ -519,7 +519,7 @@
   window.addEventListener('resize', syncBar); syncBar();
   let rw; window.addEventListener('resize', () => { clearTimeout(rw); rw = setTimeout(() => D && render(), 200); });
 
-  window.CL = {data: () => D, showTab: (t) => { history.replaceState(null, '', '#' + t); showTab(t); }, fmt};
+  window.CL = {data: () => D, showTab: (t) => { history.replaceState(null, '', '#' + t); showTab(t); }, fmt, reload: () => load(), liveAge: () => lastMsg ? Date.now() - lastMsg : null};
   showTab(location.hash.slice(1));
   load().then(() => { connect(); seedTicks();
     let pref = '15m'; try { pref = localStorage.getItem('cl.tf') || '15m'; } catch (e) { /* ignore */ }
