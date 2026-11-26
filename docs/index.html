@@ -522,6 +522,8 @@ body{background:radial-gradient(1200px 600px at 10% -10%,rgba(51,195,180,.08),tr
 .ar-k{display:grid;grid-template-columns:1fr auto;gap:2px 8px;font-size:11.5px;color:var(--muted)}.ar-k b{font-family:var(--mono);font-weight:500;color:var(--fg);text-align:right}
 .ar-bar{height:5px;border-radius:3px;background:#1b2530;overflow:hidden}.ar-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--up))}
 .ar-c small{font-size:11px;color:var(--dim);line-height:1.5}
+.carrycard{border-color:color-mix(in srgb,var(--up) 35%,#1d2833)}
+.cy-head{display:grid;gap:2px;margin-bottom:8px}
 .err{color:var(--down);font-family:var(--mono);padding:12px}
 @media (max-width:560px){#sys-chip{display:none}.bar .wrap{flex-wrap:nowrap;gap:8px}.brand .bt{display:none}#live{padding:3px 7px}.authbtn{padding:5px 10px;font-size:12px}.btc small{display:none}.brand{font-size:15px}.chip.paper{display:none}.card{padding:13px}.bigv{font-size:24px}.gauge{grid-template-columns:1fr}.meta{display:none}.decision{padding:16px}}
 @media (prefers-reduced-motion:no-preference){.gate .fill{transition:width .6s ease}}
@@ -675,6 +677,7 @@ body{background:radial-gradient(1200px 600px at 10% -10%,rgba(51,195,180,.08),tr
   <!-- เทรดเร็ว -->
   <section class="view" id="view-scalp" data-view="scalp" hidden>
     <div class="card sc-head"><h2><span class="livedot"></span>เทรดระยะสั้น · สนามประลองกลยุทธ์ด้วยราคาจริง (เงินจำลอง 500 USDT)<span class="note">paper · ไม่มีการส่งออเดอร์จริง</span></h2><div id="sc-hero"></div></div>
+    <div class="card carrycard"><h2><span class="livedot"></span>✅ กลยุทธ์ที่ผ่านการทดสอบ: เก็บ funding (ไม่เสี่ยงทิศทางราคา)<span class="note">funding สดจาก Binance Futures</span></h2><div id="carry"></div></div>
     <div class="card"><h2><span class="livedot"></span>สนามประลองกลยุทธ์ · ทุกตัวเทรดเงาพร้อมกันด้วยราคาจริง<span class="note">ตัวที่ผลเงาเป็นบวกจะได้ใช้เงิน</span></h2><div id="sc-arena" class="arena"></div></div>
     <div class="card"><h2>เหรียญที่บอทเฝ้า เรียงจากวิ่งแรงสุดใน 1 ชม. · กรอบเหลือง = มีสัญญาณซื้อในแท่ง 5 นาทีล่าสุด</h2><div id="sc-tape" class="sc-tape"></div></div>
     <div class="grid g-1-1">
@@ -902,4 +905,5 @@ body{background:radial-gradient(1200px 600px at 10% -10%,rgba(51,195,180,.08),tr
 <script src="reason.js?v=2"></script>
 <script src="market.js?v=1"></script>
 <script src="brain.js?v=1"></script>
+<script src="carry.js?v=1"></script>
 </body></html>
