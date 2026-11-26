@@ -6,10 +6,11 @@
   const pct = (v, d = 1) => v == null || isNaN(v) ? '—' : (v > 0 ? '+' : '') + Number(v).toFixed(d) + '%';
   const ago = (iso) => { if (!iso) return ''; const s = Math.max(0, Math.round((Date.now() - new Date(iso)) / 1000));
     return s < 60 ? s + ' วิ' : s < 3600 ? Math.floor(s / 60) + ' นาที' : Math.floor(s / 3600) + ' ชม.'; };
-  let SC = null, scAt = 0, bandI = 0, bandAt = 0;
+  let SC = null, XS = null, scAt = 0, bandI = 0, bandAt = 0;
 
   async function loadScalp() {
     try { const r = await fetch('scalper.json?t=' + Date.now(), {cache: 'no-store'}); if (r.ok) { SC = await r.json(); scAt = Date.now(); } } catch (e) { /* keep */ }
+    try { const r = await fetch('xs_paper.json?t=' + Date.now(), {cache: 'no-store'}); if (r.ok) XS = await r.json(); } catch (e) { /* none yet */ }
   }
 
   // แต่ละโมดูล: สถานะ (ok/wait/stop/info), สิ่งที่ทำ, สิ่งที่คิด, สิ่งที่เลือก
@@ -38,6 +39,9 @@
       out.push({tab: 'scalp', mod: 'บัญชีระยะสั้น', st: SC.sentinel && SC.sentinel.halted ? 'stop' : 'info', did: `เงิน ${(SC.equity || 0).toFixed(2)} USDT`,
         think: `กำไร/ขาดทุนรวม ${((SC.stats || {}).pnl_usdt || 0).toFixed(2)} USDT จาก ${(SC.stats || {}).trades || 0} เทรด`,
         pick: SC.sentinel && SC.sentinel.halted ? 'Sentinel สั่งพัก: ' + SC.sentinel.halted.reason : `Sentinel ปกติ · แพ้ติด ${(SC.sentinel || {}).loss_streak || 0}/3`}); }
+    if (XS && XS.targets) { const L = XS.targets.filter((t) => t.weight > 0).slice(0, 3).map((t) => t.symbol.replace('USDT', '')), S = XS.targets.filter((t) => t.weight < 0).slice(-3).map((t) => t.symbol.replace('USDT', ''));
+      out.push({tab: 'scalp', mod: 'Long แข็ง/Short อ่อน', st: 'ok', did: `จัดพอร์ตวันละครั้ง · บัญชีจำลอง ${XS.equity.toFixed(2)} USDT`,
+        think: 'ตลาดขาลงทั้งกระดาน → กำไรจากส่วนต่าง: ตัวที่ลงน้อยกว่า vs ตัวที่ลงหนัก (ทดสอบแล้ว: ตลาดขาลง +30%)', pick: `Long ${L.join(', ')} · Short ${S.join(', ')}`}); }
     // 4. ORB สแกนทั้งกระดาน
     const orb = window.CLOrb && window.CLOrb.changes ? window.CLOrb.changes() : [];
     const rows = (S.rows || []).filter((r) => r.status !== 'illiquid' && r.score != null);

@@ -1,0 +1,247 @@
+{
+ "capital": 500.0,
+ "equity": 499.65556,
+ "subs": {
+  "L7H7N3": {
+   "ZECUSDT": -0.16666666666666666,
+   "HYPEUSDT": -0.16666666666666666,
+   "PEPEUSDT": -0.16666666666666666,
+   "ADAUSDT": 0.16666666666666666,
+   "TRXUSDT": 0.16666666666666666,
+   "PUMPUSDT": 0.16666666666666666
+  },
+  "L7H7N5": {
+   "ZECUSDT": -0.1,
+   "HYPEUSDT": -0.1,
+   "PEPEUSDT": -0.1,
+   "NEARUSDT": -0.1,
+   "UNIUSDT": -0.1,
+   "XRPUSDT": 0.1,
+   "QNTUSDT": 0.1,
+   "ADAUSDT": 0.1,
+   "TRXUSDT": 0.1,
+   "PUMPUSDT": 0.1
+  },
+  "L7H14N3": {
+   "ZECUSDT": -0.16666666666666666,
+   "HYPEUSDT": -0.16666666666666666,
+   "PEPEUSDT": -0.16666666666666666,
+   "ADAUSDT": 0.16666666666666666,
+   "TRXUSDT": 0.16666666666666666,
+   "PUMPUSDT": 0.16666666666666666
+  },
+  "L7H14N5": {
+   "ZECUSDT": -0.1,
+   "HYPEUSDT": -0.1,
+   "PEPEUSDT": -0.1,
+   "NEARUSDT": -0.1,
+   "UNIUSDT": -0.1,
+   "XRPUSDT": 0.1,
+   "QNTUSDT": 0.1,
+   "ADAUSDT": 0.1,
+   "TRXUSDT": 0.1,
+   "PUMPUSDT": 0.1
+  },
+  "L14H7N3": {
+   "ENAUSDT": -0.16666666666666666,
+   "ZECUSDT": -0.16666666666666666,
+   "UNIUSDT": -0.16666666666666666,
+   "QNTUSDT": 0.16666666666666666,
+   "XRPUSDT": 0.16666666666666666,
+   "TRXUSDT": 0.16666666666666666
+  },
+  "L14H7N5": {
+   "ENAUSDT": -0.1,
+   "ZECUSDT": -0.1,
+   "UNIUSDT": -0.1,
+   "PUMPUSDT": -0.1,
+   "AVAXUSDT": -0.1,
+   "TAOUSDT": 0.1,
+   "NEARUSDT": 0.1,
+   "QNTUSDT": 0.1,
+   "XRPUSDT": 0.1,
+   "TRXUSDT": 0.1
+  },
+  "L14H14N3": {
+   "ENAUSDT": -0.16666666666666666,
+   "ZECUSDT": -0.16666666666666666,
+   "UNIUSDT": -0.16666666666666666,
+   "QNTUSDT": 0.16666666666666666,
+   "XRPUSDT": 0.16666666666666666,
+   "TRXUSDT": 0.16666666666666666
+  },
+  "L14H14N5": {
+   "ENAUSDT": -0.1,
+   "ZECUSDT": -0.1,
+   "UNIUSDT": -0.1,
+   "PUMPUSDT": -0.1,
+   "AVAXUSDT": -0.1,
+   "TAOUSDT": 0.1,
+   "NEARUSDT": 0.1,
+   "QNTUSDT": 0.1,
+   "XRPUSDT": 0.1,
+   "TRXUSDT": 0.1
+  },
+  "L30H7N3": {
+   "ENAUSDT": -0.16666666666666666,
+   "WLDUSDT": -0.16666666666666666,
+   "ZECUSDT": -0.16666666666666666,
+   "HYPEUSDT": 0.16666666666666666,
+   "PEPEUSDT": 0.16666666666666666,
+   "TRXUSDT": 0.16666666666666666
+  },
+  "L30H7N5": {
+   "ENAUSDT": -0.1,
+   "WLDUSDT": -0.1,
+   "ZECUSDT": -0.1,
+   "PUMPUSDT": -0.1,
+   "UNIUSDT": -0.1,
+   "BTCUSDT": 0.1,
+   "AVAXUSDT": 0.1,
+   "HYPEUSDT": 0.1,
+   "PEPEUSDT": 0.1,
+   "TRXUSDT": 0.1
+  },
+  "L30H14N3": {
+   "ENAUSDT": -0.16666666666666666,
+   "WLDUSDT": -0.16666666666666666,
+   "ZECUSDT": -0.16666666666666666,
+   "HYPEUSDT": 0.16666666666666666,
+   "PEPEUSDT": 0.16666666666666666,
+   "TRXUSDT": 0.16666666666666666
+  },
+  "L30H14N5": {
+   "ENAUSDT": -0.1,
+   "WLDUSDT": -0.1,
+   "ZECUSDT": -0.1,
+   "PUMPUSDT": -0.1,
+   "UNIUSDT": -0.1,
+   "BTCUSDT": 0.1,
+   "AVAXUSDT": 0.1,
+   "HYPEUSDT": 0.1,
+   "PEPEUSDT": 0.1,
+   "TRXUSDT": 0.1
+  }
+ },
+ "weights": {
+  "ZECUSDT": -0.13333,
+  "ADAUSDT": 0.04444,
+  "TRXUSDT": 0.13333,
+  "PUMPUSDT": 0.01111,
+  "UNIUSDT": -0.07778,
+  "XRPUSDT": 0.06111,
+  "QNTUSDT": 0.06111,
+  "ENAUSDT": -0.08889,
+  "TAOUSDT": 0.01667,
+  "WLDUSDT": -0.04444,
+  "BTCUSDT": 0.01667
+ },
+ "last_day": "2026-11-26",
+ "prices": {
+  "ADAUSDT": 0.1486,
+  "AVAXUSDT": 6.657,
+  "BNBUSDT": 551.87,
+  "BTCUSDT": 60714.01,
+  "DOGEUSDT": 0.05686,
+  "ENAUSDT": 0.1028,
+  "ETHUSDT": 1700.36,
+  "HYPEUSDT": 60.73,
+  "NEARUSDT": 3.072,
+  "PEPEUSDT": 3.55e-06,
+  "PUMPUSDT": 0.002649,
+  "QNTUSDT": 148.69,
+  "SOLUSDT": 70.88,
+  "SUIUSDT": 0.6697,
+  "TAOUSDT": 184.1,
+  "TRXUSDT": 0.3035,
+  "UNIUSDT": 4.731,
+  "WLDUSDT": 0.2457,
+  "XRPUSDT": 0.9524,
+  "ZECUSDT": 726.57
+ },
+ "log": [
+  {
+   "t": "2026-11-26T15:20:56+00:00",
+   "kind": "rebalance",
+   "turnover": 0.689,
+   "fee_usdt": 0.3444
+  }
+ ],
+ "curve": [
+  [
+   "2026-11-26T15:20:56+00:00",
+   499.656
+  ]
+ ],
+ "started_at": "2026-11-26T15:20:53+00:00",
+ "fees_usdt": 0.34444,
+ "updated_at": "2026-11-26T15:20:56+00:00",
+ "targets": [
+  {
+   "symbol": "TRXUSDT",
+   "weight": 0.13333,
+   "side": "long",
+   "mom30_pct": -7.6
+  },
+  {
+   "symbol": "XRPUSDT",
+   "weight": 0.06111,
+   "side": "long",
+   "mom30_pct": -26.9
+  },
+  {
+   "symbol": "QNTUSDT",
+   "weight": 0.06111,
+   "side": "long",
+   "mom30_pct": -26.3
+  },
+  {
+   "symbol": "ADAUSDT",
+   "weight": 0.04444,
+   "side": "long",
+   "mom30_pct": -26.9
+  },
+  {
+   "symbol": "TAOUSDT",
+   "weight": 0.01667,
+   "side": "long",
+   "mom30_pct": -25.7
+  },
+  {
+   "symbol": "BTCUSDT",
+   "weight": 0.01667,
+   "side": "long",
+   "mom30_pct": -24.0
+  },
+  {
+   "symbol": "PUMPUSDT",
+   "weight": 0.01111,
+   "side": "long",
+   "mom30_pct": -36.2
+  },
+  {
+   "symbol": "WLDUSDT",
+   "weight": -0.04444,
+   "side": "short",
+   "mom30_pct": -43.0
+  },
+  {
+   "symbol": "UNIUSDT",
+   "weight": -0.07778,
+   "side": "short",
+   "mom30_pct": -32.6
+  },
+  {
+   "symbol": "ENAUSDT",
+   "weight": -0.08889,
+   "side": "short",
+   "mom30_pct": -48.9
+  },
+  {
+   "symbol": "ZECUSDT",
+   "weight": -0.13333,
+   "side": "short",
+   "mom30_pct": -41.9
+  }
+ ]
+}

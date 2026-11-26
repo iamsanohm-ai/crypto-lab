@@ -42,3 +42,11 @@ def test_briefs_build_with_unjudged_strategy(monkeypatch):
     monkeypatch.setattr(brief.yaml, "safe_load", lambda _t: cfg)
     assert "brand_new_untested" in brief.morning()
     assert "brand_new_untested" in brief.weekly()
+
+
+def test_xs_sub_weights_long_strong_short_weak():
+    import numpy as np
+    from lab.xs_paper import sub_weights
+    closes = {f"C{i}USDT": np.r_[np.ones(200), np.full(1, 1 + i / 100)] for i in range(10)}   # C9 แข็งสุด, C0 อ่อนสุด
+    w = sub_weights(closes, 7, 3)
+    assert w["C9USDT"] > 0 and w["C0USDT"] < 0 and abs(sum(w.values())) < 1e-9 and abs(sum(abs(x) for x in w.values()) - 1) < 1e-9
