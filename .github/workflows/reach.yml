@@ -1,0 +1,26 @@
+# ทดสอบว่าเซิร์ฟเวอร์ GitHub Actions ติดต่อ Binance ได้แค่ไหน (ไม่ใช้คีย์ ไม่ส่งออเดอร์)
+name: binance-reach
+on:
+  workflow_dispatch: {}
+permissions:
+  contents: read
+jobs:
+  reach:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Where is this runner
+        run: curl -s https://ipinfo.io/json | python3 -c "import sys,json;d=json.load(sys.stdin);print('region:', d.get('country'), d.get('region'), d.get('org'))" || true
+      - name: Probe Binance endpoints
+        run: |
+          for u in \
+            https://api.binance.com/api/v3/ping \
+            https://api1.binance.com/api/v3/ping \
+            https://api-gcp.binance.com/api/v3/ping \
+            https://data-api.binance.vision/api/v3/ping \
+            https://testnet.binance.vision/api/v3/ping \
+            https://fapi.binance.com/fapi/v1/ping \
+            https://api.binance.us/api/v3/ping ; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 "$u"); echo "$code  $u"
+          done
+          # signed endpoint without key → 401/400 means reachable, 451/403 means geo-blocked
+          code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 -X POST "https://api.binance.com/api/v3/order/test"); echo "$code  POST /api/v3/order/test (no key)"
