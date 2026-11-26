@@ -3,7 +3,7 @@
  "cash": 500,
  "positions": {},
  "closed": [],
- "last_bar": "2026-11-25 16:00:00+00:00",
+ "last_bar": "2026-11-25 20:00:00+00:00",
  "halted": null,
  "universe": {
   "month": "2026-11",
@@ -30,7 +30,7 @@
    "TAOUSDT"
   ]
  },
- "day": "2026-11-25",
+ "day": "2026-11-26",
  "day_start_equity": 500,
  "loss_streak": 0
 }
