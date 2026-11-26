@@ -39,7 +39,10 @@ jobs:
             sync_scalp
             python -m lab.live || echo "tick failed"
             python -m lab.scanner || echo "scanner failed"
-            python -m lab.dashboard || echo "dashboard failed"
+            if ! python -m lab.dashboard; then
+              echo "dashboard failed"; NOWA=$(date +%s)
+              if [ $(( NOWA - ${LAST_ALERT:-0} )) -gt 3600 ]; then python -m lab.watchdog alert "สร้างหน้าเว็บไม่สำเร็จในรอบบอท — หน้าเว็บจะแสดงข้อมูลเก่า"; LAST_ALERT=$NOWA; fi
+            fi
             git add state ledger dashboard/data.json docs/data.json docs/heartbeat.json docs/scalper.json
             if ! git diff --cached --quiet; then
               git commit -qm "paper tick $(date -u +%Y-%m-%dT%H:%MZ)"

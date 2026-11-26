@@ -1,0 +1,75 @@
+{
+ "generated_at": "2026-11-26T14:12:05+00:00",
+ "period": [
+  "2023-11-01 00:00:00+00:00",
+  "2026-11-24 08:00:00+00:00"
+ ],
+ "short_trend": {
+  "btc_down_only": {
+   "trades": 405,
+   "inverse_method_pnl_usdt": 59.9,
+   "exact_pnl_usdt": -19.6,
+   "win_pct": 33.1,
+   "by_exit_year_usdt": {
+    "2024": -12.5,
+    "2025": -15.2,
+    "2026": 11.5
+   }
+  },
+  "always": {
+   "trades": 582,
+   "inverse_method_pnl_usdt": 105.7,
+   "exact_pnl_usdt": -8.9,
+   "win_pct": 36.6,
+   "by_exit_year_usdt": {
+    "2023": -26.2,
+    "2024": 23.8,
+    "2025": -0.6,
+    "2026": 0.1
+   }
+  }
+ },
+ "funding_carry": {
+  "maker_bnb": {
+   "return_pct": 18.23,
+   "max_dd_pct": -0.51,
+   "positions_opened": 242,
+   "by_year": {
+    "2023": 3.6,
+    "2024": 11.7,
+    "2025": 1.2,
+    "2026": 1.0
+   },
+   "params": {
+    "enter": 0.0001,
+    "exit": 0.0,
+    "lookback_bars": 18,
+    "max_coins": 5,
+    "fee_round_trip_both_legs": 0.0019
+   }
+  },
+  "market": {
+   "return_pct": 3.22,
+   "max_dd_pct": -10.95,
+   "positions_opened": 242,
+   "by_year": {
+    "2023": 3.5,
+    "2024": 11.0,
+    "2025": -0.1,
+    "2026": -9.7
+   },
+   "params": {
+    "enter": 0.0001,
+    "exit": 0.0,
+    "lookback_bars": 18,
+    "max_coins": 5,
+    "fee_round_trip_both_legs": 0.005
+   }
+  }
+ },
+ "notes": [
+  "short_trend: กำไรจากวิธีกลับราคา (inverse) เป็นผลหลอก — ผลจริงขาดทุน ไม่ใช้",
+  "funding_carry (limit order + BNB): บวกทุกปี ขาดทุนสะสมสูงสุดต่ำมาก แต่ยังไม่รวมความเสี่ยง basis/การถูกบังคับปิดขา short และต้องใช้ทุนสำหรับ margin ขา futures เพิ่ม",
+  "ต้องใช้บัญชี Binance Futures — เซิร์ฟเวอร์ GitHub (สหรัฐฯ) ถูก Binance บล็อก จึงส่งออเดอร์ได้จากเครื่องเจ้าของเท่านั้น"
+ ]
+}

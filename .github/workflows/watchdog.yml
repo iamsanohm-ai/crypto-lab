@@ -1,0 +1,22 @@
+# ยามเฝ้าระบบ ทุกชั่วโมง: หน้าเว็บ/บอทหลัก/บอทระยะสั้นยังอัปเดตไหม และมีงานไหนล้มเหลว → Telegram
+name: watchdog
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch: {}
+permissions:
+  contents: read
+  actions: read
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    env:
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12", cache: pip}
+      - run: pip install -q -r requirements.txt
+      - run: python -m lab.watchdog

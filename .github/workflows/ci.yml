@@ -1,0 +1,31 @@
+# ทดสอบก่อนใช้งานจริง: ทุกครั้งที่แก้โค้ด/ตั้งค่า/หน้าเว็บ ต้องสร้างหน้าเว็บและสรุปเช้าได้ — ถ้าพังแจ้ง Telegram ทันที
+name: ci
+on:
+  push:
+    paths: ["lab/**", "config/**", "tests/**", "docs/*.js", "docs/index.html", ".github/workflows/**", "requirements.txt"]
+  workflow_dispatch: {}
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12", cache: pip}
+      - run: pip install -q -r requirements.txt
+      - name: Unit tests
+        run: python -m pytest -q
+      - name: Smoke — build dashboard + morning brief + config
+        run: |
+          python -c "import yaml; from lab.strategies import IDEAS; c=yaml.safe_load(open('config/strategy.yaml')); missing=[s['name'] for s in c['strategies'] if s['name'] not in IDEAS]; assert not missing, missing"
+          python -m lab.dashboard
+          python -c "from lab.brief import morning, weekly; assert len(morning()) > 200; assert len(weekly()) > 100"
+      - name: Web scripts parse
+        run: for f in docs/*.js; do node --check "$f"; done
+      - name: Alert on failure
+        if: failure()
+        run: python -m lab.watchdog alert "การทดสอบก่อนใช้งานไม่ผ่านหลังแก้ไขล่าสุด (${GITHUB_SHA::7}) — ดู https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"

@@ -47,6 +47,9 @@ jobs:
       - name: Weekly review
         if: steps.pick.outputs.job == 'weekly'
         run: python -m lab.notify weekly
+      - name: Alert on failure
+        if: failure()
+        run: python -m lab.watchdog alert "งาน ${{ steps.pick.outputs.job }} ล้มเหลว — ดู https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
       - name: Commit
         run: |
           git config user.name "crypto-lab-bot"
