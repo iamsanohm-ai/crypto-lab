@@ -6,12 +6,13 @@
   const pct = (v, d = 2) => v == null || isNaN(v) ? '—' : (v > 0 ? '+' : '') + v.toFixed(d) + '%';
   const cls = (v) => v == null || isNaN(v) ? 'flat' : v > 0 ? 'pos' : v < 0 ? 'neg' : 'flat';
   const ENTER = 0.0001, EXIT = 0.0, FEE_RT = 2 * (0.00075 + 0.0002);   // ตรงกับ research/edge_search.json (limit order + ส่วนลด BNB)
-  let R = null, rows = [], at = 0, err = null, busy = false;
+  let R = null, PP = null, rows = [], at = 0, err = null, busy = false;
 
   async function load() {
     if (busy) return; busy = true;
     try {
       if (!R) { const r = await fetch('edge_search.json?t=' + Date.now(), {cache: 'no-store'}); if (r.ok) R = await r.json(); }
+      try { const r2 = await fetch('carry_paper.json?t=' + Date.now(), {cache: 'no-store'}); if (r2.ok) PP = await r2.json(); } catch (e) { /* none yet */ }
       const D = window.CL && window.CL.data(); const syms = ((D && D.market) || []).map((m) => m.symbol);
       if (!syms.length) return;
       const prem = await (await fetch('https://fapi.binance.com/fapi/v1/premiumIndex', {cache: 'no-store'})).json();
@@ -44,6 +45,15 @@
     }
     head.append(mk('p', 'sc-why', 'วิธีทำ (ต่อ 1 เหรียญ): ซื้อ spot X USDT + เปิด short perpetual X USDT (leverage 1x) พร้อมกัน → ราคาขึ้น/ลงหักล้างกันเอง ได้ค่า funding ทุก 8 ชม. เมื่อ funding เป็นบวก · ปิดทั้งสองขาเมื่อ funding เฉลี่ยกลายเป็นลบ'));
     el.append(head);
+    if (PP) {
+      const box = mk('div', 'cy-paper'); const held = Object.keys(PP.held || {});
+      box.append(mk('b', null, `บัญชีจำลองเก็บ funding: ${PP.equity.toFixed(2)} USDT`),
+        mk('span', null, `ได้ funding ${PP.funding_usdt >= 0 ? '+' : ''}${PP.funding_usdt.toFixed(3)} · ค่าธรรมเนียม −${PP.fees_usdt.toFixed(3)} · ถือ ${held.length ? held.map((x) => x.replace('USDT', '')).join(', ') : 'ไม่มี (funding ยังไม่เป็นบวกพอ)'} · ตรวจรอบ funding ล่าสุด ${new Date(PP.last_event).toLocaleString('th-TH', {day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'})}`),
+        mk('small', null, 'เซิร์ฟเวอร์เข้า Binance Futures ไม่ได้ จึงใช้ funding ประมาณการจาก premium index (ช้าประมาณ 1 วัน) — ตารางด้านล่างคือค่าสดจากเบราว์เซอร์ของคุณ'));
+      const lg = (PP.log || []).filter((x) => x.kind !== 'funding').slice(-4).reverse();
+      for (const x of lg) box.append(mk('small', null, `${x.kind === 'open' ? 'เปิด' : 'ปิด'} ${x.sym.replace('USDT', '')} · ${x.why}`));
+      el.append(box);
+    }
     if (err) { el.append(mk('div', 'empty', err)); return; }
     if (!rows.length) { el.append(mk('div', 'empty', 'กำลังดึง funding สด…')); return; }
     const tb = mk('table', 'mkt'); const hr = mk('tr');

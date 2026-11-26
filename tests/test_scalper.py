@@ -45,7 +45,7 @@ def test_sentinel_three_losses(tmp_path, monkeypatch):
         bot.check_exits()
         for c in sc.COINS: bot.px[c] = 100.0
     assert bot.s["sentinel"]["loss_streak"] == 3 and bot.s["cash"] < sc.CAPITAL
-    assert not bot.sentinel_ok() and bot.s["sentinel"]["halted"]["reason"].startswith("แพ้ติดกัน")
+    assert not bot.sentinel_ok() and bot.s["sentinel"]["halted"]["reason"].startswith("แพ้ติดกัน") and "resume_at" in bot.s["sentinel"]["halted"]
 
 
 def test_breakeven_moves_stop_once():
@@ -82,3 +82,14 @@ def test_trailing_stop_locks_profit(tmp_path, monkeypatch):
     bot.px[sym] = 101.5; bot.check_exits()
     t = [x for x in bot.s["trades"] if x["sym"] == sym][0]
     assert t["reason"] == "trail" and t["pnl_usdt"] > 0
+
+
+def test_sentinel_three_losses_pauses_two_hours(tmp_path, monkeypatch):
+    from datetime import datetime, timedelta, timezone
+    bot = mkbot(tmp_path, monkeypatch, 0.2)
+    bot.s["sentinel"].update(day=datetime.now(timezone.utc).strftime("%Y-%m-%d"), day_start_equity=sc.CAPITAL, loss_streak=3)
+    assert not bot.sentinel_ok() and "resume_at" in bot.s["sentinel"]["halted"]
+    bot.s["sentinel"]["halted"]["resume_at"] = (datetime.now(timezone.utc) - timedelta(minutes=1)).isoformat()
+    assert bot.sentinel_ok() and bot.s["sentinel"]["loss_streak"] == 0      # ครบ 2 ชม. → กลับมาเทรด
+    bot.s["cash"] = sc.CAPITAL * 0.96                                       # ขาดทุนเกิน 3% ในวัน → หยุดถึงพรุ่งนี้
+    assert not bot.sentinel_ok() and "resume_on" in bot.s["sentinel"]["halted"]

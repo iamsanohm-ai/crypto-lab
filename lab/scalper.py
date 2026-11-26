@@ -161,19 +161,30 @@ class Scalper:
         return "probation" if m.get("active") and not benched else "shadow"
 
     def sentinel_ok(self) -> bool:
-        S = self.s["sentinel"]; day = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        """Sentinel ของบัญชีระยะสั้น (เจ้าของอนุมัติ 2026-11-26):
+        แพ้ติดกัน 3 ครั้ง → พัก 2 ชั่วโมงแล้วเริ่มนับใหม่ · ขาดทุน −3% ในวัน → หยุดถึงวันพรุ่งนี้ (เหมือนเดิม)."""
+        S = self.s["sentinel"]; now = datetime.now(timezone.utc); day = now.strftime("%Y-%m-%d")
         if S["day"] != day:
             S.update(day=day, day_start_equity=round(self.equity(), 4))
-            if S["halted"] and S["halted"].get("resume_on", "") <= day:
+            if S["halted"] and S["halted"].get("resume_on") and S["halted"]["resume_on"] <= day:
                 S["halted"] = None; S["loss_streak"] = 0; self.ev("Sentinel: วันใหม่ กลับมาเทรดได้", "info")
-        if S["halted"]:
+        h = S["halted"]
+        if h and not h.get("resume_at") and h.get("reason", "").startswith("แพ้ติดกัน"):   # พักแบบเก่า (ถึงพรุ่งนี้) → ใช้กฎใหม่ 2 ชม.
+            h["resume_at"] = (datetime.fromisoformat(h["at"]) + pd.Timedelta(hours=2)).isoformat(timespec="seconds"); h.pop("resume_on", None)
+        if h and h.get("resume_at") and now >= datetime.fromisoformat(h["resume_at"]):
+            S["halted"] = None; S["loss_streak"] = 0; self.ev("Sentinel: พักครบ 2 ชั่วโมง กลับมาเทรดได้ (เริ่มนับแพ้ติดใหม่)", "info"); h = None
+        if h:
             return False
         dd = self.equity() / S["day_start_equity"] - 1
-        why = f"ขาดทุนวันนี้ {dd:.2%} ถึงเพดาน -3%" if dd <= -0.03 else f"แพ้ติดกัน {S['loss_streak']} ครั้ง" if S["loss_streak"] >= 3 else None
-        if why:
+        if dd <= -0.03:
             nxt = (pd.Timestamp(day) + pd.Timedelta(days=1)).strftime("%Y-%m-%d")
-            S["halted"] = {"at": now_iso(), "reason": why, "resume_on": nxt}
-            self.ev(f"Sentinel หยุดเทรดเงิน: {why} — กลับมาวันพรุ่งนี้ 07:00 น.", "halt")
+            S["halted"] = {"at": now_iso(), "reason": f"ขาดทุนวันนี้ {dd:.2%} ถึงเพดาน -3%", "resume_on": nxt}
+            self.ev(f"Sentinel หยุดเทรดเงิน: ขาดทุนวันนี้ {dd:.2%} ถึงเพดาน -3% — กลับมาพรุ่งนี้ 07:00 น.", "halt")
+            return False
+        if S["loss_streak"] >= 3:
+            until = now + pd.Timedelta(hours=2)
+            S["halted"] = {"at": now_iso(), "reason": f"แพ้ติดกัน {S['loss_streak']} ครั้ง", "resume_at": until.isoformat(timespec="seconds")}
+            self.ev(f"Sentinel พักเทรดเงิน 2 ชม.: แพ้ติดกัน {S['loss_streak']} ครั้ง — กลับมา {(until + pd.Timedelta(hours=7)).strftime('%H:%M')} น.", "halt")
             return False
         return True
 

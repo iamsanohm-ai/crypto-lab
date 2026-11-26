@@ -55,7 +55,7 @@
     t('บอทกำลังเทรดด้วยเงิน?', benched ? 'พักใช้เงิน' : g.open ? 'เต็มขนาด' : 'ช่วงทดลอง', benched ? 'แพ้ 20 ครั้งล่าสุดเฉลี่ยแย่ → กลับไปเทรดเงา' : g.open ? 'ผลพิสูจน์แล้วว่าเป็นบวก' : 'เทรดจริงด้วยขนาดครึ่งหนึ่ง (เสี่ยง 0.25%/ครั้ง)', benched ? 'neg' : 'pos');
     t('ผลเฉลี่ยเงา 30 ครั้งล่าสุด', g.avg_pct == null ? '—' : pct(g.avg_pct, 3), g.win_pct == null ? 'ยังไม่มีข้อมูล' : `ชนะ ${g.win_pct}% · หลังค่าธรรมเนียม`, cls(g.avg_pct));
     t('เทรดที่ใช้เงิน', String(st.trades || 0), `ชนะ ${st.wins || 0} · รวม ${usd(st.pnl_usdt || 0, true)}`, cls(st.pnl_usdt));
-    t('Sentinel', sen.halted ? 'หยุดพัก' : 'ปกติ', sen.halted ? sen.halted.reason : `แพ้ติดกัน ${sen.loss_streak || 0}/3`, sen.halted ? 'neg' : 'pos');
+    t('Sentinel', sen.halted ? 'หยุดพัก' : 'ปกติ', sen.halted ? sen.halted.reason + (sen.halted.resume_at ? ' · กลับมา ' + new Date(sen.halted.resume_at).toLocaleTimeString('th-TH', {hour: '2-digit', minute: '2-digit'}) + ' น.' : ' · กลับมาพรุ่งนี้ 07:00 น.') : `แพ้ติดกัน ${sen.loss_streak || 0}/3 (ครบ 3 = พัก 2 ชม.)`, sen.halted ? 'neg' : 'pos');
     t('ราคาสด', Date.now() - liveAt < 5000 ? 'สด' : 'กำลังเชื่อม', mode === 'ws' ? 'WebSocket ทุกวินาที' : 'สำรอง ทุก 3 วิ', Date.now() - liveAt < 5000 ? 'pos' : 'amber');
     t('บอทบนเซิร์ฟเวอร์', ago(S.updated_at), 'เช็คราคาทุก 15 วิ · ส่งขึ้นเว็บทุก 5 นาที', Date.now() - new Date(S.updated_at) < 20 * 60000 ? 'pos' : 'amber');
     const m = S.model || {}, ex = m.exit || {};
