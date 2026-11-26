@@ -59,7 +59,7 @@ def morning():
     lines += ["", "กลยุทธ์ (backtest OOS 3 ปี | paper ตั้งแต่เริ่ม):"]
     flags = []
     for s in cfg["strategies"]:
-        mt = (judge.get("results", {}).get(s["name"]) or {}).get("metrics") or {"return": float("nan"), "max_dd": float("nan"), "sharpe": float("nan"), "trades": 0, "win_rate": float("nan")}   # กลยุทธ์ใหม่ยังไม่มีผล Judge
+        mt = (judge.get("results", {}).get(s["name"]) or {}).get("metrics") or {"return": float("nan"), "max_dd": float("nan"), "sharpe": float("nan"), "trades": 0, "win_rate": float("nan"), "avg_r": float("nan"), "calmar": float("nan"), "profit_factor": float("nan")}   # กลยุทธ์ใหม่ยังไม่มีผล Judge
         a = account(s["name"], cfg)
         pnl = a["equity"] - cfg["capital"]
         lines.append(f"• {s['role']}: {s['name']} | BT {mt['return']:+.1%}, DD {mt['max_dd']:.1%}, Sharpe {mt['sharpe']:.2f} "
@@ -91,7 +91,7 @@ def weekly():
     for s in cfg["strategies"]:
         a = account(s["name"], cfg)
         closed = pd.DataFrame(a["closed"])
-        mt = (judge.get("results", {}).get(s["name"]) or {}).get("metrics") or {"return": float("nan"), "max_dd": float("nan"), "sharpe": float("nan"), "trades": 0, "win_rate": float("nan")}   # กลยุทธ์ใหม่ยังไม่มีผล Judge
+        mt = (judge.get("results", {}).get(s["name"]) or {}).get("metrics") or {"return": float("nan"), "max_dd": float("nan"), "sharpe": float("nan"), "trades": 0, "win_rate": float("nan"), "avg_r": float("nan"), "calmar": float("nan"), "profit_factor": float("nan")}   # กลยุทธ์ใหม่ยังไม่มีผล Judge
         paper_ret = a["equity"] / cfg["capital"] - 1
         wr = (closed["pnl"] > 0).mean() if len(closed) else float("nan")
         rows.append((s, paper_ret, len(closed), wr, mt))
