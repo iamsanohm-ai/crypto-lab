@@ -218,7 +218,7 @@
       el.replaceChildren();
       for (const x of acc) {
         const row = mk('div', 'acct'); const n = mk('div', 'n', x.strategy); n.append(mk('span', 'role', ROLE[x.role] || x.role));
-        const r = mk('div', 'r'); r.append(mk('span', cls(x.pnl_pct), fmt.pct(x.pnl_pct)), ` จำลอง · backtest ${fmt.pct(x.bt_return_pct, 1)} · Sharpe ${Number(x.bt_sharpe).toFixed(2)}`);
+        const r = mk('div', 'r'); r.append(mk('span', cls(x.pnl_pct), fmt.pct(x.pnl_pct)), (x.bt_return_pct == null ? ' จำลอง · ยังไม่มีผล backtest (รอรอบคืนนี้)' : ` จำลอง · backtest ${fmt.pct(x.bt_return_pct, 1)} · Sharpe ${Number(x.bt_sharpe).toFixed(2)}`));
         const r2 = mk('div', 'r', `ถือ ${x.open_positions} · ปิดแล้ว ${x.closed_trades}`); r2.style.textAlign = 'right';
         row.append(n, mk('div', 'v', fmt.usd(x.equity)), r, r2); el.append(row);
       }

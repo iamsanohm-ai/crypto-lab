@@ -144,7 +144,7 @@ class Scalper:
 
     def gate(self, mid: str | None = None) -> dict:
         mid = mid or self.MODELS[0]["id"]
-        last = [x["net_pct"] for x in self.s["shadow_closed"] if x.get("model", self.MODELS[0]["id"]) == mid][:GATE_N]
+        last = [x["net_pct"] for x in self.s["shadow_closed"] if x.get("model", "5m:momo_burst") == mid][:GATE_N]
         avg = float(np.mean(last)) / 100 if last else None
         g = {"n": len(last), "need": GATE_N, "avg_pct": None if avg is None else round(avg * 100, 3),
              "win_pct": round(float(np.mean([x > 0 for x in last]) * 100), 1) if last else None,
@@ -212,8 +212,10 @@ class Scalper:
                 if hit and hit[1] == "sl" and p.get("trail") and p["sl"] > p["entry"]: hit = (hit[0], "trail")
                 if hit: self._close(p, hit[0], hit[1], shadow)
                 else:
-                    if px and p.get("trail"):          # trailing stop: ล็อกกำไรเมื่อราคาขึ้น (ไม่เลื่อนลง)
-                        p["best"] = max(p.get("best", p["entry"]), px); p["sl"] = max(p["sl"], p["best"] * (1 - p["trail"]))
+                    if px and p.get("trail"):          # trailing stop: เริ่มขยับเมื่อกำไรพ้นค่าธรรมเนียมแล้ว และไม่ขยับมาจุดที่ยังขาดทุน
+                        p["best"] = max(p.get("best", p["entry"]), px)
+                        if p["best"] >= p["entry"] * (1 + 2 * p["trail"]):
+                            p["sl"] = max(p["sl"], p["best"] * (1 - p["trail"]), p["entry"] * (1 + 2 * (FEE + SLIP)))
                     keep.append(p)
             self.s[key] = keep
 
@@ -254,6 +256,7 @@ class Scalper:
             chk[m["id"]] = {"at": now_iso(), "coins": len(dfs), "fired": f_}
         G = self.gates(); ok = self.sentinel_ok()
         fired.sort(key=lambda x: -x[2])           # เหรียญที่วิ่งแรงสุดก่อน
+        bought = 0
         for m, sym, _r in fired:
             px = self.px.get(sym)
             if not px: continue
@@ -268,12 +271,12 @@ class Scalper:
             if mode == "shadow":
                 self.ev(f"[{m['label']}] สัญญาณ {sym} → เทรดเงา (ยังไม่ใช้เงิน: เก็บผลเงาแล้ว {g['n']}/{GATE_N} ครั้ง"
                         + (f" เฉลี่ย {g['avg_pct']:+.2f}%)" if g['avg_pct'] is not None else ")"), "info"); continue
-            if not ok or held or len(self.s["positions"]) >= MAX_POS: continue
-            eq = self.equity(); notional = min(eq * (RISK if mode == "full" else RISK_PROBATION) / ex["sl"], MAX_NOTIONAL, self.s["cash"] * 0.98)
+            if not ok or held or bought or len(self.s["positions"]) >= MAX_POS: continue   # ซื้อด้วยเงินไม่เกิน 1 เหรียญต่อแท่ง 5 นาที
+            eq = self.equity(); notional = min(eq * (RISK if mode == "full" else RISK_PROBATION) / (ex["sl"] + 2 * (FEE + SLIP)), MAX_NOTIONAL, self.s["cash"] * 0.98)
             if notional < 5: continue
             qty = notional / (entry * (1 + FEE)); cost = qty * entry * (1 + FEE)
             self.s["cash"] -= cost
-            self.s["positions"].append({**base, "qty": qty, "cost": cost, "mode": mode})
+            self.s["positions"].append({**base, "qty": qty, "cost": cost, "mode": mode}); bought = 1
             why = f"ขึ้น {_r * 100:+.2f}% ใน 1 ชม. แรงสุดในกลุ่มที่เข้าเงื่อนไข" if m["strategy"] == "momentum_rotation" else "เข้าเงื่อนไขกลยุทธ์"
             self.ev(f"[{m['label']}] ซื้อ {sym} {notional:.2f} USDT ที่ {entry:.6g} · {why} · เป้า +{ex['tp']:.1%} / stop -{ex['sl']:.1%}"
                     + (f" (ขยับตาม −{ex['trail']:.1%})" if ex.get("trail") else "") + (" · ช่วงทดลอง: ใช้เงินครึ่งหนึ่ง" if mode == "probation" else ""), "buy")

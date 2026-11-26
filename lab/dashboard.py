@@ -75,16 +75,17 @@ def build():
         members = members or st.get("universe", {}).get("members", [])
         eq = st["cash"] + sum(x["qty"] * x["last_price"] for x in st["positions"].values())
         closed = st["closed"]
-        mt = judge["results"][s["name"]]["metrics"]
+        mt = (judge.get("results", {}).get(s["name"]) or {}).get("metrics")   # กลยุทธ์ใหม่ยังไม่มีผล Judge จนกว่าจะถึงรอบคืนนี้
+        rnd = lambda v, k=1, f=1: None if mt is None else round(v * f, k)
         accounts.append({"strategy": s["name"], "role": s["role"], "params": json.dumps(s["params"]),
                          "equity": round(eq, 2), "start_capital": cfg["capital"],
                          "pnl": round(eq - cfg["capital"], 2), "pnl_pct": round((eq / cfg["capital"] - 1) * 100, 2),
                          "cash": round(st["cash"], 2), "open_positions": len(st["positions"]),
                          "closed_trades": len(closed),
                          "paper_win_rate_pct": round(100 * sum(c["pnl"] > 0 for c in closed) / len(closed), 1) if closed else None,
-                         "bt_return_pct": round(mt["return"] * 100, 1), "bt_max_dd_pct": round(mt["max_dd"] * 100, 1),
-                         "bt_sharpe": round(mt["sharpe"], 2), "bt_trades": mt["trades"],
-                         "bt_win_rate_pct": round(mt["win_rate"] * 100, 1)})
+                         "bt_return_pct": rnd(mt and mt["return"], 1, 100), "bt_max_dd_pct": rnd(mt and mt["max_dd"], 1, 100),
+                         "bt_sharpe": rnd(mt and mt["sharpe"], 2), "bt_trades": mt and mt["trades"],
+                         "bt_win_rate_pct": rnd(mt and mt["win_rate"], 1, 100)})
         for sym, x in st["positions"].items():
             positions.append({"strategy": s["name"], "symbol": sym.replace("USDT", ""), "entry": x["entry"],
                               "last": x["last_price"], "qty": x["qty"], "stop": x["stop"], "target": x.get("target"),

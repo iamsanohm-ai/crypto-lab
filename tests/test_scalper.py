@@ -21,7 +21,7 @@ def mkbot(tmp_path, monkeypatch, gate_avg):
 def test_buy_then_take_profit(tmp_path, monkeypatch):
     bot = mkbot(tmp_path, monkeypatch, 0.2)
     bot.on_bar()
-    assert len(bot.s["positions"]) == sc.MAX_POS
+    assert len(bot.s["positions"]) == 1
     p = bot.s["positions"][0]
     assert p["cost"] <= sc.MAX_NOTIONAL + 1e-9
     bot.px[p["sym"]] = 103.0; bot.check_exits()
@@ -38,9 +38,12 @@ def test_gate_closed_means_shadow_only(tmp_path, monkeypatch):
 
 def test_sentinel_three_losses(tmp_path, monkeypatch):
     bot = mkbot(tmp_path, monkeypatch, 0.2)
-    bot.on_bar()
-    for p in list(bot.s["positions"]): bot.px[p["sym"]] = 98.0
-    bot.check_exits()
+    for _ in range(3):
+        bot.s["shadow_closed"] = [{"net_pct": 0.2, "model": "5m:momo_burst"} for _ in range(30)]   # ประตูยังเปิด
+        bot.on_bar()
+        for p in list(bot.s["positions"]): bot.px[p["sym"]] = 98.0
+        bot.check_exits()
+        for c in sc.COINS: bot.px[c] = 100.0
     assert bot.s["sentinel"]["loss_streak"] == 3 and bot.s["cash"] < sc.CAPITAL
     assert not bot.sentinel_ok() and bot.s["sentinel"]["halted"]["reason"].startswith("แพ้ติดกัน")
 
@@ -59,9 +62,9 @@ def test_active_model_trades_on_probation_and_gets_benched(tmp_path, monkeypatch
     bot = mkbot(tmp_path, monkeypatch, -0.3)           # ผลเงาติดลบ → ประตูปิด
     bot.P["active"] = True
     bot.on_bar()
-    assert len(bot.s["positions"]) == sc.MAX_POS and all(p["mode"] == "probation" for p in bot.s["positions"])
+    assert len(bot.s["positions"]) == 1 and bot.s["positions"][0]["mode"] == "probation"   # ซื้อด้วยเงิน 1 เหรียญต่อแท่ง
     p = bot.s["positions"][0]
-    assert p["cost"] <= sc.CAPITAL * sc.RISK_PROBATION / 0.01 * 1.01   # ขนาดครึ่งหนึ่งของปกติ
+    assert p["cost"] <= sc.CAPITAL * sc.RISK_PROBATION / (0.01 + 2 * (sc.FEE + sc.SLIP)) * 1.01   # ขนาดครึ่งหนึ่ง รวมค่าธรรมเนียมในความเสี่ยง
     bot.s["positions"] = []; bot.s["cash"] = sc.CAPITAL
     bot.s["trades"] = [{"net_pct": -0.8, "model": bot.P["id"], "pnl_usdt": -1} for _ in range(20)]
     bot.on_bar()
@@ -72,6 +75,8 @@ def test_trailing_stop_locks_profit(tmp_path, monkeypatch):
     bot = mkbot(tmp_path, monkeypatch, 0.2)
     bot.P["exit"] = {"tp": 0.05, "sl": 0.01, "trail": 0.01, "hold": 12}
     bot.on_bar(); sym = bot.s["positions"][0]["sym"]
+    bot.px[sym] = 100.5; bot.check_exits()                  # กำไรยังไม่พ้นค่าธรรมเนียม → stop ยังไม่ขยับ
+    assert bot.s["positions"][0]["sl"] < bot.s["positions"][0]["entry"]
     bot.px[sym] = 103.0; bot.check_exits()                  # ราคาขึ้น → stop ขยับขึ้นมาเหนือทุน
     assert bot.s["positions"][0]["sl"] > bot.s["positions"][0]["entry"]
     bot.px[sym] = 101.5; bot.check_exits()
