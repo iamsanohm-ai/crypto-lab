@@ -65,7 +65,11 @@
       else {
         const NAME = {'bot-loop': 'บอทวนรอบ', nightly: 'งานกลางคืน', 'paper-bot': 'บอทสำรอง'};
         const shown = runs.filter((w) => w.conclusion !== 'cancelled').slice(0, 4);   // ยกเลิก = รีสตาร์ทตามปกติ ไม่ต้องแสดง
-        const fails = runs.filter((w) => w.conclusion === 'failure' && since(w.updated_at) < 86400000).length;
+        // นับเฉพาะงานที่ "ล้มเหลวและยังไม่ถูกแก้" = รอบล่าสุดของงานนั้นยังล้มเหลวอยู่ (ถ้ารอบหลังผ่านแล้ว ถือว่าแก้แล้ว)
+        const latest = {}; for (const w of runs) if (w.status === 'completed' && !latest[w.name]) latest[w.name] = w;
+        const open = Object.values(latest).filter((w) => w.conclusion === 'failure');
+        const fixed = runs.filter((w) => w.conclusion === 'failure' && since(w.updated_at) < 86400000 && !open.includes(w)).length;
+        const fails = open.length;
         for (const w of shown) {
           const running = w.status !== 'completed', okc = w.conclusion === 'success';
           const row = mk('a', 'gh-run ' + (running ? 'run' : okc ? 'ok' : 'bad'));
@@ -75,7 +79,7 @@
             mk('span', 'gh-s', running ? 'ทำงาน ' + ago(since(w.run_started_at || w.created_at)).replace('ที่แล้ว', '') : ago(since(w.updated_at))));
           ga.append(row);
         }
-        ga.append(mk('span', 'gh-sum ' + (fails ? 'bad' : 'ok'), fails ? `ล้มเหลว ${fails} ครั้งใน 24 ชม.` : 'ไม่มีงานล้มเหลวใน 24 ชม.'));
+        ga.append(mk('span', 'gh-sum ' + (fails ? 'bad' : 'ok'), fails ? `ยังล้มเหลวอยู่: ${open.map((w) => NAME[w.name] || w.name).join(', ')}` : fixed ? `ทุกงานปกติ (ล้มเหลว ${fixed} ครั้งใน 24 ชม. — แก้แล้ว)` : 'ทุกงานปกติ'));
       }
     }
     // activity feed
