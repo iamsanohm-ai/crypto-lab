@@ -138,7 +138,7 @@
       NET.canvas.addEventListener('mouseleave', () => { NET.hover = null; });
       NET.canvas.addEventListener('click', (e) => { const n = hit(e); if (n) { fire(n, 3); select(n.row); } });
     }
-    const w = Math.min(900, host.clientWidth || 600), h = Math.round(w * (w > 700 ? 0.6 : 0.78));   // กว้างไม่เกิน 900px สูง ~540px
+    const w = Math.min(760, host.clientWidth || 600), h = Math.round(w * 0.78);
     if (w !== NET.W) { NET.W = w; NET.H = h; NET.ys = (h / w) / 0.78; NET.dpr = Math.min(1.5, window.devicePixelRatio || 1);
       NET.canvas.width = w * NET.dpr; NET.canvas.height = h * NET.dpr; NET.canvas.style.width = w + 'px'; NET.canvas.style.height = h + 'px'; NET.key = ''; }
     return true;

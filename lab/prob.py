@@ -139,6 +139,7 @@ def run(m, rows: list[dict], thinking: dict | None, btc_up: bool) -> dict:
         record_and_score(m, preds)
     except Exception as e:  # noqa: BLE001
         print("prediction log failed", e)
+    cal = calibration()          # สถานะล่าสุดหลังบันทึก/ตรวจรอบนี้ (ใช้แสดงผล)
     best_long = sorted(((s, x) for s, x in out.items() if x["prob"]), key=lambda kv: -kv[1]["prob"]["long"]["ev_pct"])[:5]
     best_short = sorted(((s, x) for s, x in out.items() if x["prob"]), key=lambda kv: -kv[1]["prob"]["short"]["ev_pct"])[:5]
     return {"generated_at": now_iso(), "paths": PATHS, "horizon_days": HORIZON // 6, "coins": out, "calibration": cal,
