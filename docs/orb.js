@@ -138,8 +138,8 @@
       NET.canvas.addEventListener('mouseleave', () => { NET.hover = null; });
       NET.canvas.addEventListener('click', (e) => { const n = hit(e); if (n) { fire(n, 3); select(n.row); } });
     }
-    const w = Math.min(760, host.clientWidth || 600), h = Math.round(w * 0.78);
-    if (w !== NET.W) { NET.W = w; NET.H = h; NET.dpr = Math.min(1.5, window.devicePixelRatio || 1);
+    const w = Math.min(1240, host.clientWidth || 600), h = Math.round(w * (w > 900 ? 0.6 : 0.78));
+    if (w !== NET.W) { NET.W = w; NET.H = h; NET.ys = (h / w) / 0.78; NET.dpr = Math.min(1.5, window.devicePixelRatio || 1);
       NET.canvas.width = w * NET.dpr; NET.canvas.height = h * NET.dpr; NET.canvas.style.width = w + 'px'; NET.canvas.style.height = h + 'px'; NET.key = ''; }
     return true;
   }
@@ -155,7 +155,7 @@
     rad *= 1 + (hash(r.symbol, 2) - 0.5) * 0.18;
     const lobe = 1 + 0.08 * Math.cos(2 * ang) + 0.05 * Math.sin(3 * ang + 0.6) + 0.03 * Math.cos(5 * ang);
     const cx = Math.cos(ang), side = cx >= 0 ? 1 : -1;            // two hemispheres with a central fissure
-    const x = C + cx * rad * lobe * 1.22 + side * W * 0.016, y = CY + Math.sin(ang) * rad * lobe * 0.98;
+    const x = C + cx * rad * lobe * 1.22 / Math.sqrt(NET.ys || 1) + side * W * 0.016, y = CY + Math.sin(ang) * rad * lobe * 0.98 * (NET.ys || 1);
     return [Math.max(10, Math.min(W - 10, x)), Math.max(10, Math.min(NET.H - 10, y))];
   }
   function graph(S, rows) {
@@ -214,6 +214,14 @@
     const cx = mx - dy * e.bend, cy = my + dx * e.bend, u = 1 - t;
     return [u * u * a.x + 2 * u * t * cx + t * t * b.x, u * u * a.y + 2 * u * t * cy + t * t * b.y, b];
   }
+  function probLines(sym) {
+    const PB = (window.CL && window.CL.data().scanner || {}).prob, x = PB && PB.coins[sym]; if (!x) return [];
+    const p = x.prob, out = [];
+    if (p) { out.push(`P(ขึ้นใน 7 วัน): เทรนด์ต่อ ${(p.p_up7 * 100).toFixed(0)}% · ไม่มีเทรนด์ ${(p.flat.p_up7 * 100).toFixed(0)}%`,
+      `ช่วง 7 วัน (90%): ${p.p5.toFixed(1)}% ถึง +${p.p95.toFixed(1)}% · คาดหวัง long ${p.long.ev_pct >= 0 ? '+' : ''}${p.long.ev_pct.toFixed(2)}% / short ${p.short.ev_pct >= 0 ? '+' : ''}${p.short.ev_pct.toFixed(2)}%`); }
+    out.push(`สภากลยุทธ์: ${x.council.verdict} (คะแนน ${x.council.score >= 0 ? '+' : ''}${x.council.score}) · ` + x.council.votes.map((v) => `${v.who.split(' ')[0]} ${v.vote > 0 ? '▲' : v.vote < 0 ? '▼' : '•'}`).join(' '));
+    return out;
+  }
   const SPR = {};
   function sprite(col) {
     const k = String(col); if (SPR[k]) return SPR[k];
@@ -240,14 +248,21 @@
       NET.layerAt = ts; const g = L.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
     const bg = g.createRadialGradient(C, CY, 0, C, CY, W * 0.55); bg.addColorStop(0, 'rgba(242,169,59,0.07)'); bg.addColorStop(0.5, 'rgba(51,195,180,0.025)'); bg.addColorStop(1, 'rgba(0,0,0,0)');
     g.fillStyle = bg; g.fillRect(0, 0, W, H);
+    if (!NET.sky || NET.sky.W !== W) {        // ดาว + เนบิวลา วาดครั้งเดียวต่อขนาดจอ แล้วนำมาวางซ้ำ
+      const sk = document.createElement('canvas'); sk.width = L.width; sk.height = L.height; const q = sk.getContext('2d'); q.setTransform(dpr, 0, 0, dpr, 0, 0);
+      for (let i = 0; i < Math.round(W * 0.3); i++) { const x = hash('s' + i, 1) * W, y = hash('s' + i, 2) * H, b = hash('s' + i, 3); q.fillStyle = `rgba(200,220,255,${0.08 + b * 0.25})`; q.fillRect(x, y, b > 0.85 ? 1.6 : 1, b > 0.85 ? 1.6 : 1); }
+      for (const [fx, fy, col] of [[0.18, 0.3, '51,195,180'], [0.82, 0.7, '143,124,242'], [0.75, 0.22, '242,169,59']]) {
+        const ng = q.createRadialGradient(W * fx, H * fy, 0, W * fx, H * fy, W * 0.22); ng.addColorStop(0, `rgba(${col},0.05)`); ng.addColorStop(1, `rgba(${col},0)`); q.fillStyle = ng; q.fillRect(0, 0, W, H); }
+      NET.sky = {W, c: sk}; }
+    g.setTransform(1, 0, 0, 1, 0, 0); g.drawImage(NET.sky.c, 0, 0); g.setTransform(dpr, 0, 0, dpr, 0, 0);
     // rank guide rings (closer to the decision core = more attractive)
     const nAll = Math.max(1, NET.nodes.size - 1);
     g.setLineDash([3, 5]); g.lineWidth = 1; g.font = '600 10px ui-monospace,monospace'; g.textAlign = 'left';
     for (const [k, label] of [[10, 'Top 10'], [50, 'Top 50'], [150, 'Top 150']]) {
       if (k >= nAll) continue;
       const rr = W * (0.085 + 0.27 * Math.sqrt(k / nAll));
-      g.strokeStyle = 'rgba(150,170,190,0.22)'; g.beginPath(); g.ellipse(C, CY, rr * 1.22, rr * 0.98, 0, 0, 6.283); g.stroke();
-      g.fillStyle = 'rgba(160,180,200,0.55)'; g.textAlign = 'center'; g.fillText(label, C, CY - rr * 0.98 - 3); g.textAlign = 'left';
+      g.strokeStyle = 'rgba(150,170,190,0.22)'; g.beginPath(); g.ellipse(C, CY, rr * 1.22 / Math.sqrt(NET.ys || 1), rr * 0.98 * (NET.ys || 1), 0, 0, 6.283); g.stroke();
+      g.fillStyle = 'rgba(160,180,200,0.55)'; g.textAlign = 'center'; g.fillText(label, C, CY - rr * 0.98 * (NET.ys || 1) - 3); g.textAlign = 'left';
     }
     g.setLineDash([]);
       g.lineWidth = 0.6;
@@ -321,10 +336,24 @@
       c.globalAlpha = 0.6 + fl * 0.4; c.drawImage(sprite([242, 169, 59]), C - rr, CY - rr, rr * 2, rr * 2); c.globalAlpha = 1;
       c.fillStyle = '#0b1016'; c.strokeStyle = '#f2a93b'; c.lineWidth = 1.5; c.beginPath(); c.arc(C, CY, 17, 0, 6.283); c.fill(); c.stroke();
       c.fillStyle = '#f2a93b'; c.font = '700 11px "IBM Plex Sans Thai",system-ui,sans-serif'; c.textAlign = 'center'; c.fillText('ซื้อ?', C, CY + 4); }
-    // ring: เหรียญที่ระบบคิดแล้วว่า "เข้าได้" = วงเขียว, "รอ" = วงเหลือง
-    c.lineWidth = 1.2;
-    for (const n of NET.nodes.values()) { if (!n.verdict || n.verdict === 'no') continue;
-      c.strokeStyle = n.verdict === 'enter' || n.verdict === 'hold' ? '#22c983' : 'rgba(242,169,59,0.85)'; c.beginPath(); c.arc(n.x, n.y, 8, 0, 6.283); c.stroke(); }
+    // วงความน่าจะเป็น: ส่วนเขียว = P(ขึ้นใน 7 วัน) จากการจำลอง 2,000 อนาคต · วงนอก = มติสภากลยุทธ์ (เขียว ซื้อ / แดง short)
+    { const up = new Path2D(), dn = new Path2D(), buy = new Path2D(), sh = new Path2D();
+      for (const n of NET.nodes.values()) { const r = n.row || {}; if (r.p_up7 == null) continue;
+        const a0 = -Math.PI / 2, a1 = a0 + r.p_up7 * 6.283, R = 9.5;
+        up.moveTo(n.x + R * Math.cos(a0), n.y + R * Math.sin(a0)); up.arc(n.x, n.y, R, a0, a1);
+        dn.moveTo(n.x + R * Math.cos(a1), n.y + R * Math.sin(a1)); dn.arc(n.x, n.y, R, a1, a0 + 6.283);
+        if (r.council === 'ซื้อ') { buy.moveTo(n.x + 13, n.y); buy.arc(n.x, n.y, 13, 0, 6.283); }
+        if (r.council === 'short') { sh.moveTo(n.x + 13, n.y); sh.arc(n.x, n.y, 13, 0, 6.283); } }
+      c.lineWidth = 1.6; c.strokeStyle = 'rgba(34,201,131,0.75)'; c.stroke(up); c.strokeStyle = 'rgba(240,82,91,0.45)'; c.stroke(dn);
+      c.lineWidth = 1.3; c.setLineDash([2, 3]); c.strokeStyle = '#22c983'; c.stroke(buy); c.strokeStyle = '#ff5c6c'; c.stroke(sh); c.setLineDash([]); }
+    // HUD: สิ่งที่สมองกำลังประมวลผล (ตัวเลขจริงจาก scanner)
+    { const PB = (window.CL && window.CL.data().scanner || {}).prob;
+      if (PB && NET.hudKey !== PB.generated_at) { NET.hudKey = PB.generated_at; const cal = PB.calibration || {}; NET.hud = [`จำลอง ${PB.simulated_futures.toLocaleString()} อนาคต · ${PB.horizon_days} วันข้างหน้า`,
+          cal.n ? `ตรวจคำทำนายแล้ว ${cal.n} ครั้ง · ทายทิศถูก ${(cal.hit_rate * 100).toFixed(0)}%` : `เก็บคำทำนาย ${cal.pending || 0} รายการ · ตรวจผลจริงเมื่อครบ 7 วัน`,
+          `มติสภากลยุทธ์: ซื้อ ${Object.values(PB.coins).filter((x) => x.council.verdict === 'ซื้อ').length} · short ${Object.values(PB.coins).filter((x) => x.council.verdict === 'short').length} · รอ ${Object.values(PB.coins).filter((x) => x.council.verdict === 'รอ').length}`]; }
+      if (NET.hud) { const lines = NET.hud;
+        c.font = '600 11px ui-monospace,monospace'; c.textAlign = 'left';
+        lines.forEach((t, i) => { c.fillStyle = 'rgba(6,9,13,0.7)'; c.fillRect(8, 8 + i * 17, c.measureText(t).width + 12, 15); c.fillStyle = i ? '#9fb0c2' : '#f2a93b'; c.fillText(t, 14, 19 + i * 17); }); } }
     // labels: top coins, selection, hover
     c.font = '600 10px ui-monospace,monospace'; c.textAlign = 'left';
     const placed = [[C - 22, CY - 22, 44], [C - 22, CY - 7, 44], [C - 22, CY + 8, 44]];   // keep the decision core clear
@@ -349,7 +378,8 @@
       const lines = [`${r.symbol}  คะแนน ${r.score}${r.caps && r.caps.length ? ` (ดิบ ${r.raw_score})` : ''}`, `สถานะ: ${ST[r.status] || r.status}`,
         `24 ชม. ${r.change_24h_pct == null ? '—' : (r.change_24h_pct > 0 ? '+' : '') + r.change_24h_pct.toFixed(2) + '%'} · เทียบ EMA200 ${r.vs_ema200_pct == null ? '—' : (r.vs_ema200_pct > 0 ? '+' : '') + r.vs_ema200_pct + '%'}`,
         r.caps && r.caps.length ? 'ถูกจำกัดคะแนนเพราะ: ' + r.caps.map((x) => CAP[x] || x).join(', ') : 'ไม่ถูกจำกัดคะแนน',
-        `แรงดึงเข้าหาการซื้อ: ${Math.round(NET.hover.pull || 0)} (คะแนนดิบ + กำไร 24 ชม.)` + (NET.hover.verdict ? ` · ระบบคิด: ${{enter: 'เข้าได้', wait: 'รอ', no: 'ไม่ซื้อ', hold: 'ถืออยู่'}[NET.hover.verdict]}` : ''), 'แตะเพื่อดูรายละเอียด'];
+        `แรงดึงเข้าหาการซื้อ: ${Math.round(NET.hover.pull || 0)} (คะแนนดิบ + กำไร 24 ชม.)` + (NET.hover.verdict ? ` · ระบบคิด: ${{enter: 'เข้าได้', wait: 'รอ', no: 'ไม่ซื้อ', hold: 'ถืออยู่'}[NET.hover.verdict]}` : '')]
+        .concat(probLines(r.symbol), ['แตะเพื่อดูรายละเอียด']);
       c.font = '12px ui-monospace,monospace'; const bw = Math.max(...lines.map((t) => c.measureText(t).width)) + 18, bh = lines.length * 17 + 12;
       let bx = NET.hover.x + 14, by = NET.hover.y + 14; if (bx + bw > W - 4) bx = NET.hover.x - 14 - bw; if (by + bh > H - 4) by = NET.hover.y - 14 - bh;
       c.fillStyle = 'rgba(8,12,17,0.94)'; c.strokeStyle = 'rgba(242,169,59,0.6)'; c.lineWidth = 1; c.fillRect(bx, by, bw, bh); c.strokeRect(bx, by, bw, bh);

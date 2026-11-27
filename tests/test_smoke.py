@@ -50,3 +50,19 @@ def test_xs_sub_weights_long_strong_short_weak():
     closes = {f"C{i}USDT": np.r_[np.ones(200), np.full(1, 1 + i / 100)] for i in range(10)}   # C9 แข็งสุด, C0 อ่อนสุด
     w = sub_weights(closes, 7, 3)
     assert w["C9USDT"] > 0 and w["C0USDT"] < 0 and abs(sum(w.values())) < 1e-9 and abs(sum(abs(x) for x in w.values()) - 1) < 1e-9
+
+
+def test_probability_engine_and_learning(tmp_path, monkeypatch):
+    import numpy as np
+    import lab.prob as pb
+    rng = np.random.default_rng(1)
+    up = np.exp(np.cumsum(np.full(300, 0.004)))                     # ขึ้นสม่ำเสมอ
+    r = pb.simulate(up, atr=up[-1] * 0.01, rng=rng)
+    f = pb.simulate(up, atr=up[-1] * 0.01, rng=rng, demean=True)
+    assert r["p_up7"] > 0.95 and 0.3 < f["p_up7"] < 0.7               # เทรนด์ต่อ vs ไม่มีเทรนด์
+    assert r["long"]["ev_pct"] > r["short"]["ev_pct"]
+    # เรียนรู้: ทำนาย 80% แต่เกิดจริง 30% → ครั้งต่อไปต้องลดความมั่นใจลง
+    monkeypatch.setattr(pb, "PRED", tmp_path / "pred.jsonl")
+    (tmp_path / "pred.jsonl").write_text("\n".join(json.dumps({"t": "2026-01-01T00:00:00+00:00", "sym": "X", "p": 0.8, "price": 1, "outcome": int(i < 30)}) for i in range(100)))
+    cal = pb.calibration()
+    assert cal["n"] == 100 and pb.calibrate(0.8, cal) < 0.6

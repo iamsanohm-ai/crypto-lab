@@ -55,6 +55,24 @@
       ol.append(li);
     });
     el.append(mk('div', 'op-t', 'ระบบคิดทีละขั้น (ตัวเลขจริงจากแท่ง 4h ที่ปิดแล้ว)'), ol);
+    // สภากลยุทธ์ + ความน่าจะเป็น (คิดหลายทาง)
+    const PB = (window.CL.data().scanner || {}).prob, X = PB && PB.coins[it.symbol];
+    if (X) {
+      const cw = mk('div', 'rs-council');
+      for (const v of X.council.votes) { const r = mk('div', 'rs-vote ' + (v.vote > 0 ? 'up' : v.vote < 0 ? 'dn' : 'nt'));
+        r.append(mk('b', null, v.vote > 0 ? '▲ ซื้อ' : v.vote < 0 ? '▼ ไม่ซื้อ/short' : '• รอ'), mk('span', null, v.who), mk('small', null, v.why)); cw.append(r); }
+      el.append(mk('div', 'op-t', `สภากลยุทธ์ ${X.council.votes.length} เสียง → มติ "${X.council.verdict}" (คะแนนรวม ${X.council.score >= 0 ? '+' : ''}${X.council.score}; ซื้อเมื่อ ≥ +2 และ BTC ขาขึ้น, short เมื่อ ≤ −3)`), cw);
+      const P = X.prob;
+      if (P) {
+        const g = mk('div', 'rs-money');
+        const m2 = (k, v, s2, c) => { const d = mk('div'); d.append(mk('span', null, k), mk('b', c || '', v), mk('small', null, s2 || '')); g.append(d); };
+        m2('โอกาสขึ้นใน 7 วัน', `${(P.p_up7 * 100).toFixed(0)}% / ${(P.flat.p_up7 * 100).toFixed(0)}%`, 'เทรนด์ 50 วันดำเนินต่อ / ไม่มีเทรนด์');
+        m2('ช่วงที่เป็นไปได้ 90%', `${P.p5.toFixed(1)}% → +${P.p95.toFixed(1)}%`, 'ผลตอบแทน 7 วัน (เทรนด์ต่อ)');
+        m2('ถ้าซื้อตามแผน', `ถึงเป้า ${(P.long.p_target * 100).toFixed(0)}% · โดน stop ${(P.long.p_stop * 100).toFixed(0)}%`, `คาดหวัง ${P.long.ev_pct >= 0 ? '+' : ''}${P.long.ev_pct.toFixed(2)}% (ไม่มีเทรนด์ ${P.flat.long_ev >= 0 ? '+' : ''}${P.flat.long_ev.toFixed(2)}%)`, P.long.ev_pct > 0 && P.flat.long_ev > 0 ? 'pos' : 'neg');
+        m2('ถ้า short ตามแผน', `ถึงเป้า ${(P.short.p_target * 100).toFixed(0)}% · โดน stop ${(P.short.p_stop * 100).toFixed(0)}%`, `คาดหวัง ${P.short.ev_pct >= 0 ? '+' : ''}${P.short.ev_pct.toFixed(2)}% (ไม่มีเทรนด์ ${P.flat.short_ev >= 0 ? '+' : ''}${P.flat.short_ev.toFixed(2)}%)`, P.short.ev_pct > 0 && P.flat.short_ev > 0 ? 'pos' : 'neg');
+        el.append(mk('div', 'op-t', `ความน่าจะเป็น — จำลอง ${PB.paths.toLocaleString()} อนาคต × 2 สถานการณ์ จากการเคลื่อนไหวจริง 50 วันล่าสุด (stop 3×ATR, เป้า 2R, หักค่าธรรมเนียม)`), g);
+      }
+    }
     // เงิน
     const money = mk('div', 'rs-money');
     const m = (k, v, s, c) => { const d = mk('div'); d.append(mk('span', null, k), mk('b', c || '', v), mk('small', null, s || '')); money.append(d); };
@@ -83,6 +101,16 @@
   function logic(ev) {
     const el = $('#rs-logic'); if (!el || el.dataset.k === (ev.period || [])[1]) return; el.dataset.k = (ev.period || [])[1]; el.replaceChildren();
     const A = (window.CL.data().scanner || {}).analysis || {}, R = ev.regime;
+    const PB = (window.CL.data().scanner || {}).prob;
+    if (PB) {
+      const C = PB.calibration || {}, lw = mk('div', 'rs-qa');
+      lw.append(mk('b', null, 'ระบบเรียนรู้จากคำทำนายของตัวเองอย่างไร'));
+      lw.append(mk('p', null, `ทุกวันระบบบันทึกคำทำนาย "โอกาสขึ้นใน 7 วัน" ของทุกเหรียญที่ซื้อขายคล่อง → ครบ 7 วันเทียบกับราคาจริง → ถ้าทายมั่นใจเกินจริง ครั้งต่อไปจะลดความมั่นใจลงเอง (ยิ่งมีหลักฐานมาก ยิ่งปรับมาก)`));
+      lw.append(mk('p', null, C.n ? `ตรวจแล้ว ${C.n} คำทำนาย · ทายทิศถูก ${(C.hit_rate * 100).toFixed(0)}% · Brier ${C.brier} (เดาแบบไม่รู้อะไรได้ ${C.brier_naive} — ต่ำกว่า = ดีกว่า) · รอตรวจ ${C.pending}`
+        : `กำลังเก็บคำทำนาย ${C.pending || 0} รายการ — ผลตรวจชุดแรกจะเริ่มแสดงหลังครบ 7 วัน`));
+      if (C.table) { const tb = mk('div', 'rs-cal'); for (const b2 of C.table) tb.append(mk('span', null, `ทาย ${b2.bin}: จริง ${(b2.real * 100).toFixed(0)}% (${b2.n})`)); lw.append(tb); }
+      el.append(lw);
+    }
     const q = mk('div', 'rs-qa');
     q.append(mk('b', null, 'ถาม: ถ้าต้องรอ BTC ขึ้นอีกเกือบ 20% เท่ากับขาดทุน 20% ไปแล้วไหม?'));
     q.append(mk('p', null, `ไม่ใช่ครับ — ตอนนี้บอทถือเงินสด 100% เงินไม่ได้ลดลงเลย ที่เสียไปคือ "โอกาส" ช่วงต้นของขาขึ้น ไม่ใช่เงิน`));

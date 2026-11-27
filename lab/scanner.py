@@ -123,7 +123,17 @@ def scan() -> dict:
         thinking = {"items": reasoning.think(m, rows, cfg, plans, universe, held), "evidence": reasoning.evidence_summary()}
     except Exception as e:  # noqa: BLE001
         print("reasoning failed", e); thinking = None
-    out = {"generated_at": now_iso(), "bar": str(m.times[T]), "btc_regime_up": btc_up, "total": len(rows), "thinking": thinking,
+    try:
+        from lab import prob
+        probs = prob.run(m, rows, thinking, bool(btc_up))
+        for r in rows:
+            x = probs["coins"].get(r["symbol"])
+            if x:
+                r["council"] = x["council"]["verdict"]; r["council_score"] = x["council"]["score"]
+                if x["prob"]: r["p_up7"] = x["prob"]["p_up7"]; r["ev_long"] = x["prob"]["long"]["ev_pct"]; r["ev_short"] = x["prob"]["short"]["ev_pct"]
+    except Exception as e:  # noqa: BLE001
+        print("prob failed", e); probs = None
+    out = {"generated_at": now_iso(), "bar": str(m.times[T]), "btc_regime_up": btc_up, "total": len(rows), "thinking": thinking, "prob": probs,
            "counts": counts, "min_liquid_usdt": MIN_LIQUID_USDT, "analysis": analysis, "plans": plans, "rows": rows,
            "orb": {"components": {k: {"weight": v[0], "full": v[1], "zero": v[2], "label": v[3]} for k, v in orb.COMPONENTS.items()},
                    "cap_reasons": orb.CAP_REASONS},

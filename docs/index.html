@@ -266,7 +266,7 @@ details.notes summary{cursor:pointer;color:var(--fg)}
 .oh-i b{font-size:13px;color:var(--fg);font-weight:600}
 .orb-tog{margin-left:auto;font-family:var(--sans);font-size:12px;color:var(--muted);display:flex;gap:6px;align-items:center}
 .orb-grid{display:grid;gap:10px;grid-template-columns:minmax(0,1fr)}
-@media (min-width:1000px){.orb-grid{grid-template-columns:240px minmax(0,1fr) 260px}}
+@media (min-width:1000px){.orb-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.orb-grid .orb-center{grid-column:1/-1;order:-1}}
 .orb-panel{background:#0a0f15;border:1px solid #17212b;border-radius:10px;padding:10px;min-width:0}
 .op-t{font-size:10px;letter-spacing:.06em;color:var(--dim);margin-bottom:8px;text-transform:uppercase}
 .oc{border-left:2px solid #1f2b37;padding:4px 0 8px 8px;margin-bottom:6px}
@@ -330,7 +330,7 @@ details.notes summary{cursor:pointer;color:var(--fg)}
 /* orb motion */
 .orb-clock{font-size:16px;font-weight:700;color:#cfd8e3;letter-spacing:.04em;font-variant-numeric:tabular-nums}
 .scanning{float:right;color:var(--up);letter-spacing:.08em}
-.orb-stage{position:relative;max-width:640px;margin:0 auto;width:100%}
+.orb-stage{position:relative;max-width:1240px;margin:0 auto;width:100%}
 .orb-sweep{position:absolute;left:3.5%;top:3.5%;right:3.5%;bottom:3.5%;border-radius:50%;pointer-events:none;
   background:conic-gradient(from 0deg,transparent 0deg,rgba(242,169,59,.0) 300deg,rgba(242,169,59,.22) 356deg,rgba(242,169,59,.55) 359deg,transparent 360deg);
   -webkit-mask:radial-gradient(circle,transparent 7%,#000 8%);mask:radial-gradient(circle,transparent 7%,#000 8%)}
@@ -536,6 +536,12 @@ body{background:radial-gradient(1200px 600px at 10% -10%,rgba(51,195,180,.08),tr
 .xs-row{display:grid;grid-template-columns:52px 1fr auto;gap:8px;align-items:center;font-size:12px}
 .xs-row i{height:7px;border-radius:4px;display:block}.xs-row i.pos{background:var(--up)}.xs-row i.neg{background:var(--down)}
 .xs-row em{font-style:normal;font-family:var(--mono);font-size:11px;color:var(--muted)}
+.rs-council{display:grid;gap:5px}
+.rs-vote{display:grid;grid-template-columns:auto 150px 1fr;gap:8px;align-items:center;font-size:12px;background:var(--panel2);border:1px solid var(--line);border-left-width:3px;border-radius:8px;padding:6px 9px}
+.rs-vote.up{border-left-color:var(--up)}.rs-vote.dn{border-left-color:var(--down)}.rs-vote.nt{border-left-color:#3d4b5a}
+.rs-vote b{font-size:11px;white-space:nowrap}.rs-vote.up b{color:var(--up)}.rs-vote.dn b{color:var(--down)}.rs-vote.nt b{color:var(--muted)}.rs-vote small{color:var(--muted)}
+@media (max-width:600px){.rs-vote{grid-template-columns:auto 1fr}.rs-vote small{grid-column:1/-1}}
+.rs-cal{display:flex;flex-wrap:wrap;gap:6px}.rs-cal span{font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
 .err{color:var(--down);font-family:var(--mono);padding:12px}
 @media (max-width:560px){#sys-chip{display:none}.bar .wrap{flex-wrap:nowrap;gap:8px}.brand .bt{display:none}#live{padding:3px 7px}.authbtn{padding:5px 10px;font-size:12px}.btc small{display:none}.brand{font-size:15px}.chip.paper{display:none}.card{padding:13px}.bigv{font-size:24px}.gauge{grid-template-columns:1fr}.meta{display:none}.decision{padding:16px}}
 @media (prefers-reduced-motion:no-preference){.gate .fill{transition:width .6s ease}}
@@ -655,7 +661,7 @@ body{background:radial-gradient(1200px 600px at 10% -10%,rgba(51,195,180,.08),tr
       </div>
       <div class="orb-grid">
         <aside class="orb-panel"><div class="op-t">ผลตรวจ 5 ด้าน · % เหรียญที่ผ่าน (≥70% ของน้ำหนัก)</div><div id="orb-checks"></div></aside>
-        <div class="orb-panel orb-center"><div class="op-t">NEURAL MAP · เหรียญวิ่งเข้าหาสมองตัดสินใจซื้อ <span class="scanning">● THINKING</span></div><div class="orb-stage"><div id="orb-graph"></div></div><div id="nm-insight" class="nm-insight"></div><div class="nm-heatw"><div class="op-t">HEATMAP · ทุกเหรียญบนกระดาน</div><div id="nm-heat" class="nm-heat"></div><div id="nm-heat-cap" class="nm-heat-cap"></div></div><div class="nm-legend"><span><i style="background:#33c3b4"></i>ขาขึ้น</span><span><i style="background:#f0525b"></i>ขาลง</span><span><i style="background:#465464"></i>สภาพคล่องต่ำ</span><span><i style="background:#ffdc8c"></i>กระแสประสาท = คะแนนเปลี่ยนจากราคาสด</span><span><i style="background:#8ce6ff"></i>สัญญาณพื้นหลัง</span><span>ใกล้แกน "ซื้อ?" = ระบบอยากซื้อมาก (คะแนน + กำไร)</span><span><i style="background:none;border:1.5px solid #22c983"></i>ระบบคิดว่าเข้าได้</span><span><i style="background:none;border:1.5px solid #f2a93b"></i>รอ</span><span>ใย 5 เส้นรอบเซลล์ (ยาว = ดี): <b style="color:#33c3b4">แนวโน้ม</b> <b style="color:#f2a93b">Momentum</b> <b style="color:#78aaff">สภาพคล่อง</b> <b style="color:#c882ff">ผันผวน</b> <b style="color:#ff78a0">จุดเข้า</b></span></div></div>
+        <div class="orb-panel orb-center"><div class="op-t">NEURAL MAP · สมองตัดสินใจ: ทุกเหรียญ × ทุกกลยุทธ์ × 2,000 อนาคตที่เป็นไปได้ <span class="scanning">● THINKING</span></div><div class="orb-stage"><div id="orb-graph"></div></div><div id="nm-insight" class="nm-insight"></div><div class="nm-heatw"><div class="op-t">HEATMAP · ทุกเหรียญบนกระดาน</div><div id="nm-heat" class="nm-heat"></div><div id="nm-heat-cap" class="nm-heat-cap"></div></div><div class="nm-legend"><span><i style="background:#33c3b4"></i>ขาขึ้น</span><span><i style="background:#f0525b"></i>ขาลง</span><span><i style="background:#465464"></i>สภาพคล่องต่ำ</span><span><i style="background:#ffdc8c"></i>กระแสประสาท = คะแนนเปลี่ยนจากราคาสด</span><span><i style="background:#8ce6ff"></i>สัญญาณพื้นหลัง</span><span>ใกล้แกน "ซื้อ?" = ระบบอยากซื้อมาก (คะแนน + กำไร)</span><span><i style="background:none;border:1.5px solid #22c983"></i>วงรอบเหรียญ: ส่วนเขียว = โอกาสขึ้นใน 7 วัน</span><span><i style="background:none;border:1.5px dashed #22c983"></i>สภากลยุทธ์มีมติ ซื้อ</span><span><i style="background:none;border:1.5px dashed #ff5c6c"></i>มติ short</span><span>ใย 5 เส้นรอบเซลล์ (ยาว = ดี): <b style="color:#33c3b4">แนวโน้ม</b> <b style="color:#f2a93b">Momentum</b> <b style="color:#78aaff">สภาพคล่อง</b> <b style="color:#c882ff">ผันผวน</b> <b style="color:#ff78a0">จุดเข้า</b></span></div></div>
         <aside class="orb-panel"><div class="op-t">ทะเบียนคะแนน (VERDICT)</div><div id="orb-reg"></div></aside>
       </div>
       <div class="orb-panel orb-detail" id="orb-detail"></div>
@@ -912,10 +918,10 @@ body{background:radial-gradient(1200px 600px at 10% -10%,rgba(51,195,180,.08),tr
 <script src="app.js?v=20261126b"></script>
 <script src="trade.js?v=20261125h"></script>
 <script src="library.js?v=20261125h"></script>
-<script src="orb.js?v=20261126d"></script>
+<script src="orb.js?v=20261127b"></script>
 <script src="system.js?v=20261126m"></script>
 <script src="scalp.js?v=4"></script>
-<script src="reason.js?v=2"></script>
+<script src="reason.js?v=3"></script>
 <script src="market.js?v=1"></script>
 <script src="brain.js?v=2"></script>
 <script src="carry.js?v=2"></script>
