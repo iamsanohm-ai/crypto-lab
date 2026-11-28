@@ -1,6 +1,6 @@
 {
  "capital": 500.0,
- "equity": 505.29667190624536,
+ "equity": 495.57968467612136,
  "subs": {
   "L7H7N3": {
    "ZECUSDT": -0.16666666666666666,
@@ -136,28 +136,28 @@
   "WLDUSDT": -0.04444,
   "BTCUSDT": 0.01667
  },
- "last_day": "2026-11-27",
+ "last_day": "2026-11-28",
  "prices": {
-  "ADAUSDT": 0.1486,
-  "AVAXUSDT": 6.596,
-  "BNBUSDT": 554.21,
-  "BTCUSDT": 60577.18,
-  "DOGEUSDT": 0.05648,
-  "ENAUSDT": 0.1003,
-  "ETHUSDT": 1689.85,
-  "HYPEUSDT": 62.31,
-  "NEARUSDT": 3.05,
-  "PEPEUSDT": 3.48e-06,
-  "PUMPUSDT": 0.002583,
-  "QNTUSDT": 147.93,
-  "SOLUSDT": 71.03,
-  "SUIUSDT": 0.6685,
-  "TAOUSDT": 183.9,
-  "TRXUSDT": 0.3041,
-  "UNIUSDT": 4.658,
-  "WLDUSDT": 0.2414,
-  "XRPUSDT": 0.9438,
-  "ZECUSDT": 682.52
+  "ADAUSDT": 0.1485,
+  "AVAXUSDT": 6.614,
+  "BNBUSDT": 554.72,
+  "BTCUSDT": 59923.1,
+  "DOGEUSDT": 0.05775,
+  "ENAUSDT": 0.1042,
+  "ETHUSDT": 1662.48,
+  "HYPEUSDT": 63.57,
+  "NEARUSDT": 3.021,
+  "PEPEUSDT": 3.55e-06,
+  "PUMPUSDT": 0.0026,
+  "QNTUSDT": 146.46,
+  "SOLUSDT": 71.66,
+  "SUIUSDT": 0.6734,
+  "TAOUSDT": 187.1,
+  "TRXUSDT": 0.3009,
+  "UNIUSDT": 4.827,
+  "WLDUSDT": 0.2472,
+  "XRPUSDT": 0.9489,
+  "ZECUSDT": 735.54
  },
  "log": [
   {
@@ -176,6 +176,17 @@
    "kind": "rebalance",
    "turnover": 0.0,
    "fee_usdt": 0.0
+  },
+  {
+   "t": "2026-11-28T00:08:21+00:00",
+   "kind": "pnl",
+   "pct": -1.923
+  },
+  {
+   "t": "2026-11-28T00:08:21+00:00",
+   "kind": "rebalance",
+   "turnover": 0.0,
+   "fee_usdt": 0.0
   }
  ],
  "curve": [
@@ -186,29 +197,33 @@
   [
    "2026-11-27T00:08:31+00:00",
    505.297
+  ],
+  [
+   "2026-11-28T00:08:21+00:00",
+   495.58
   ]
  ],
  "started_at": "2026-11-26T15:20:53+00:00",
  "fees_usdt": 0.34444,
- "updated_at": "2026-11-27T00:08:31+00:00",
+ "updated_at": "2026-11-28T00:08:21+00:00",
  "targets": [
   {
    "symbol": "TRXUSDT",
    "weight": 0.13333,
    "side": "long",
-   "mom30_pct": -8.3
+   "mom30_pct": -8.8
   },
   {
    "symbol": "XRPUSDT",
    "weight": 0.06111,
    "side": "long",
-   "mom30_pct": -29.1
+   "mom30_pct": -28.4
   },
   {
    "symbol": "QNTUSDT",
    "weight": 0.06111,
    "side": "long",
-   "mom30_pct": -25.8
+   "mom30_pct": -27.4
   },
   {
    "symbol": "ADAUSDT",
@@ -220,43 +235,43 @@
    "symbol": "TAOUSDT",
    "weight": 0.01667,
    "side": "long",
-   "mom30_pct": -28.1
+   "mom30_pct": -27.3
   },
   {
    "symbol": "BTCUSDT",
    "weight": 0.01667,
    "side": "long",
-   "mom30_pct": -25.1
+   "mom30_pct": -26.3
   },
   {
    "symbol": "PUMPUSDT",
    "weight": 0.01111,
    "side": "long",
-   "mom30_pct": -40.8
+   "mom30_pct": -42.7
   },
   {
    "symbol": "WLDUSDT",
    "weight": -0.04444,
    "side": "short",
-   "mom30_pct": -45.1
+   "mom30_pct": -43.5
   },
   {
    "symbol": "UNIUSDT",
    "weight": -0.07778,
    "side": "short",
-   "mom30_pct": -34.3
+   "mom30_pct": -33.4
   },
   {
    "symbol": "ENAUSDT",
    "weight": -0.08889,
    "side": "short",
-   "mom30_pct": -51.9
+   "mom30_pct": -50.3
   },
   {
    "symbol": "ZECUSDT",
    "weight": -0.13333,
    "side": "short",
-   "mom30_pct": -47.9
+   "mom30_pct": -43.9
   }
  ]
 }
